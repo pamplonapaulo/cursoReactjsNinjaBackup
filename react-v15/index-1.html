@@ -15,24 +15,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
 
     <script type="text/babel">
+        // var h1 = React.createElement('h1', null, 'Hello H1 React v15');
 
-        var Title = React.createClass({
-            render: function() {
-                return (
-                    <div>
-                        <h1>
-                            <i>First H1</i>
-                        </h1>
-                        <h1>
-                            <i>Second H1 wrapped by the same DIV</i>
-                        </h1>
-                    </div>
-                ) 
-            }
-        })
+        // var h1 = React.createElement('h1', null, [
+        //     React.createElement('span', null, 'Texto do Span'),
+        //     React.createElement('i', null, 'Texto do Span 2')
+        // ]);
+
+        // var h1 = React.DOM.h1(null, [
+        //     React.DOM.span(null, React.DOM.i(null, 'Italic')),
+        //     React.DOM.span(null, 'Texto do Span 2')
+        // ]);
+
+        // ReactDOM.render(h1, document.getElementById('app'));
 
         ReactDOM.render(
-            <Title />,
+            <h1>Hello 2 World</h1>,
             document.getElementById('app')
         );
 

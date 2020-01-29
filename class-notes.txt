@@ -58,10 +58,117 @@ Class Notes
         
         (Using npx you can run the script without installing it first)
 
-        
 
+
+https://www.udemy.com/course/curso-reactjs-ninja/learn/lecture/7176634#overview
+    
+
+Module 1 | Class 4:
+
+    Multiple Elements inside a parent Element.
+
+        var h1 = React.createElement('h1', null, [
+            React.createElement('span', null, 'Texto do Span'),
+            React.createElement('i', null, 'Texto do Span 2')
+        ]);
+
+Module 1 | Class 5:
+
+    JSX:
+
+        Javascript + XML, created by Facebook Co.
+
+        React.DOM object (doesn't have 100% of the tags)
+
+            var h1 = React.DOM.h1(null, [
+                React.DOM.span(null, React.DOM.i(null, 'Italic')),
+                React.DOM.span(null, 'Texto do Span 2')
+            ]);
+
+        JSX is a more visual way to write a code like 'React.createElement'
+
+        'JSX is optional and not required to use React. Try the Babel REPL to see the raw JavaScript code produced by the JSX compilation step.'
+
+
+        Babel (JS compiler)
+
+        - Add the CDN:
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+
+        - Helps the Browser to render ECMA6+
+
+            <script type="text/babel">
+
+                ReactDOM.render(
+                    <h1>Hello World</h1>,
+                    document.getElementById('app')
+                );
+
+            </script>
+
+        - Newest versions don't work that way!
+
+
+Module 1 | Class 6: Create Class + Render Method
+
+    React Components should starts with an uppercase letter:
+
+        var Title = React.createClass({
+            render: function() {
+                return (
+                    <div>
+                        <h1>
+                            <i>First H1</i>
+                        </h1>
+                        <h1>
+                            <i>Second H1 wrapped by the same DIV</i>
+                        </h1>
+                    </div>
+                ) 
+            }
+        })
+
+        ReactDOM.render(
+            <Title />,
+            document.getElementById('app')
+        );
+    
+
+    PS: We can't brak a line just after 'return'. Use parentheses to wrap the 'HTML'.
+
+    => We can't have two HTML tags beside each one. Classes are always wrapped by a single parent inside the parentheses. This is cuz a function with 'return' will return just once, so you must wrap eveything inside one single element. Just throw a DIV wrapping everything when you need it.
+
+
+Module 2 | Class 1:
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
