@@ -1,0 +1,41 @@
+"React.js Ninja" by Fernando Daciuk
+
+Class Notes
+
+    Class Support: https://github.com/da2k/curso-reactjs-ninja
+
+    Módulo 1:
+
+        Functional Programming
+
+        EcmaScript6 (2015 + 2016)
+
+        Setting up environment (development and production)
+
+    
+    What is React?
+
+    Not a framework, but a library to build User Interfaces
+
+    It's the "V" of Model View Controller
+
+    DOM manipulation:
+    
+        Webapps
+        Mobile Apps
+        CMSs
+
+    Don't use React:
+
+        Institutional Websites 
+        Blogs
+
+        (Doesn't make sense. It does make sense for more interactive areas)
+
+        
+
+
+
+
+
+
