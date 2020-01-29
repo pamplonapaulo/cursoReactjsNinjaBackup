@@ -4,8 +4,6 @@ Class Notes
 
     Class Support: https://github.com/da2k/curso-reactjs-ninja
 
-    Módulo 1:
-
         Functional Programming
 
         EcmaScript6 (2015 + 2016)
@@ -32,7 +30,39 @@ Class Notes
 
         (Doesn't make sense. It does make sense for more interactive areas)
 
+    What problems React solve?
+
+        Modularização (separação de responabilidades)
+
+        Componentização (for User Interface)
+
+        Performance (DOM manipulation, virtual DOM)
+
+
+    http://facebook.github.io/react (https://reactjs.org/)
+
+    
+    
+    https://cdnjs.com/libraries/react/15.1.0
+
+
+    Starting a server:
+    
+        npm i http-server (installing the package)
+
+        http-server (running the server)
+
+        In my case I used:
         
+            npx http-server ./
+        
+        (Using npx you can run the script without installing it first)
+
+        
+
+
+    
+
 
 
 
