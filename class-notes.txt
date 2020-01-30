@@ -139,7 +139,317 @@ Module 1 | Class 6: Create Class + Render Method
     => We can't have two HTML tags beside each one. Classes are always wrapped by a single parent inside the parentheses. This is cuz a function with 'return' will return just once, so you must wrap eveything inside one single element. Just throw a DIV wrapping everything when you need it.
 
 
-Module 2 | Class 1: Environment Settings + Webpack
+Section 2 | Class #1: Environment Settings + Webpack
+
+Daciuk's settings:
+
+    https://github.com/da2k/curso-reactjs-ninja/tree/master/config
+
+
+Webpack
+
+    It's a module bundler: http://webpack.github.io/
+
+
+Section 2 | Class #1.1: Versions and dependencies
+
+        From this point we may be using old versions. Make sure we are following these versions:
+
+        https://github.com/da2k/curso-reactjs-ninja/blob/master/versions-of-dependencies.md
+
+
+Section 2 | Class #2: Starting up with Webpacks
+
+    npm install --save-dev webpack@1
+    or npm install --save-dev webpack (to get the last stable version)
+
+    Basic config of Webpack.config.js
+
+        touch webpack.config.js
+
+    Now edit it. Include:
+
+        'use strict'
+
+        const path = require('path')
+
+        module.exports = {
+            entry: path.join(__dirname, 'src', 'index'),
+            output: {
+                path:path.join(__dirname, 'dist'),
+                filename: 'bundle.js'
+            }
+        }
+
+    'src' directoy:
+
+        mkdir src
+        cd src
+        touch index.js
+
+    webpack:
+
+        cd ..
+        npm install -g webpack@1
+
+        webpack
+
+    index.html:
+
+        touch index.html
+
+
+Section 2 | Class #3: Web Server
+
+    section-2 (dev) npm install --save-dev webpack-dev-server@1
+    or
+    section-2 (dev) npm install --save-dev webpack-dev-server (to get the last stable version)
+
+
+    Now add the public path at web.config
+
+        publicPath: '/static/'
+        (this is using a virtual memory to store a file - the folder itself actually doesn't exist)
+
+    Fix the path at the index.html:
+
+        <script src="/static/bundle.js"></script>
+
+    
+    Install the webpack server globally:
+    
+        npm install -g webpack-dev-server@1
+
+    Run it.
+
+        webpack-dev-server
+
+Section 2 | Class #4: Moduling an App
+
+
+    require + exports
+
+        index.js
+        var sum = require('./app')
+
+        app.js
+        module.exports = sum
+
+
+Section 2 | Class #5: React + ReactDOM from Nodle Package Management (NPM)
+
+
+        (dev) npm install --save react@15.4 react-dom@15.4
+        or
+        (dev) npm install --save react react-dom
+
+
+PS: Something that I had forgoten:
+
+    Every time you select something from ID inside your JS, it goes to the global memmory. So it's a bad practice.
+
+
+
+Section 2 | Class #6: EcmaScript 2015
+
+
+
+    Babel dependencies
+
+        npm install --save-dev babel-core@6 babel-loader@6 babel-preset-es2015@6 babel-preset-stage-0@6
+
+        or
+
+        npm install --save-dev babel-core babel-loader babel-preset-es2015 babel-preset-stage-0
+
+    Babel config:
+
+        .babelrc (hidden file)
+
+        edit it. Add this:
+
+            {
+                "presets": ["es2015", "stage-0"]
+            }
+
+        
+        import + export
+
+            index.js
+            import Title from './app'
+
+            app.js
+            export default Title
+
+
+    Shorthand notation:
+
+        import { render } from 'react-dom'
+
+        render(
+            React.createElement(Title),
+            document.querySelector('[data-js="app"]')
+        )
+
+    Longhand Notation:
+
+        import { render : render } from 'react-dom' (with unknown error compiling)
+
+        ReactDOM.render(
+            React.createElement(Title),
+            document.querySelector('[data-js="app"]')
+        )
+
+Section 2 | Class #6.0.1: ES Modules (Daciuk's notes from the 'future')
+
+    Fixing mistakes from last video: forget about shorthand/longhand notation.
+
+    Named Import / Named Export
+
+    export WITHOUT default // named export:
+
+        ./react-dom.js
+
+            export function render() {
+                console.log('hello render')
+            }
+            export { render } ***** this is a named export *****
+
+        ./index.js
+
+            import { render } from './react-dom'
+            render(
+                React.createElement(Title),
+                document.querySelector('[data-js="app"]')
+            )
+
+        It could be this other way:
+
+            ./react-dom.js
+
+                function render() {
+                    console.log('hello render')
+                }
+                export { render }
+
+            ./index.js
+
+                // Here you have to use this name.
+                import { render } from './react-dom'
+
+                // But you could make this:
+                import { render as reactDomRender } from './react-dom'
+                reactDomRender(
+                    React.createElement(Title),
+                    document.querySelector('[data-js="app"]')
+                )
+
+            Long story short:
+
+                import ... 'as' ...
+
+                To rename a object exported by a named export, use keyword "as"
+                    import { render as reactDomRender } from './react-dom'
+
+
+            Long X Short:
+
+            This:
+
+                function render() {
+                    console.log('hello render')
+                }
+                var ReactDOM = {}
+                ReactDOM.render = render
+                export default ReactDOM
+
+            Is the same as:
+
+                function render() {
+                    console.log('hello render')
+                }
+                export default {
+                    render: render
+                }
+
+            But since the property has the same name as the method...
+
+                function render() {
+                    console.log('hello render')
+                }
+                export default { render }
+
+            But in case you have to name a value, so take of the 'default'...
+
+                function render() {
+                    console.log('hello render')
+                }
+                export { render }
+
+            Or:
+
+                export function render() {
+                    console.log('hello render')
+                }
+
+            Or:
+
+                export default function () {
+                    console.log('hello render')
+                }
+
+
+    OBS:
+    'use strict' is not a need on modules. Daciuks keep doing by his habit.
+
+
+Section 2 | Class #7: Setting JSX at Babel and sourcemaps at webpack
+
+    PRESET (makes Babel recogniza JSX)
+
+    npm install --save-dev babel-preset-react@6 (version in this course)
+
+    or
+
+    npm install --save-dev babel-preset-react (newer)
+
+    Update something at .babelrc. Include "react" at the end of the preset's array:
+
+        {
+            "presets": ["es2015", "stage-0", "react"]
+        }
+
+    Update app.js:
+    
+        var Title = React.createClass({
+            render: function(){
+                return <h1>babel-preset-react is working</h1>
+            }
+        })
+
+    Update index.js:
+
+        render(
+            <Title />,
+            document.querySelector('[data-js="app"]')
+        )
+
+
+    However, how could we debug this code in case we need it? It's not easy to understand file './dist/bundle.js'. This is why we use sourcemap.
+
+        Add an extra entry at:
+        
+            webpack.config
+
+                module.exports = {
+                    devtool: 'sourcemap',
+                    (...)
+                }
+
+            Boom! Now if we have to debug anything, console will show us the original files where we are working on, not the bundle.js. Super cool.
+
+
+Section 2 | Class #8: React Hot Loader
 
 
 
