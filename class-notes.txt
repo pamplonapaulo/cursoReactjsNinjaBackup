@@ -450,3 +450,144 @@ Section 2 | Class #7: Setting JSX at Babel and sourcemaps at webpack
 
 
 Section 2 | Class #8: React Hot Loader
+
+    HTML/CSS: Live Reload Mode
+
+    React Hot Loader: For each update in every component, only it's tree will be reloaded.
+
+    Installing it.
+
+        npm install --save-dev react-hot-loader@3.0.0-beta.2 (version in this course)
+
+    The idea is to heve this onli in the development, not under production. Later we will set this too.
+
+    Update webpack.config:
+
+        Include this:
+
+            entry: [
+                'react-hot-loader/patch',
+                'webpack-dev-server/client?http://localhost:3000',
+                'webpack/hot/only-dev-server'
+            ],
+
+            plugins: [
+                new webpack.HotModuleReplacementPlugin()
+            ],
+
+    Update .babelrc:
+
+        Include this line:
+
+            {
+                "plugins": ["react-hot-loader/babel"]
+            }
+            
+    Touch server.js (to be run with Node.js)
+
+    Start entry at package.json
+
+
+Section 2 | Class #9: React Hot Loader (Part II)
+
+    So far so good? Not really. Now we'll include a feature that auto-reloads contents when something change in the page.
+
+    We need to include this in index.js:
+
+        import { AppContainer } from 'react-hot-loader'
+
+    At index.js:
+
+        import React from 'react'
+        import { render } from 'react-dom'
+        import { AppContainer } from 'react-hot-loader'
+        import App from './app'
+
+        render(
+            <AppContainer>
+                <App />
+            </AppContainer>,    
+            document.querySelector('[data-js="app"]')
+        )
+
+        if(module.hot) {
+            module.hot.accept('./app', () => {
+                const NextApp = require('./app').default
+
+                render(
+                    <AppContainer>
+                        <App />
+                    </AppContainer>,    
+                    document.querySelector('[data-js="app"]')
+                )
+
+            })
+        }
+    
+        How is our structure:
+
+            index.js calls app.js, and app.js calls everything it needs
+
+        OBS on app.js:
+
+            This:
+
+                export default App
+
+            Is the same as:
+
+                exports.default = App
+
+Section 2 | Class #10: Linter
+
+    New dependencies:
+
+        - standard
+        - standard loader
+
+    Terminal:
+
+        npm install --save-dev standard standard-loader@4
+
+    Linter have to be loaded before Babel.
+
+        So, on webpack.config:
+
+            module: {
+
+                preLoaders: [{
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: 'standard'
+                }],
+
+                loaders: [{
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: 'babel'
+                }]
+            }
+
+    Linter standard gives you warnings if your code has semicolon or if it's indentation has more or less spaces than it's standard.
+
+    Webpack validator: helps you to find errors at webpack.config.js
+
+        npm install --save-dev webpack-validator
+
+    
+
+
+
+
+
+
+        
+
+    
+
+
+
+
+

@@ -1,35 +1,25 @@
 'use strict'
-/*
-var sum = require('./app')
-console.log(sum(1,2))
-*/
 
-import React from 'react' // ES6/2015
-// var React = require('react') // Old
+import React from 'react'
+import { render } from 'react-dom'
+import { AppContainer } from 'react-hot-loader'
+import App from './app'
 
-    /*Longhand Notation
-    import ReactDOM from 'react-dom' // ES6/2015
-    */
-    // var ReactDOM = require('react-dom') // Old
-    
+const renderApp = (NextApp) => {
+    render(
+        <AppContainer>
+            <App />
+        </AppContainer>,
+        document.querySelector('[data-js="app"]')
+    )
+}
 
-    // Longhand Notation:
-    // import { render : render } from 'react-dom' // (with unknown error compiling)
-    // Shorthand notation:
-    import { render } from 'react-dom'
+renderApp(App)
 
-import Title from './app' // ES6/2015 
-// var Title = require('./app') // Old
+if (module.hot) {
+    module.hot.accept('./app', () => {
+        const NextApp = require('./app').default
 
-/* Longhand Notation
-ReactDOM.render(
-    React.createElement(Title),
-    document.querySelector('[data-js="app"]')
-)*/
-
-// Shorthand notation:
-render(
-    <Title />,
-    // React.createElement(Title),
-    document.querySelector('[data-js="app"]')
-)
+        renderApp(NextApp)
+    })
+}
