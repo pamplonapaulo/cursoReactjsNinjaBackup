@@ -1,20 +1,11 @@
 'use strict'
-/*
-function sum(val1, val2){
-    return val1 + val2
-}
-module.exports = sum
-*/
 
-import React from 'react' // ES6/2015
-// var React = require('react')
+import React from 'react'
 
-var Title = React.createClass({
-    render: function(){
-        //return React.createElement('h1', null, 'Título 5')
-        return <h1>babel-preset-react is working</h1>
-    }
+const App = React.createClass({
+    render: function () {
+    return <h1>Application 6</h1>
+  }
 })
 
-// module.exports = Title // Old
-export default Title // ES6/2015
+export default App
