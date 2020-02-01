@@ -8,6 +8,7 @@ const Title = (props) => (
 )
 */
 
+// pure function:
 const Title = ({ name, car }) => (
     <h1>Oi, {`${name} ${car.model}`}</h1>
 )

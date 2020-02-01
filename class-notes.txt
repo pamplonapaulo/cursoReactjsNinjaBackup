@@ -670,7 +670,7 @@ Section 3 | #10: getDefaultProps beyond strings
                 to: app.js
                     <Title name='Fernando' car={{model: 'Wolks', year: 1980}} />
 
-Section 3 | #11: Render with pure functions insted of
+Section 3 | #11: Render with pure functions insted of React.createClass():
 
     option 1
 
@@ -711,7 +711,151 @@ Section 3 | #11: Render with pure functions insted of
 
     
 
-Section 3 | #12: Render with classes
+Section 3 | #12: Render with classes (ES6)
+
+import React, { Component } from 'react'
+
+class App extends Component {
+  render () {
+    return (
+      <div className='container'>
+        <Title name='Fernandos' />
+      </div>
+    )
+  }
+}
+
+Section 3 | #13: prop key (use it on every loop)
+
+const Square = ({ color }) => (
+    <div style={{
+        backgroundColor: color,
+        height: '100px',
+        width: '100px'
+    }} />
+)
+
+Square.defaultProps = {
+    color: 'red'
+}
+
+ALSO:
+
+class App extends Component {
+  render () {
+    return (
+      <div className='container'>
+        {['yellow', 'blue', 'blue', 'black'].map((square, index) => (
+          <Square key={index} color={square} />
+        ))}
+      </div>
+    )
+  }
+}
+
+Section 3 | #14: 
+
+Never have a duplicated key={} !
+Duplicated keys wont be render!
+
+Section 3 | #15: Events (async)
+
+    Mostly:
+
+    - inline (actually react will create a listener, ot a inline html event)
+    - arrow functions
+    - 'onEventname'
+
+      <div className='container' onClick={function (e) {
+        alert('click')
+      }}>
+
+
+
+Section 3 | #16: Prop children
+
+    button.js:
+        import React from 'react'
+        const Button = ({ children }) => (
+            <button>{children}</button>
+        )
+        export default Button
+
+    app.js:
+        return (
+        <div className='container'>
+            <Button>
+                <span>span *</span>
+                outside
+            </Button>
+        </div>
+        )
+
+    
+Section 3 | #17: Composition
+
+a function:
+    const sum = (x, y) => x + y
+
+a composition:
+    sum(sum(sum(3, 4), 2), sum(1, 1))
+
+on react (using JSX):
+
+    button.js
+        import React from 'react'
+        const Button = ({ children, handleClick }) => (
+            <button className='main-button' onClick={handleClick}>          {children}
+            </button>
+        )
+        export default Button
+
+    search-button.js
+        import React from 'react'
+        import Button from './button'
+        const SearchButton = () => (
+            <Button handleClick={() => alert('search')}>
+                Search
+            </Button>
+        )
+        export default LikeButton
+
+    like-button.js
+        import React from 'react'
+        import Button from './button'
+        const LikeButton = () => (
+            <Button handleClick={() => alert('like')}>
+                Like
+            </Button>
+        )
+        export default LikeButton
+
+    Ad so on.
+
+Section 3 | #18: State
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
