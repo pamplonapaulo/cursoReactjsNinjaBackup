@@ -578,14 +578,142 @@ Section 2 | Class #10: Linter
 
     
 
+Section 3: Módulo 1 parte 2 * * * * * * *
 
 
 
+Section 3 | #07: Props
 
+    Props are like html attriutes
+
+            from: title.js
+                <Title name='Fernando Daciuk'/>
+
+            to: app.js
+                <h1>Hello {this.props.name}!</h1>
+
+            returns:
+                Hello Fernando Daciuk!
+
+
+Section 3 | #08: className + htmlFor
+
+    CLASS is a keyword in JS. So use className.
+
+            <div className='do-not-use-class' id='id-is-ok'>
+
+
+    FOR also is a keyword in JS. So use htmlFor.
+
+            <label htmlFor=''>Input</label>
+            <input id='input' type='text'/>
+
+
+Section 3 | #09: getDefaultProps
+
+            from: title.js
+                const Title = React.createClass({
+                    getDefaultProps: function () {
+                        return {
+                            name: 'Desconhecido',
+                            lastName: 'Sorenome'
+                        }
+                    },
+                    render: function () {
+                        return (
+                        <h1>Hello {this.props.name + ' ' + this.props.lastName}!</h1>
+                        )
+                    }
+                })
+
+            to: app.js
+                const App = React.createClass({
+                    render: function () {
+                    return (
+                        <div className='do-not-use-class' id='id-is-ok'>
+                        <Title name='Fernando'/>
+                    </div>
+                    )
+                }
+                })
+
+            returns:
+                Fernando Sorenome!
 
         
 
     
+Section 3 | #10: getDefaultProps beyond strings
+
+            Number
+
+                from: title.js
+                    <h1>Hello {this.props.name + ' ' + this.props.age}!</h1>
+
+                to: app.js
+                    <Title name='Fernando' age={40}/>
+
+            Arrays
+
+                from: title.js
+                    <h1>Hello {this.props.name + ' ' + this.props.scores}!</h1>
+
+                to: app.js
+                    <Title name='Fernando' scores={[40,100, 0, 20]}/>
+
+
+            object
+
+                from: title.js
+                    <h1>Hello {this.props.name + ' has a car made by ' + this.props.car.model + ' on ' + this.props.car.year}!</h1>
+
+                to: app.js
+                    <Title name='Fernando' car={{model: 'Wolks', year: 1980}} />
+
+Section 3 | #11: Render with pure functions insted of
+
+    option 1
+
+        const Title = () => {
+            return (
+                <h1>Oi</h1>
+            )
+        }
+
+    option 2
+
+        const Title = () => <h1>Oi</h1>
+
+    option 3
+
+        const Title = (props) => (
+            <h1>Oi, {`${props.name} ${props.car.model}`}</h1>
+        )
+
+    option 4
+
+        const Title = ({ name, car }) => (
+            <h1>Oi, {`${name} ${car.model}`}</h1>
+        )
+
+    option 5
+
+        const Title = ({ name, car }) => (
+            <h1>Oi, {`${name} ${car.model}`}</h1>
+        )
+
+        Title.defaultProps = {
+            name: 'Unknown',
+            car: {
+                model: 'Tesla'
+            }
+        }
+
+    
+
+Section 3 | #12: Render with classes
+
+
 
 
 
