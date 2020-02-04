@@ -830,17 +830,314 @@ on react (using JSX):
         )
         export default LikeButton
 
-    Ad so on.
+    app.js
+        class App extends Component {
+            render () {
+                return (
+                <div className='container'>
+                    <LikeButton />
+                    <SearchButton />
+                </div>
+                )
+            }
+        }
 
 Section 3 | #18: State
 
+Props can't change. So we use State to get any change.
 
+{this.state}
 
+state does not work in pure function components
         
+super() method
+
+    gets methods from constructor
+
+this.setState
+
+    once the state changes, the render reload stuff
+
+class App extends Component {
+  constructor () {
+    super()
+    this.state = {
+      text: 'Paulo'
+    }
+  }
+  
+  render () {
+    return (
+      <div className='container' onClick={() => this.setState({
+        text: 'Outro texto'
+      })}>
+        {this.state.text}
+      </div>
+    )
+  }
+}
+
+Section 3 | #19: Arrow functions
+
+- always anonymous
+
+- if has one line, doesn't need 'return' keyword and doesn't need curly brackets.
+
+var sum = (x, y) => x + y
+
+- of just one parameter, no parentheses needed
+
+var add1 = x => sum(x,1)
+
+- the real advantage actually it hasn't lexical scope: old sintax wouldn't get 'this.setState', cuz 'this' would be the 'function' itself, not the class.
+
+onClick={() => this.setState({ text: 'Outro texto' })}>
+
+- it does not contain the arguments object
+
+- it can't create a costructor - you must use a normal function
+
+
+Section 3 | #20: stateful X stateless
+
+    stateful: able to manipulate states.
+
+    stateless: pure functions can't manipulate states (see our buttons)
+
+    React tem fluxo de dados unidirecional. (De pai para filho/ Cima para baixo)
+
+    Todo método render() precisa ser uma função pura, não pode gerar side effects.
+
+Section 3 | #21: lifecycle
+
+    - mounting / unmounting
+    - updating
+
+    Each one has specific methods
+
+    mounting / unmounting:
+
+        1. componentWillMount()
+        2. componentDidMount()
+        3. componentWillUnmount()
+
+    updating:
+
+        1. componentWillReceiveProps(nextProps)
+        2. shouldComponentUpdate(nextProps, nextState) => bool
+        3. componentWillUpdate(nextProps, nextState)
+        4. componentDidUpdate(prevProps, prevState)
+
+
+Section 3 | #22: mounting / unmounting
+
+OBS: React runs either on the server side or in the client side. So do not manipulate DOM with componentWillMount or anything that could mess something on the server side.
+
+componentWillMount() = component is not in the DOM yet when this method runs.
+mounting = it means build a component in the dom. (component ready)
+
+constructor() runs just when the Class is instantiated, then componentWillMount() runs, then render() runs after all. Then componentDidMount() would run.
+
+componentDidMount() it's the proper method if you have to manipulate the DOM.
+
+componentWillUnmount()
+
+time.js:
+
+class Timer extends Component {
+    constructor () {
+        super()
+        this.state = {
+            time: 0
+        }
+        
+        this.timer
+    }
+
+    componentDidMount () {
+        this.timer = setInterval(() => {
+            this.setState({ 
+                time: this.state.time + 1 
+            })
+        }, 1000)
+    }
+
+    componentWillUnmount () {
+        clearInterval(this.timer)
+    }
+
+    render () {
+        return <div>Timer: {this.state.time}</div>
+    }
+}
+
+app.js:
+
+class App extends Component {
+  constructor () {
+    console.log('constructor');
+    super()
+    this.state = {
+      showTimer: true
+    }
+  }
+
+  render () {
+    return (
+      <div>
+        {this.state.showTimer && <Timer />}
+
+        <button onClick={() => {
+          this.setState({ showTimer: !this.state.showTimer })
+        }}>show / hide time</button>
+      </div>
+    )
+  }
+}
+
+Section 3 | #23: updating: componentWillReceiveProps(nextProps)
+
+- use it only after get the DOM set.
+
+- 
+
+Section 3 | #24: updating:  shouldComponentUpdate(nextProps, nextState) => bool
+
+- this function runs every time something in the DOM updates
+
+- good for value tests: is this.props.time !== nextProps.time?
+
+- if somehow you don't want the component to render
+
+- do not use promises or ajax, just a fast condition that returns true or false
 
 
 
+Section 3 | #25: updating:  componentWillUpdate(nextProps, nextState)
 
+- last moment before component update
+
+- do not use this.setState inside it (issues may occur)
+OBS: this.setState can be used only inside componentWillReceiveProps()
+
+So, after all, how do all these steps in lifecycle behave (from the view of console.log)?
+
+    constructor app
+    componentWillMount app
+    render app
+        constructor timer
+        componentWillMount timer
+        render timer
+        componentDidMount timer
+    componentDidMount app
+
+Also, the updates when it happen:
+
+    componentWillReceiveProps timer
+    componentWillUpdate timer
+
+
+app.js
+
+'use strict'
+
+import React, { Component } from 'react'
+import Timer from './timer.js'
+
+class App extends Component {
+  constructor () {
+    console.log('constructor app')
+    super()
+    this.state = {
+      time: 0,
+      showTimer: true
+    }
+  }
+
+  componentWillMount () {
+    console.log('componentWillMount app')
+  }
+
+  componentDidMount () {
+    console.log('componentDidMount app')
+  }
+
+  componentWillUnmount () {
+    console.log('componentWillUnmount app')
+  }
+
+  render () {
+    console.log('render app')
+    return (
+      <div>
+        <Timer time={this.state.time} />
+
+        <button onClick={() => { this.setState({ time: this.state.time + 10 }) }}>Change props</button>
+      </div>
+    )
+  }
+}
+
+export default App
+
+timer.js
+
+'use strict'
+
+import React, { Component } from 'react'
+
+class Timer extends Component {
+  constructor () {
+    console.log('constructor timer')
+    super()
+    this.state = {
+      time: 0
+    }
+
+    this.timer
+  }
+
+  componentWillReceiveProps (nextProps) {
+    console.log('componentWillReceiveProps timer', this.props, nextProps)
+  }
+
+  shouldComponentUpdate (nextProps, nextState) {
+    //console.log('shouldComponentUpdate timer', this.state, nextState)
+    return this.props.time !== nextProps.time
+  }
+
+  componentWillMount () {
+    console.log('componentWillMount timer')
+  }
+
+  componentWillUpdate (nextProps, nextState) {
+    console.log('componentWillUpdate timer', this.props, nextProps)
+  }
+
+  componentDidMount () {
+    console.log('componentDidMount timer')
+    this.timer = setInterval(() => {
+      this.setState({
+        time: this.state.time + 1
+      })
+    }, 1000)
+  }
+
+  componentWillUnmount () {
+    console.log('componentWillUnmount timer')
+    clearInterval(this.timer)
+  }
+
+  render () {
+    console.log('render timer')
+    return <div>Timer: {this.state.time}</div>
+  }
+}
+
+export default Timer
+
+
+Section 3 | #26: componentDidUpdate(prevProps, prevState)
 
 
 
