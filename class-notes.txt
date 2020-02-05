@@ -1031,11 +1031,11 @@ So, after all, how do all these steps in lifecycle behave (from the view of cons
         componentDidMount timer
     componentDidMount app
 
-Also, the updates when it happen:
+Also, the updates (when it happen):
 
     componentWillReceiveProps timer
     componentWillUpdate timer
-
+    componentDidUpdate timer
 
 app.js
 
@@ -1140,12 +1140,199 @@ export default Timer
 Section 3 | #26: componentDidUpdate(prevProps, prevState)
 
 
+Section 3 | #27: propTypes
+
+ex:
+Button.propTypes = {
+  handleClick: React.PropTypes.func.isRequired
+}
+
+app.js
+class App extends Component {
+
+  render () {
+    return (
+      <div>
+        <Button handleClick={() => console.log('cliked')}>Click me</Button>
+      </div>
+    )
+  }
+}
+
+button.js
+const Button = ({ children, handleClick }) => (
+  <button className='main-button' onClick={handleClick}>
+    {children}
+  </button>
+)
+
+Button.propTypes = {
+  handleClick: React.PropTypes.func.isRequired
+}
+
+MORE:
+https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes
+
+Section 3 | #28: Forms
+
+    <input /> is not an HTML element, it's actually a function from React. Therefore, it doesn't have same behavior. In case you set 'value="any value"', this can't be changed by the user. You could insted use "defaultValue='Default Value'", or the way bellow here:
+
+    1. Controlled Components (best practice):
+
+        (those are stateless, these components don't keep an own state:)
+
+        class App extends Component {
+            constructor () {
+                super()
+                this.state = {
+                value: 'Valor inicial'
+                }
+            }
+            render () {
+                return (
+                <div>
+                <form>
+                    <input type='text' value={this.state.value} onChange={(e) => {
+                    console.log(e.target)
+                    console.log(e.nativeEvent)
+                    this.setState({
+                        value: e.target.value
+                    })
+                    }} />
+                </form>
+                </div>
+                )
+            }
+            }
+
+    2. Uncontrolled component:
+
+        (stateful component: without the 'value' attribute)
+
+        <input type="text" defaultValue='Default Value' />
+
+    Stateless X Stateful:
+
+        Easier for React to manage differences between JSX (virtual DOM) and the real DOM when components are stateless. Use stateless!
 
 
 
+        
+Section 3 | #29: Checkboxes & Radio
+
+    Controlled:
+
+        <label>
+            <input 
+            type='checkbox' 
+            value='my-checkbox1' 
+            checked={this.state.checked} 
+            onChange={(e) => {
+            this.setState({ checked: !this.state.checked })
+            }} />
+            Controlled
+        </label>
+
+    Uncontrolled:
+
+        <label>
+            <input
+            type='checkbox'
+            value='my-checkbox2'
+            defaultChecked1 />
+            Uncontrolled
+        </label>
+
+    Also there is another option for events on this: onClick()
+
+        <input type='checkbox' onClick={} />
+
+    ps: onClick or onChange would work the same way for checkbox or radio.
 
 
+Section 3 | #30: Select & Option
 
+      <form>
+        <select>
+          <option value='1' selected>Option 1</option>
+          <option value='2'>Option 2</option>
+          <option value='3'>Option 3</option>
+        </select>
+      </form>
+
+    or:
+
+    <form>
+        <select value='3'>
+            <option value='1'>Option 1</option>
+            <option value='2'>Option 2</option>
+            <option value='3'>Option 3</option>
+        </select>
+    </form>
+
+    but just like before, that won't allow user to change it.
+
+    so...
+
+    <form>
+        <select value={this.state.value} onChange={(e) => {
+        this.setState({
+            value: e.target.value
+        })
+        }}>
+            <option value='1'>Option 1</option>
+            <option value='2'>Option 2</option>
+            <option value='3'>Option 3</option>
+        </select>
+    </form>
+
+    and multiple:
+
+      <form>
+        <select multiple value={['1', '3']} onChange={(e) => {
+          this.setState({
+            value: e.target.value
+          })
+        }}>
+          <option value='1'>Option 1</option>
+          <option value='2'>Option 2</option>
+          <option value='3'>Option 3</option>
+        </select>
+      </form>
+
+
+Section 3 | #31: Textarea
+
+    <form>
+        <textarea defaultValue={'Content with\n break line'} />
+    </form>
+
+
+Section 3 | #32: Form Events
+
+
+    - onChange
+    - onInput (not recomended)
+    - onSubmit
+
+      <form onSubmit={(e) => {
+        e.preventDefault()
+          console.log('event', e)
+        }}
+        
+        onChange={(e) => {
+          console.log('name', e.target.name)
+          console.log('value', e.target.value)
+        }}
+        >
+        <input type='name' name='name' />
+        <input type='email' name='email' />
+        {/* <input type='checkbox' onClick={} /> */}
+        <button type='submit'>Submit</button>
+      </form>
+
+
+Section 3 | #33: setState is async
 
 
 

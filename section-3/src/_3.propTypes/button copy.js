@@ -13,3 +13,4 @@ Button.propTypes = {
 }
 
 export default Button
+//https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes
