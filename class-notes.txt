@@ -1564,8 +1564,6 @@ Section 3 | #49: Spread Operator (ES6)
         sum.apply(null, arr) //6
         sum(...arr) //6
 
-    
-
 
 
 
