@@ -753,6 +753,18 @@ class App extends Component {
   }
 }
 
+OBS.mistakes:
+
+      {repos.map((repo, index) => (
+        <li><a key={index} href={repo.link}>{repo.name}</a></li>
+      ))}
+
+What is wrong? How to fix?
+
+      {repos.map((repo, index) => (
+        <li key={index}><a href={repo.link}>{repo.name}</a></li>
+      ))}
+
 Section 3 | #14: 
 
 Never have a duplicated key={} !
@@ -1334,15 +1346,115 @@ Section 3 | #32: Form Events
 
 Section 3 | #33: setState is async
 
+There is a option of a call back function when setState runs. So in this case the 'content' is shown after the execution of tje setState. 
+
+class App extends Component {
+  constructor () {
+    super()
+    this.state = {
+      checked: false,
+      showContent: false
+    }
+  }
+
+  render () {
+    return (
+      <div>
+        <label>
+          <input
+            type='checkbox'
+            checked={this.state.checked}
+            onChange={() => {
+              this.setState({
+                checked: !this.state.checked
+              }, () => {
+                this.setState({
+                  showContent: this.state.checked
+                })
+              })
+            }}
+          />Show content
+        </label>
+
+        {this.state.showContent && <div>Look at me!</div>}
+      </div>
+    )
+  }
+}
+
+Section 3 | #34: GitHub App (intro)
+
+- ajax
+
+- DOM libs
+
+- stateful X stateless
+
+- smart X dumb
+
+- container X presentational
+
+GitHub App:
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m01/github-app
+
+GitHub API:
+https://api.github.com/users
+
+https://developer.github.com/v3/
+https://developer.github.com/v4/
 
 
+Section 3 | #35: App's Markup
+
+Section 3 | #36: App's Components + propTypes
+
+Section 3 | #37: App's States + Concepts
+
+    Stateful x Stateless
+    
+        App: this component will be stateful (sends data via props to it's children components, which will all be stateless)
+
+    Container X Presentational
+
+        Presentational just presents/shows content. It just render properties received from it's parent.
+
+    Smart X Dumb
+
+        Dumb: doesn't know what to do, just that they supposed to render properties.
 
 
+Section 3 | #38: App's States (cont.)
+
+obs: shortcircuit-ternary always shows a value, unless the value is null.
+
+{!!userinfo && <UserInfo />}
 
 
+Section 3 | #39: App's States (cont.)
+
+Section 3 | #40: App's Request / Ajax Lib
+
+    npm i --save @fdaciuk/ajax
+
+Section 3 | #41: App's Populating
+
+I might need this later again:
+https://stackoverflow.com/questions/29280445/reactjs-setstate-with-a-dynamic-key-name
 
 
+Section 3 | #42: App's Populating (Solving the challenge: Repos + Starred)
 
+Section 3 | #43: App's Populating (Solving the challenge: Cont.)
+
+Section 3 | #44: App's Populating (Solving the challenge: Cont.)
+
+Não pense em manipular DOM. Pense manipulação de dados.
+
+Section 3 | #45: Events (isDisable - rever esse vídeo!!!)
+
+Section 3 | #46: Loading (isFetching - rever esse vídeo!!!)
+
+Section 3 | #47: Organizando propTypes
 
 
 
