@@ -70,7 +70,6 @@ class App extends Component {
   render () {
     return <AppContent
       {...this.state}
-      isFetching={this.state.isFetching}
       handleSearch={this.handleSearch}
       getRepos={this.getRepos('repos')}
       getStarred={this.getRepos('starred')}

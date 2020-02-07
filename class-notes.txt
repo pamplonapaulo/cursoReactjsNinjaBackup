@@ -1456,6 +1456,120 @@ Section 3 | #46: Loading (isFetching - rever esse vídeo!!!)
 
 Section 3 | #47: Organizando propTypes
 
+Section 3 | #48: Bind (this - rever esse vídeo!!!)
+
+    arrow function has a lexical bind:
+
+        handleSearch={(e) => this.handleSearch(e)}
+
+    this's reference is not lost. it keeps from the Class.
+
+    or:
+
+        handleSearch={this.handleSearch.bind(this)}
+
+    Here again, this has a reference from the Class. Bind however is slower, so use arrow function.
+
+    or even better, at the constructor (and just one time!):
+
+        constructor () {
+          super()
+          this.state = {
+            userinfo: null,
+            repos: [],
+            starred: [],
+            isFetching: false
+          }
+
+          this.handleSearch = this.handleSearch.bind(this)
+        }
+
+    Then at the render:
+
+        render () {
+            return <AppContent
+            isFetching={this.state.isFetching}
+            handleSearch={this.handleSearch}
+            getRepos={this.getRepos('repos')}
+            getStarred={this.getRepos('starred')}
+            />
+        }
+
+    So above 'this' is already from the App's object. That's the most recommended way, cuz it's the most perfomatic. Put the 'bind' inside the constructor!
+
+    Just good to know: Moving backwards - about ES5 -, building a component by 'const App = react.createClass()' it has already a built in 'bind', we don't need to include it again to get Class' reference. Kinda 'auto-bind'.
+
+Section 3 | #49: Spread Operator (ES6)
+
+    What is this? It's a reticent before an object. Like:
+
+        ...obj
+
+    What it does?
+    
+    Suppose we have this obj:
+
+      const obj = {
+          prop1: 1,
+          prop2: 2,
+          prop3: 3,
+      }
+
+      const obj2 = obj
+      console.log(obj2 === obj) // true
+
+    But... If we had done this way:
+
+      const obj2 = { ...obj }
+      console.log(obj2 === obj) // false
+
+    It works on arrays, JSX, 
+
+    So, in a real world code. This:
+
+        render () {
+            return <AppContent
+            userinfo={this.state.userinfo}      <==
+            repos={this.state.repos}            <==
+            starred={this.state.starred}        <==
+            isFetching={this.state.isFetching}  <==
+            handleSearch={this.handleSearch}
+            getRepos={this.getRepos('repos')}
+            getStarred={this.getRepos('starred')}
+            />
+        }
+
+    Could be written like this:
+
+        render () {
+            return <AppContent
+            {...this.state}
+            handleSearch={this.handleSearch}
+            getRepos={this.getRepos('repos')}
+            getStarred={this.getRepos('starred')}
+            />
+        }
+
+    And that way we actually would be passing all the current state just at once. Super shortcut. (Since we had those 3 lines defined before at the code - see app.js)
+
+    The spread operator spreads someone's properties somewhere else. Very modern sintax.
+
+    Using Spread Operator with arrays:
+
+        let arr = [1, 2, 3]
+        function sum(a, b, c){
+            return a + b + c
+        }
+        sum(1,2,3) //6
+        sum.apply(null, arr) //6
+        sum(...arr) //6
+
+    
 
 
 
+
+
+
+
+Section 3 | #50: 
