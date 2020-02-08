@@ -1566,8 +1566,148 @@ Section 3 | #49: Spread Operator (ES6)
 
 
 
+Section 3 | #50: Libs 3rd party with React
+
+    ref={}
+
+    While using 3rd party libs, which you can't have access from React's api, you may want to manipulate the DOM.
+
+    ref={} gives you the DOM reference allowing you to manipulate it.
+
+    The way showed in class we were mainupalting the DOM directly, cuz we couldn't get by props or state (from React's Components). But we must avoid this as much as possible.
+
+    If this Component get destroied, ref will me discarded by default.
+
+    Also, ref can be used only if your component is a Class or if using method createClass. Pure functions component won't give you this 'ref'.
+
+
+Section 3 | #51: Tests Intro
+
+    Sometimes a new feature you build demands you to test the whole application, just to make sure the new piece of code didn't break the old that was working nicely.
+
+    Automated tests help you to avoid to manually test everything that you already coded before include a new feature. 
+
+Section 3 | #52: Tests TDD (Test Driven Development)
+
+    Code the test first, then code the application itself.
+
+    Steps:
+
+        1 - Red
+
+            Write a test for something before the implamentation be available. It should break.
+
+        2 - Green
+
+            Build the implementation, then run the test. It should pass.
+
+        3 - Refactor
+
+            Need to refactor the code? Duplicated code? No earlier test should break.
+
+            At this step, you shouldn't write any new implamentation - keep the ones you already have. Also, never break a test.
+
+        console.assert(code, message)
+
+            First parameter is the code to be tested. If it's good, it should return true.
+            Second parameter is the message in case the test didn't pass.
+            Nothing will be displayed if the test returns true.
+
+        
+        One thing you have to know: what your code must do?
+
+        Baby Steps
+
+        Make the test pass with the simplest implementation as possible
+
+        Ex:
+
+            function sum(x, y) {
+                return 3
+            }
+
+            console.assert(
+                sum(1, 2) === 3,
+                'sum(1, 2) should return 3'
+            )
+
+        Then move to the next baby step:
+
+            function sum(x, y) {
+                return x + y
+            }
+
+            console.assert(
+                sum(1, 2) === 3,
+                'sum(1, 2) should return 3'
+            )
+
+
+        And so on.
+
+
+Section 3 | #53: Unit testing (over React components)
+
+    It tests each thing in the component.
+
+    How Node runs React components for this test, without a browser?
+
+    How to render those react components?
+
+        ReactDOMServer
+
+            const ReactDOMServer = require('react-dom/server')
+
+        Generates a string with the HTML markup needed
+
+        Combined with this:
+
+            console.log(ReactDOMServer.renderToStaticMarkup(Title))
+
+        But mind that we are not using JSX so far. So...
+
+        node title-test.js
+        //<h1>Title</h1>
+
+    Whacko: it's kinda jquery at server side.
+
+        npm i --save-dev whacko
+
+    Helps to manipulate DOM at server side. Check more at GitHub searching by 'Whacko'.
+
+    Also, check for 'cheerio'. But 'Whacko' is better (but about to become deprecated)
+
+    Now try to test again at Terminal:
+    
+        node title-test.js
+        //h1
+
+    More about Unit testing at next module (2).
+
+    
+    
+    
 
 
 
 
-Section 3 | #50: 
+
+
+
+
+
+
+
+
+
+Section 3 | #54: 
+
+
+
+
+
+
+
+
+
+
