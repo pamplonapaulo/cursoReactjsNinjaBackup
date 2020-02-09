@@ -1,0 +1,122 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+class #02
+create-react-app
+
+  it's a command line that creates react's apps without any config (like the ones we have at '_startup-files')
+
+  https://github.com/facebook/create-react-app
+
+  it needs a global installation in your machine, by typing this:
+
+    npm i -g create-react-app
+
+    (Which I already did months ago)
+
+    Once you get this, here is how to use it:
+
+      create-react-app <folder/project name>
+
+    What is different?
+
+    - Create React App doesn't use hot-loeader: it comes with it's own loader.
+
+    Package.json
+
+      - just a few dependencies
+
+      - react-scripts (holds most dependencies)
+
+    npm run build
+
+      - already zips the code, minification
+
+    npm run eject
+
+      - takes dependencies from react-scripts and puts it inside the project itself
+
+      - after that package.json has much more dependencies
+
+      - now you can handle all settings manually
+
+      - if you have to include specifics settings from webpack, you gonna need to first run eject
+
+    so create-react-app is a faster way to start a project
+
+
+class #03
+Jest (Overview)
+
+  components tests & Unit testing
+
+  Other similar tools: Mooca, Jasmine, Tape
+
+  Why Jest?
+
+    'report' is pretty and useful
+
+    where the code breaks? is that clear enough? Just does it!
+
+    easy to use ES6
+
+    uses babel settings from your project.
+
+    but you must include babel-jest
+
+    code coverage: how much your code is covered by tests?
+
+    Jest calculates the code-covarage by default, by including --covarage at the command line.
+
+    Interactive Watch. You can interactive with the tool, running specific tests
+
+    Emulates browser at the Terminal by using JSDOM, you don't need a browser.
+
+    Jest tests react's components too.
+
+class #04
+Jest (Install and config)
+
+So starting the class with a totally clean directory...
+
+  touch package.json
+  echo {} >> package.json
+  cat package.json
+
+Then we may install now jest-cli:
+
+  npm install --save-dev jest-cli@15
+
+OBS: Jest uses convention insted of config. What is this?
+
+Jest always look a for directory such as '__tests__/*' or any file names as something.test.js or something.spec.js. But for now, we don't have none of them.
+
+IT function:
+
+  it('Testing Jest', () => {
+    
+  })
+
+
+
+
+
+
+
+
+class #07
+
+Instalação do babel-core e babel-jest:
+
+  npm install --save-dev babel-core@6 babel-jest@15
+
+
+
+
+
+
+
+
