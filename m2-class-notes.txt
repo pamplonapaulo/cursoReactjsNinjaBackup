@@ -116,35 +116,282 @@ class #05
 
     creates a scope for our tests. Like a module with differents parts to be tested.
 
+    describe('#SCOPE something', () => {
+
+      it('Test 1', () => {
+
+      })
+
+      it('Test 2', () => {
+
+      })
+      
+    })
+
+    describe('#SCOPE 2', () => {
+
+      it('Test 1', () => {
+
+      })
+
+      it('Test 2', () => {
+
+      })
+      
+    })
+
+    ASSERT TOOL
+
+    console.assert(expression, 'fail message')
+
+    succeful tests doesn't show any message.
+
+      it('Test 1', () => {
+        console.assert(1 == 2, '1 not equal to 2')
+      })
+
+    expect() (from Jasmine)
+
+    it('1 equals to 1', () => {
+      expect(1).toBe(2)
+    })
+
+
+class #06: Code coverage
+
+  => test file supposed to test another file, so a single test file for each module. Jest already comes with 'Instabul' code coverage tool.
+
+package.json:
+
+  {
+    "scripts": {
+      "test": "jest --coverage"
+    }
+  }
+
+Mocca or Jasmine would need you to setup the code coverage, with external dependencies.
+But Jest doesn't need it, just include parameter '--coverage' as shown above.
+
+
+chai
+
+  Helps to write tests and get our assertions
+
+  Install via Terminal:
+
+    npm i --save-dev chai
+
+  sum.test.js:
+  
+    const expect = require('chai').expect
+
+  then also import the file to be tested:
+
+    const sum = require('./sum')
+
+
+class #07: code coverage in ES5/ES6
+
+Make Jest understand ES6
+
+babel-core and babel-jest install:
+
+  npm install --save-dev babel-core@6 babel-jest@15 babel-preset-es2015 babel-preset-stage-0
+
+crete a a file named '.babelrc' and include this:
+
+  {
+    "presets": ["es2015", "stage-0"]
+  }
+
+Now the function file can have ES6 code, like this:
+
+  import { expect } from 'chai'
+
+In case you run the test again. It might be still not reading the ES2015. So how to clean Jest's cache?
+
+  Via Terminal:
+
+    npm test -- --no-cache
+
+After those last dependencies installed, our package.json has these dev-dependencies:
+
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^15.0.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "chai": "^4.2.0",
+    "jest-cli": "^15.1.1"
+  }
+
+  class #08: interactive watch
+
+  Let's include one extra command at our scripts in package.json:
+
+    "scripts": {
+      "test": "jest --coverage",
+      "test:watch": "npm test -- --watch"
+    },
+
+  Then via Terminal:
+
+    npm run test:watch
+
+  Watch skips those tests that you already had before. 
+
+  Watch Usage
+  › Press a to run all tests.
+  › Press o to only run tests related to changed files.
+  cool one ==› Press p to filter by a filename regex pattern.
+  › Press q to quit watch mode.
+  › Press Enter to trigger a test run.
+  
+
+  class #09: assertion tools + map method challenge
+
+  https://jestjs.io/
+  https://github.com/facebook/jest?fbclid=IwAR19EgUDLXCM7yzvhu5F8p6O3YeRwakC0PGtfX7do5FxisFIXtpHQiDwOKg
+
+  https://jestjs.io/docs/en/api
+
+    API Reference
+      Globals
+      Expect
+      Mock Functions
+      The Jest Object
+      Configuring Jest
+      Jest CLI Options
+
+    Methods
+      afterAll(fn, timeout)
+      afterEach(fn, timeout)
+      beforeAll(fn, timeout)
+      beforeEach(fn, timeout)
+      describe(name, fn)
+      describe.each(table)(name, fn, timeout)
+      describe.only(name, fn)
+      describe.only.each(table)(name, fn)
+      describe.skip(name, fn)
+      describe.skip.each(table)(name, fn)
+      test(name, fn, timeout)
+      test.each(table)(name, fn, timeout)
+      test.only(name, fn, timeout)
+      test.only.each(table)(name, fn)
+      test.skip(name, fn)
+      test.skip.each(table)(name, fn)
+      test.todo(name)
+
+  https://jestjs.io/docs/en/expect#expectvalue
 
 
 
+  https://www.chaijs.com/api/
+  https://www.chaijs.com/api/bdd/
+  https://www.chaijs.com/api/assert/
+
+
+  TDD Training
+
+  Type your test before the code itself.
+
+  1# map
+
+  Array.protoype.map
+
+  var arr = [1, 2, 3]
+
+  var plusOne = (item) => item + 1
+  plusOne(1) // 2
+  plusOne(2) // 3
+  arr.map(plusOne) // [2, 3, 4]
+
+  arr.map((item, index, array) => ({ item, index, array })) 
+  [ { item: 1, index: 0, array: [1, 2, 3] },
+    { item: 2, index: 1, array: [1, 2, 3] },
+    { item: 3, index: 2, array: [1, 2, 3] } ]
+
+  Challenge: make a function called 'map' that does the same as shown above. Like that:
+
+    map([1, 2, 3], function (item, index, array) {})
 
 
 
+  class #10: Challenge solution
+
+  DEEP EQUAL
+
+    it('map([1, 2], (item) => item) should return [1, 2]', () => {
+      expect(map([1, 2], (item) => item)).to.be.deep.equal([1, 2])
+    })
+
+  Imperative Way: you tell to the method how to implement
+
+    using FOR loop:
+
+      const map = (arr, func) => {         
+
+        let newArr = []
+
+        for (let i = 0; i < arr.length; i++)
+          newArr.push(func(arr[i], i, arr))
+
+        return newArr
+      }
+
+
+  Throw an error:
+
+    https://www.chaijs.com/api/bdd/#method_throw
+
+    
+  class #11: Recursion + Destructuring
+
+    Recursion
+
+      1. when a function calls itself
+      2. has a way to stop running
+
+
+      Example:
+
+        const sum = (arr) => {
+          if (arr.length === 0)
+            return 0
+
+          return arr[0] + sum(arr.slice(1))
+        }
+
+
+      How it works?
+      
+        console.log(sum([1, 2, 3]))
+
+
+      What is it doing behind the scenes?
+
+        sum([1, 2, 3])
+        1 + sum([2, 3])
+        1 + 2 + sum([3])
+        1 + 2 + 3 + sum([])
+        1 + 2 + 3 + 0
+        6
+
+        Another way, via ES6, called "Destructuring":
+
+        const sum = (arr) => {
+          if (arr.length === 0)
+            return 0
+
+          const [head, ...tail] = arr
+          return head + sum(tail)
+        }
+
+    https://hackernoon.com/recursion-in-javascript-with-es6-destructuring-and-rest-spread-4b22ae5998fa
 
 
 
+    
 
-
-
-
-
-
-
-
-
-
-class #07
-
-Instalação do babel-core e babel-jest:
-
-  npm install --save-dev babel-core@6 babel-jest@15
-
-
-
-
-
-
-
-
+    Declarative Way:
+  
