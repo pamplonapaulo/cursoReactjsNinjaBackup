@@ -390,8 +390,40 @@ After those last dependencies installed, our package.json has these dev-dependen
     https://hackernoon.com/recursion-in-javascript-with-es6-destructuring-and-rest-spread-4b22ae5998fa
 
 
-
-    
-
-    Declarative Way:
   
+  class #12: Challenge "Recursive Map" | Professor's solution
+
+    How to filter to watch a single test?
+
+     › Press p to filter by a filename regex pattern.
+
+      'prof'
+
+    Professor's code:
+
+      'use strict'
+
+      const profMapRecursive = (arr = [], func = (item) => item) => {
+        return (function mapInternal(arrayInternal, counter) {
+          const [head, ...tail] = arrayInternal
+
+          return arrayInternal.length === 0 ? [] : [
+            func(head, counter, arr),
+            ...mapInternal(tail, counter + 1)
+          ]
+        })(arr, 0)
+      }
+
+      export default profMapRecursive
+    
+    But keep in mind that Javascript is not a pure functional language, in case you have many calls of this kind of recursive function, you may face a break in the running code: 'maximum stack call'.
+
+    Next challenge: FILTER (both imperative and recursive)
+
+      [1, 2, 3].filter((item, index, arrau) => item > 2)
+
+
+
+
+
+
