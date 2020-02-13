@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for recursive-map/recursive-map.js</title>
+    <title>Code coverage report for recursive-filter/filter-recursive.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -16,7 +16,7 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../index.html">All files</a> / <a href="index.html">recursive-map</a> recursive-map.js
+      <a href="../index.html">All files</a> / <a href="index.html">recursive-filter</a> filter-recursive.js
     </h1>
     <div class='clearfix'>
     </div>
@@ -43,37 +43,21 @@
 18
 19
 20
-21
-22
-23
-24
-25
-26
-27
-28
-29</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+21</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">19x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -81,33 +65,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict'
 &nbsp;
-const recursiveMap = (arr, func, originalArr = [], mapped = []) =&gt; {
+const recursiveFilter = (arr = <span class="branch-0 cbranch-no" title="branch not covered" >[],</span> func = <span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >(i</span>tem) =&gt; <span class="cstat-no" title="statement not covered" >item,</span></span> originalArr = [], mapped = []) =&gt; {
   if (arr.length === 0)
     return mapped
 &nbsp;
   if (originalArr.length === 0)
     originalArr = arr
 &nbsp;
-  /*
-  Old-Fashion - Paulo version:
-&nbsp;
-      mapped.push(func(arr[0], mapped.length, arr))
-      arr = arr.slice(1)
-      return recursiveMap(arr, func, mapped)
-&nbsp;
-  ES6 - Paulo version: */
-&nbsp;
   const [head, ...tail] = arr
-  mapped.push(func(head, mapped.length, originalArr))
-  return recursiveMap(tail, func, originalArr, mapped)
+&nbsp;
+  if(func(head, mapped.length, originalArr, arr ))
+    mapped.push(head)
+&nbsp;
+  return recursiveFilter(tail, func, originalArr, mapped)
 }
 &nbsp;
-//console.log(recursiveMap( [1, 2, 3, 4], (item) =&gt; item))
-//console.log(recursiveMap( [1, 5, 3], (item) =&gt; item * 2))
-//console.log(recursiveMap( [1, 2, 3], (item, index) =&gt; index))
-//console.log(recursiveMap( [1, 2, 3, 4], (item, index, array) =&gt; array))
+//console.log(recursiveFilter( [0, 1, 2, 3, 4, 5, 6, 7], (item) =&gt; item &lt; 2))
+//console.log(recursiveFilter([{ id: 15 },{ id: -1 },{ id: undefined },{ id: 'string' },{ id: 12.2 },{ },{ id: null },{ id: NaN },{ id: true }], (item, index, array) =&gt; typeof(item.id) === 'number'))
 &nbsp;
-export default recursiveMap</pre></td></tr>
+export default recursiveFilter</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
