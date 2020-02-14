@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1581566298861" clover="3.2.0">
-  <project timestamp="1581566298861" name="All files">
-    <metrics statements="9" coveredstatements="9" conditionals="10" coveredconditionals="8" methods="2" coveredmethods="1" elements="21" coveredelements="18" complexity="0" loc="9" ncloc="9" packages="1" files="1" classes="1">
-      <file name="filter-recursive.js" path="/Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/m2-section-4/jest-in-practice/src/recursive-filter/filter-recursive.js">
-        <metrics statements="9" coveredstatements="9" conditionals="10" coveredconditionals="8" methods="2" coveredmethods="1"/>
-        <line num="3" count="1" type="cond" truecount="2" falsecount="2"/>
-        <line num="4" count="21" type="cond" truecount="2" falsecount="0"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="7" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="8" count="3" type="stmt"/>
-        <line num="10" count="18" type="stmt"/>
-        <line num="12" count="18" type="cond" truecount="2" falsecount="0"/>
-        <line num="13" count="8" type="stmt"/>
-        <line num="15" count="18" type="stmt"/>
+<coverage generated="1581715630248" clover="3.2.0">
+  <project timestamp="1581715630248" name="All files">
+    <metrics statements="4" coveredstatements="4" conditionals="6" coveredconditionals="4" methods="3" coveredmethods="2" elements="13" coveredelements="10" complexity="0" loc="4" ncloc="4" packages="1" files="1" classes="1">
+      <file name="filter-recursive-prof.js" path="/Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/m2-section-4/jest-in-practice/src/recursive-filter/filter-recursive-prof.js">
+        <metrics statements="4" coveredstatements="4" conditionals="6" coveredconditionals="4" methods="3" coveredmethods="2"/>
+        <line num="18" count="1" type="cond" truecount="0" falsecount="2"/>
+        <line num="20" count="9" type="stmt"/>
+        <line num="21" count="42" type="stmt"/>
+        <line num="23" count="42" type="cond" truecount="2" falsecount="0"/>
       </file>
     </metrics>
   </project>
