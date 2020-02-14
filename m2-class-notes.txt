@@ -347,7 +347,7 @@ After those last dependencies installed, our package.json has these dev-dependen
     
   class #11: Recursion + Destructuring
 
-    Recursion
+    Recursion (also known as Functional Programing)
 
       1. when a function calls itself
       2. has a way to stop running
@@ -424,6 +424,51 @@ After those last dependencies installed, our package.json has these dev-dependen
 
 
 
+  class #14: recursive filter solved by prof
+
+    tip: creating more than one file at onde in Terminal
+
+      touch src/filter/{filter, filter.test}.js
+
+      
+
+    // Part 1: Imperative function
+
+    const filter = (arr, func) => {
+      let newArr = []
+
+      for (let i = 0; i < arr.length; i++) {
+        if (func(arr[i], i, arr)) {
+          newArr.push(arr[i])
+        }
+      }
+      return newArr
+    }
+
+    // Part 2: Recursive function
+
+    obs: Termo 'predicato', usado por Daciuk, é a call back function passada como parâmetro na call da nossa função filter. "In mathematical logic, a predicate is commonly understood to be a Boolean-valued function P: X→ {true, false}"   
+
+    obs: arrow function not used cuz we have to name the function in this case.
+
+    obs: Daciuk used a ternay inside another ternary! Fucking cool.
+
+    obs: I must understand more this concat with head and tail.
+
+    obs: in these classes, part of the code is not being covered by tests:
+    preciselly, at this piece of code: "arr = [], func = (item) => item"
 
 
+    Professor's Solution:
 
+    const filter = (arr = [], func = (item) => item) => {
+
+      return (function filterInternal(arrayInternal, counter, finalArray) {
+        const [head, ...tail] = arrayInternal
+
+        return arrayInternal.length === 0
+          ? []
+          : (func(head, counter, arr) ? [head] : []).concat(filterInternal(tail, counter + 1))
+      })(arr, 0, [])
+    }
+    

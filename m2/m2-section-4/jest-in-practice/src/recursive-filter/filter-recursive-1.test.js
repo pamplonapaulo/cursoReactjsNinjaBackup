@@ -1,5 +1,5 @@
 import { expect } from  'chai'
-import recursiveFilter from './filter-recursive'
+import recursiveFilter from './filter-recursive-1'
 
 it('recursiveFilter should be a function', () => {
   expect(recursiveFilter).to.be.a('function')
