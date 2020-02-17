@@ -472,3 +472,31 @@ After those last dependencies installed, our package.json has these dev-dependen
       })(arr, 0, [])
     }
     
+    class #16: recursive every solved by prof
+
+    Boolean tests via Chai:
+
+      for TRUE results:
+
+        it('every([], (item) => item) should return true', () => {
+          expect(every([], (item) => item)).to.be.ok
+        })
+
+      for FALSE results:
+
+        it('every([], (item) => item) should return true', () => {
+          expect(every([], (item) => item)).to.not.be.ok
+        })
+
+      My mistakes on this challenge:
+
+        - not necessary to wrap a ternary with parentesis when beside/inside another ternary
+        - empity array was not returning true, it was returning an empity array
+        - not necessary to return true when the dynamic array was in it's last loop, cuz as observed above, in a line before the code was returning true for an empity array. So no risk of an infinite loop.
+
+      
+    class #18: recursive some solved by prof
+
+        First challenge in this course 100% equal to professor's solution.
+
+        
