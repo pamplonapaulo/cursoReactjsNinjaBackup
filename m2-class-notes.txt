@@ -499,4 +499,37 @@ After those last dependencies installed, our package.json has these dev-dependen
 
         First challenge in this course 100% equal to professor's solution.
 
-        
+
+    My challenge (recursive reverse):
+
+      Ternary Operator with multiple statements works!
+
+        const reverse = (arr = []) => {
+          return (function reverseInternal(arrayInternal, revArr = []) {
+
+            return arrayInternal.length !== 0
+              ? (revArr.push(arrayInternal.pop()), reverseInternal(arrayInternal, revArr))
+              : revArr
+
+          })(arr)
+        }
+
+      The function without the multiple statements was being coded like that:
+
+        const reverse = (arr = []) => {
+          return (function reverseInternal(arrayInternal, revArr = []) {
+
+            if(arrayInternal.length !== 0)
+              revArr.push(arrayInternal.pop())
+
+            return arrayInternal.length === 0
+              ? revArr
+              : reverseInternal(arrayInternal, revArr)
+
+          })(arr)
+        }
+
+      
+    class #20: recursive reverse solved by prof
+
+    
