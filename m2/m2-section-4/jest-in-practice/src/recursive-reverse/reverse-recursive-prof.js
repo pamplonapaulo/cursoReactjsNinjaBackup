@@ -5,14 +5,16 @@
 const reverse = (arr) => {
   let reversed = []
 
-  for (let i = arr.length; i > 0; i--) {
-    reversed.push(arr[i-1])
-  }
+  for (let i = arr.length; i--;)
+    reversed.push(arr[i])
+
   return reversed
 }
 */
 
 // Recursive function:
+
+/* PAULO's version:
 
 const reverse = (arr = []) => {
   return (function reverseInternal(arrayInternal, revArr = []) {
@@ -22,8 +24,32 @@ const reverse = (arr = []) => {
       : revArr
 
   })(arr)
+}*/
+
+/* PROF before refactoring:
+const reverse = (arr) => {
+
+  if (arr.length === 0) {
+    return []
+  }
+  return [arr[arr.length - 1]].concat(reverse(arr.slice(0, -1)))
+}
+*/
+
+/* PROF after refactoring:
+const reverse = (arr) => {
+  return arr.length === 0 ? [] : [
+    arr.slice(-1)[0]
+  ].concat(reverse(arr.slice(0, -1)))
+}
+*/
+
+// And applying the destructuring with spread operator, it gets like that:
+const reverse = (arr) => {
+  return arr.length === 0 ? [] : [
+    arr.slice(-1)[0],
+    ...reverse(arr.slice(0, -1))
+  ]
 }
 
-//console.log(reverse([]))
-//console.log(reverse([0, 1, 2, 3, 4, 5, 6, 7]))
 export default reverse

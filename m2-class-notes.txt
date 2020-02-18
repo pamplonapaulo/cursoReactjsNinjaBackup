@@ -530,6 +530,67 @@ After those last dependencies installed, our package.json has these dev-dependen
         }
 
       
-    class #20: recursive reverse solved by prof
+    class #20: recursive reverse solved by prof (part I)
 
+    Professor's magic FOR loop code:
+
+        for (let i = arr.length; i--;)
+
+          At once, the loop checks the boolean value of the second for parameter and decreses the index (i) value. The tird parameter we don't need it. Just the semi colen.
+
+          When 'i' get 0 value, it has a false boolean value.
+
+    class #21: recursive reverse solved by prof (part II)
+
+      const reverse = (arr) => {
+        return arr.length === 0 ? [] : [
+          arr.slice(-1)[0]
+        ].concat(reverse(arr.slice(0, -1)))
+      }
+
+    Comments:
+
+      arr.slice(-1) builds a new array with the last item of 'arr'.
+      So...
+      arr.slice(-1)[0] gets the single item of this new array.
+
+      arr.slice(0, -1) builds a new array without the last item from it's original array (arr)
+
+      So this is how prof concats in a loop every last item with another recursive call.
+
+
+    class #22:
     
+    imperative reduce (my version)
+
+      const reduce = (arr, func, acc) => {
+
+        acc = acc ? acc : arr[0]
+
+        for (let i = 0; i < arr.length; i++)
+          acc = func(acc, arr[i])    
+
+        return acc
+      }
+
+
+    Professor's version:
+
+      const reduce = (arr, func, initialValue) => {
+
+        let acc = initialValue
+        let arrCopy = arr
+
+        if (initialValue === undefined) {
+          acc = arr[0]
+          arrCopy = arr.slice(1)
+        }
+
+        for (let i = 0; i < arrCopy.length; i++)
+          acc = func(acc, arrCopy[i], i, arrCopy)    
+
+        return acc
+      }
+
+    obs: never change the original arr, it causes a colateral effect.
+

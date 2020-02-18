@@ -9,12 +9,20 @@ it('reverse([]) should return []', () => {
   expect(reverse([])).to.be.deep.equal([])
 })
 
+it('reverse([1]) should return [1]', () => {
+  expect(reverse([1])).to.be.deep.equal([1])
+})
+
 it('reverse([1, 2]) should return [2, 1]', () => {
   expect(reverse([1, 2])).to.be.deep.equal([2, 1])
 })
 
 it('reverse([0, 1, 2]) should return [2, 1, 0]', () => {
   expect(reverse([0, 1, 2])).to.be.deep.equal([2, 1, 0])
+})
+
+it('reverse(["fernando", "daciuk"]) should return ["daciuk", "fernando"]', () => {
+  expect(reverse(['fernando', 'daciuk'])).to.be.deep.equal(['daciuk', 'fernando'])
 })
 
 /*
