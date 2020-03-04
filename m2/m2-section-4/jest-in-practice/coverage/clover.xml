@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1581988431807" clover="3.2.0">
-  <project timestamp="1581988431807" name="All files">
-    <metrics statements="14" coveredstatements="14" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2" elements="20" coveredelements="20" complexity="0" loc="14" ncloc="14" packages="1" files="2" classes="2">
-      <file name="reduce-recursive-prof.js" path="/Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/m2-section-4/jest-in-practice/src/recursive-reduce/reduce-recursive-prof.js">
-        <metrics statements="9" coveredstatements="9" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
-        <line num="3" count="1" type="stmt"/>
-        <line num="5" count="8" type="stmt"/>
-        <line num="6" count="8" type="stmt"/>
-        <line num="8" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="9" count="2" type="stmt"/>
-        <line num="10" count="2" type="stmt"/>
-        <line num="13" count="8" type="stmt"/>
-        <line num="14" count="20" type="stmt"/>
-        <line num="16" count="8" type="stmt"/>
-      </file>
+<coverage generated="1583335283306" clover="3.2.0">
+  <project timestamp="1583335283306" name="All files">
+    <metrics statements="8" coveredstatements="8" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2" elements="14" coveredelements="14" complexity="0" loc="8" ncloc="8" packages="1" files="1" classes="1">
       <file name="reduce-recursive.js" path="/Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/m2-section-4/jest-in-practice/src/recursive-reduce/reduce-recursive.js">
-        <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
-        <line num="3" count="1" type="stmt"/>
-        <line num="5" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="7" count="6" type="stmt"/>
-        <line num="8" count="24" type="stmt"/>
-        <line num="10" count="6" type="stmt"/>
+        <metrics statements="8" coveredstatements="8" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="18" count="7" type="stmt"/>
+        <line num="19" count="7" type="stmt"/>
+        <line num="21" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="26" count="7" type="stmt"/>
+        <line num="28" count="30" type="cond" truecount="2" falsecount="0"/>
       </file>
     </metrics>
   </project>

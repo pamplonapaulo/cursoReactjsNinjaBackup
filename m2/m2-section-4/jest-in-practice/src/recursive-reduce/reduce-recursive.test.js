@@ -25,6 +25,10 @@ it('reduce([1, 2, 3, 4], (acc, item) => acc + item) should return 20', () => {
   expect(reduce([1, 2, 3, 4], (acc, item) => acc + item, 10)).to.be.deep.equal(20)
 })
 
+it('reduce([1, 2], (acc, item, index) => acc + index) should return 1', () => {
+  expect(reduce([1, 2], (acc, item, index) => acc + index, 0)).to.be.deep.equal(1)
+})
+
 it('reduce([1, 2, 3], (acc, item) => { acc[\'index\' + item ] = item; return acc }, {})) should return { \'index1\': 1, \'index2\': 2, \'index3\': 3 }', () => {
   const before = reduce([1, 2, 3], (acc, item) => {
     acc["index-" + item] = item
