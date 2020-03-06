@@ -1,0 +1,47 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+class #29
+
+TDD
+
+  Exceptions: when a developer tries to pass wrong parameters
+
+  TRY / CATCH
+
+
+    it('map(1) should throw a TypeError', () => {
+      let error
+
+      try {
+        map(1)
+      } catch (e) {
+        error = e
+      }
+
+      expect(error.name).to.be.equal('TypeError')
+    })
+
+  
+    it('map(1) should throw a TypeError with a message "The first parameter must be an array"', () => {
+      let error
+
+      try {
+        map(1)
+      } catch (e) {
+        error = e
+      }
+
+      expect(error.message).to.be.equal('The first parameter must be an array')
+    })
+
+See error types at:
+
+  https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Error
+  
+  Most used: ReferenceError + TypeError
+
+  

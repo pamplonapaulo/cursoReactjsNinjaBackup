@@ -17,8 +17,7 @@ const find = (arr, func) => {
 
 // OBS: I just forgot to include tests passing parameters such as index and array
 
-// recursive:
-
+// recursive/functional:
 const find = (arr, func) => {
 
   return (function findInternal(counter){

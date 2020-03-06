@@ -13,7 +13,7 @@ const find = (arr, func) => {
 }
 */
 
-// recursive:
+// recursive/functional:
 const find = (arr, func) => {
   return (function findInternal(arrInternal, counter){
     const [head, ...tail] = arrInternal
