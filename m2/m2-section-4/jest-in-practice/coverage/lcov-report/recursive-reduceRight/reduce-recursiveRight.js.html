@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for recursive-reduce/reduce-recursive.js</title>
+    <title>Code coverage report for recursive-reduceRight/reduce-recursiveRight.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -16,7 +16,7 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../index.html">All files</a> / <a href="index.html">recursive-reduce</a> reduce-recursive.js
+      <a href="../index.html">All files</a> / <a href="index.html">recursive-reduceRight</a> reduce-recursiveRight.js
     </h1>
     <div class='clearfix'>
     </div>
@@ -67,7 +67,8 @@
 42
 43
 44
-45</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+45
+46</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -81,22 +82,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">33x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -113,49 +115,50 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict'
 &nbsp;
-/* Imperative (my own &amp; not so good version):
+// Imperative (my own &amp; not so good version):
+/*
+const reduceRight = (arr, func, acc) =&gt; {
 &nbsp;
-const reduce = (arr, func, acc) =&gt; {
+  if (acc === undefined) {
+    acc = arr[arr.length - 1]
+    arr = arr.slice(0, arr.length - 1)
+  }
 &nbsp;
-  acc = acc === undefined ? 0 : acc
-&nbsp;
-  for (let i = 0; i &lt; arr.length; i++)
-    acc = func(acc, arr[i])    
+  for (let i = arr.length - 1; i &gt;= 0; i--)
+    acc = func(acc, arr[i], i, arr)    
 &nbsp;
   return acc
 }
 */
 &nbsp;
-const reduce = (arr, func, initialValue) =&gt; {
+// Refactoring (no mutability):
+const isInitialValueUndefined = (initialValue) =&gt; initialValue === undefined
 &nbsp;
-  let acc = initialValue
-  let arrCopy = arr
+const reduceRight = (arr, func, initialValue) =&gt; {
 &nbsp;
-  if (initialValue === undefined) {
-    acc = arr[0]
-    arrCopy = arr.slice(1)
-  }
+  const acc = isInitialValueUndefined(initialValue) ? arr[arr.length - 1] : initialValue
+  const arrCopy = isInitialValueUndefined(initialValue) ? arr.slice(0, arr.length - 1) : arr
 &nbsp;
-  return (function reduceInternal(internalArr, counter) {
+  return (function reduceRightInternal(accInternal, arrInternal, counter) {
 &nbsp;
-    return internalArr.length === 0
-      ? acc
-      : (acc = func(acc, internalArr[0], counter, arrCopy), reduceInternal(internalArr.slice(1), counter + 1))
+    const accPrev = () =&gt; func(accInternal, arrInternal[counter], counter, arrCopy)
 &nbsp;
-  })(arrCopy, 0)
+    return arrInternal.length === 0
+      ? accInternal
+      : reduceRightInternal(accPrev(), arrInternal.slice(0, arrInternal.length - 1), counter - 1)
+&nbsp;
+  })(acc, arrCopy, arrCopy.length - 1)
 }
 &nbsp;
-//console.log([1, 2, 3, 4].reduce((acc, item) =&gt; acc + item))
-//console.log([1, 2, 3].reduce((acc, item) =&gt; acc + item))
-//console.log(reduce([1, 2, 3], (acc, item) =&gt; acc + item, 2))
-//console.log(reduce([0, 1, 2, 3, 4], (acc, item) =&gt; acc + item))
-//console.log(reduce([0, 1, 2, 3, 4], (acc, item) =&gt; acc + item, 2))
-//console.log(reduce([1, 2, 33, 3], (acc, item, index) =&gt; { acc['index-' + index ] = item; return acc }, {}))
+//console.log(reduceRight(['0', '1', '2', '3', '4'], (acc, item) =&gt; acc + item))
+//console.log(reduceRight(['0', '1', '2', '3', '4'], (acc, item) =&gt; acc + item, 9))
+// console.log(reduceRight(['0', '1', '2', '3', '4'], (acc, item) =&gt; acc + item, '9'))
+// console.log(reduceRight([[0, 1], [2, 3], [4, 5]], (acc, item) =&gt; acc.concat(item)))
+// console.log(reduceRight([[0, 1], [2, 3], [4, 5]], (acc, item) =&gt; acc.concat(item), [10]))
+// console.log(reduceRight(["Banana", "Orange", "Lemon", "Apple", "Mango"], (acc, item) =&gt; acc.concat(item), ["Lettuce"]))
+// console.log(reduceRight([100, 200, 300, 400], (acc, item, index) =&gt; { acc['index-' + index ] = item; return acc }, {}))
 &nbsp;
-//console.log(reduce([1, 2], (acc, item, index) =&gt; acc + index, 0))
-&nbsp;
-&nbsp;
-export default reduce</pre></td></tr>
+export default reduceRight</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
