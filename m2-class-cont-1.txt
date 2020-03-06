@@ -4,7 +4,7 @@
 
 Class Notes
 
-class #29
+class #29: TDD Errors Exceptions
 
 TDD
 
@@ -44,4 +44,68 @@ See error types at:
   
   Most used: ReferenceError + TypeError
 
-  
+
+  class #30:  Storybook
+
+    https://storybook.js.org/
+
+    Instalação do getstorybook global:
+
+      npm i -g getstorybook@1.6.1
+
+    Posteriormente, instalação no projeto (já existente):
+
+      getstorybook
+
+    E então, rodar o storybook:
+
+      npm run storybook
+
+    A ideia do storybook é para que você possa visualizar todos os estados da sua aplicação ou de todos os componentes da sua aplicação, separados por "histórias". Um guia visual de seus componentes e seus estados. Permitindo testes visualmente. Você pode criar os componentes de forma genérica, para que sejam reutilizados em diferentes projetos, para posterior montagem.
+
+    class #31: Assets no webpack
+
+      raw-loader + style-loader:
+
+        npm install --save-dev raw-loader@0.5.1 style-loader@0.13.1
+
+      
+    Do some config at:
+    
+      webpack.config.js
+
+        Originally:
+
+          module: {
+              loaders: [{
+                  test: /\.js$/,
+                  exclude: /node_modules/,
+                  include: /src/,
+                  loader: 'babel'
+              }]
+          }
+
+        Then make it like that:
+
+          module: {
+              loaders: [{
+                  test: /\.js$/,
+                  exclude: /node_modules/,
+                  include: /src/,
+                  loader: 'babel'
+              }, {
+                  test: /\.css$/,
+                  exclude: /node_modules/,
+                  include: /src/,
+                  loaders: ['style','raw']
+              }]
+          }
+
+    However.... 'create react-app' already come with those imports by default. This class just shows how it works.
+
+
+
+
+
+
+
