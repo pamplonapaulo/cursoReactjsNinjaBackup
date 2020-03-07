@@ -4,6 +4,8 @@ const path = require('path')
 const webpack = require('webpack')
 const validate = require('webpack-validator')
 
+const htmlPlugin = require('html-webpack-plugin')
+
 module.exports = {
     devtool: 'sourcemap',
 
@@ -16,12 +18,16 @@ module.exports = {
 
     output: {
         path:path.join(__dirname, 'dist'),
-        filename: 'bundle.js',
-        publicPath: '/dist/'
+        filename: '[name]-[hash].js',
+        publicPath: ''
     },
 
     plugins: [
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        new htmlPlugin({
+            title: 'Github app',
+            template: path.join(__dirname, 'src', 'html', 'template.html')
+        })
     ],
 
     module: {

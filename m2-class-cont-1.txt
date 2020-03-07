@@ -104,8 +104,80 @@ See error types at:
     However.... 'create react-app' already come with those imports by default. This class just shows how it works.
 
 
+  class #32:  Assets: html
+
+    npm i --save-dev html-webpack-plugin
+
+  webpack.config:
+
+    const htmlPlugin = require('htmp-webpack-pplugin')
+
+    plugins: [
+        new htmlPlugin()
+    ],
 
 
+  Also changing this:
 
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: 'bundle.js',
+        publicPath: '/dist/'
+      },
+
+  To this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: 'bundle.js',
+        publicPath: ''
+      },
+
+  Also:
+
+      plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new htmlPlugin({
+            title: 'Github app TESTE',
+            template: path.join(__dirname, 'src', 'html', 'template.html')
+        })
+      ],
+
+
+  AJS:
+
+    template.html:
+
+      <title><%= htmlWebpackPlugin.options.title %></title>
+
+  Every time you change the webpack.config.js, you have to reset the server.
+
+  Also change this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: 'bundle.js',
+        publicPath: ''
+      },
+
+  To this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: '[name]-[hash].js',
+        publicPath: ''
+      },
+
+  This webpackplugin will render the JS by itself when the server is started:
+
+  Listening on http://localhost:3000
+  Hash: 0139364cfaff48101586
+  Version: webpack 1.15.0
+  Time: 2836ms
+                            Asset       Size  Chunks             Chunk Names
+      main-0139364cfaff48101586.js    1.23 MB       0  [emitted]  main
+  main-0139364cfaff48101586.js.map    1.44 MB       0  [emitted]  main
+                        index.html  232 bytes          [emitted]  
+  chunk    {0} main-0139364cfaff48101586.js, main-0139364cfaff48101586.js.map (main) 1.13 MB [rendered]
 
 
