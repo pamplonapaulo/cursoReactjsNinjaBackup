@@ -333,5 +333,33 @@ package.json changes:
 
       npm run build
 
-      
+
+
+  class #35:  Webpack Dashboard
+
+  Install:
+
+    npm i --save-dev webpack-dashboard
+
+  Then edit webpack.config.js (dev):
+
+    const DashboardPlugin = require('webpack-dashboard/plugin')
+
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new extractTextPlugin('[name]-[hash].css'),
+        new DashboardPlugin(),
+
+        new htmlPlugin({
+            title: 'Github app',
+            template: path.join(__dirname, 'src', 'html', 'template.html')
+        })
+    ],
+
+  Then edit package.json:
+
+      "scripts": {
+        "start": "webpack-dashboard -- node server.js", // <== EDITED
+        "build": "webpack --progress --config webpack.prod.config -p"
+      },
 

@@ -6,6 +6,7 @@ const validate = require('webpack-validator')
 
 const htmlPlugin = require('html-webpack-plugin')
 const extractTextPlugin = require('extract-text-webpack-plugin')
+const DashboardPlugin = require('webpack-dashboard/plugin')
 
 module.exports = {
     devtool: 'sourcemap',
@@ -26,6 +27,8 @@ module.exports = {
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new extractTextPlugin('[name]-[hash].css'),
+        new DashboardPlugin(),
+
         new htmlPlugin({
             title: 'Github app',
             template: path.join(__dirname, 'src', 'html', 'template.html')
