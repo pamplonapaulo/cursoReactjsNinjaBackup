@@ -269,3 +269,69 @@ See error types at:
                     loader: extractTextPlugin.extract('style', 'css') // <== EDITED
                 }]
               } 
+
+  class #34:  Gerando o bundle de produção
+
+  https://github.com/fdaciuk/workflow-reactjs
+
+
+copy webpack.config.js and rename one of them as webpack.prod.config.js
+
+at webpack.config.js
+
+  get rid of:
+
+    - loader: extractTextPlugin.extract('style', 'css')
+    replace with: loaders: ['style', 'css']
+
+  change loaders to:
+
+    - loaders: ['style', 'css'] // so we have the hot loader working on development
+
+at webpack.prod.config.js
+
+  get rid of:
+
+    - devtool: 'sourcemap',
+
+    entry:
+    - 'react-hot-loader/patch',
+    - 'webpack-dev-server/client?http://localhost:3000',
+    - 'webpack/hot/only-dev-server',
+
+    output:
+    - publicPath: ''
+
+    plugins:
+    - new webpack.HotModuleReplacementPlugin(),
+
+
+  include these plugins:
+
+    - new webpack.DefinePlugin({
+      'process.env': {
+          'NODE_ENV': '"production'
+      }
+    }),
+
+    - new webpack.optimize.UglifyJsPlugin({
+        compress: { warnings: false } // removed some warnings for CSS and JS, on minifications.
+    }),
+
+    - new webpack.optimize.DedupePlugin(), // allows the app to use same plugins' files in diferent dependencies calls. When the code is the same, webpack will recognize it and avoid duplications.
+    - new webpack.optimize.OccurrenceOrderPlugin(), // webpacks files generate some ID's. This creates a better order, it loads soft chuncks before the heaviers.
+
+
+package.json changes:
+
+    "scripts": {
+        "start": "node server.js",
+        "build": "webpack --progress --config webpack.prod.config -p" // NEW LINE
+      },
+
+    Then run at Terminal:
+
+      npm run build
+
+      
+
