@@ -5,6 +5,7 @@ const webpack = require('webpack')
 const validate = require('webpack-validator')
 
 const htmlPlugin = require('html-webpack-plugin')
+const extractTextPlugin = require('extract-text-webpack-plugin')
 
 module.exports = {
     devtool: 'sourcemap',
@@ -24,6 +25,7 @@ module.exports = {
 
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
+        new extractTextPlugin('[name]-[hash].css'),
         new htmlPlugin({
             title: 'Github app',
             template: path.join(__dirname, 'src', 'html', 'template.html')
@@ -47,7 +49,7 @@ module.exports = {
             test: /\.css$/,
             exclude: /node_modules/,
             include: /src/,
-            loaders: ['style','raw']
+            loader: extractTextPlugin.extract('style', 'css')
         }]
     }
 }

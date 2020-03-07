@@ -181,3 +181,91 @@ See error types at:
   chunk    {0} main-0139364cfaff48101586.js, main-0139364cfaff48101586.js.map (main) 1.13 MB [rendered]
 
 
+  class #33:  Assets: css
+
+  extract text webpack plugin:
+
+    npm i --save-dev extract-text-webpack-plugin
+    (npm install --save-dev extract-text-webpack-plugin@1.0.1)
+
+    webpack.config:
+
+    const extractTextPlugin = require('extract-text-webpack-plugin')
+
+        plugins: [
+          new webpack.HotModuleReplacementPlugin(),
+          new ExtractTextPlugin('style.css'),
+          new htmlPlugin({
+              title: 'Github app',
+              template: path.join(__dirname, 'src', 'html', 'template.html')
+          })
+        ],
+
+        So 'style.css' is the file to be created in memory
+        But at the end we changed it to:
+          new extractTextPlugin('[name]-[hash].css'),
+        That render something like: "main-fb95e8f73fa5dd94b203.css"
+
+    Also:
+
+        module: {
+          preLoaders: [{
+              test: /\.js$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loader: 'standard'
+          }],
+
+          loaders: [{
+              test: /\.js$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loader: 'babel'
+          }, {
+              test: /\.css$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loader: ExtractTextPlugin.extract('style', 'raw') // <== EDITED
+          }]
+        }
+
+        it's going to use the second parameter, 'raw'. it uses the first parameter as a fall back, 'style', so only in case we get problems at 'raw'
+
+
+        Part 2.
+        
+        css-loader insted of raw-loader
+
+          Why? Cuz it understands @import and url(...)
+
+          So first we remove the raw loader:
+
+            npm rm --save-dev raw-loader
+        
+          Then install the css loader:
+
+            npm i --save-dev css-loader
+            (npm i --save-dev css-loader@0)
+
+          Then edit a line here:
+
+              module: {
+                preLoaders: [{
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: 'standard'
+                }],
+
+                loaders: [{
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: 'babel'
+                }, {
+                    test: /\.css$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: extractTextPlugin.extract('style', 'css') // <== EDITED
+                }]
+              } 
