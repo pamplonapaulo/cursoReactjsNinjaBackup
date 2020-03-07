@@ -1,0 +1,368 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+class #29: TDD Errors Exceptions
+
+TDD
+
+  Exceptions: when a developer tries to pass wrong parameters
+
+  TRY / CATCH
+
+
+    it('map(1) should throw a TypeError', () => {
+      let error
+
+      try {
+        map(1)
+      } catch (e) {
+        error = e
+      }
+
+      expect(error.name).to.be.equal('TypeError')
+    })
+
+  
+    it('map(1) should throw a TypeError with a message "The first parameter must be an array"', () => {
+      let error
+
+      try {
+        map(1)
+      } catch (e) {
+        error = e
+      }
+
+      expect(error.message).to.be.equal('The first parameter must be an array')
+    })
+
+See error types at:
+
+  https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Error
+  
+  Most used: ReferenceError + TypeError
+
+
+  class #30:  Storybook
+
+    https://storybook.js.org/
+
+    Instalação do getstorybook global:
+
+      npm i -g getstorybook@1.6.1
+
+    Posteriormente, instalação no projeto (já existente):
+
+      getstorybook
+
+    E então, rodar o storybook:
+
+      npm run storybook
+
+    A ideia do storybook é para que você possa visualizar todos os estados da sua aplicação ou de todos os componentes da sua aplicação, separados por "histórias". Um guia visual de seus componentes e seus estados. Permitindo testes visualmente. Você pode criar os componentes de forma genérica, para que sejam reutilizados em diferentes projetos, para posterior montagem.
+
+    class #31: Assets no webpack
+
+      raw-loader + style-loader:
+
+        npm install --save-dev raw-loader@0.5.1 style-loader@0.13.1
+
+      
+    Do some config at:
+    
+      webpack.config.js
+
+        Originally:
+
+          module: {
+              loaders: [{
+                  test: /\.js$/,
+                  exclude: /node_modules/,
+                  include: /src/,
+                  loader: 'babel'
+              }]
+          }
+
+        Then make it like that:
+
+          module: {
+              loaders: [{
+                  test: /\.js$/,
+                  exclude: /node_modules/,
+                  include: /src/,
+                  loader: 'babel'
+              }, {
+                  test: /\.css$/,
+                  exclude: /node_modules/,
+                  include: /src/,
+                  loaders: ['style','raw']
+              }]
+          }
+
+    However.... 'create react-app' already come with those imports by default. This class just shows how it works.
+
+
+  class #32:  Assets: html
+
+    npm i --save-dev html-webpack-plugin
+
+  webpack.config:
+
+    const htmlPlugin = require('htmp-webpack-pplugin')
+
+    plugins: [
+        new htmlPlugin()
+    ],
+
+
+  Also changing this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: 'bundle.js',
+        publicPath: '/dist/'
+      },
+
+  To this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: 'bundle.js',
+        publicPath: ''
+      },
+
+  Also:
+
+      plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new htmlPlugin({
+            title: 'Github app TESTE',
+            template: path.join(__dirname, 'src', 'html', 'template.html')
+        })
+      ],
+
+
+  AJS:
+
+    template.html:
+
+      <title><%= htmlWebpackPlugin.options.title %></title>
+
+  Every time you change the webpack.config.js, you have to reset the server.
+
+  Also change this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: 'bundle.js',
+        publicPath: ''
+      },
+
+  To this:
+
+      output: {
+        path:path.join(__dirname, 'dist'),
+        filename: '[name]-[hash].js',
+        publicPath: ''
+      },
+
+  This webpackplugin will render the JS by itself when the server is started:
+
+  Listening on http://localhost:3000
+  Hash: 0139364cfaff48101586
+  Version: webpack 1.15.0
+  Time: 2836ms
+                            Asset       Size  Chunks             Chunk Names
+      main-0139364cfaff48101586.js    1.23 MB       0  [emitted]  main
+  main-0139364cfaff48101586.js.map    1.44 MB       0  [emitted]  main
+                        index.html  232 bytes          [emitted]  
+  chunk    {0} main-0139364cfaff48101586.js, main-0139364cfaff48101586.js.map (main) 1.13 MB [rendered]
+
+
+  class #33:  Assets: css
+
+  extract text webpack plugin:
+
+    npm i --save-dev extract-text-webpack-plugin
+    (npm install --save-dev extract-text-webpack-plugin@1.0.1)
+
+    webpack.config:
+
+    const extractTextPlugin = require('extract-text-webpack-plugin')
+
+        plugins: [
+          new webpack.HotModuleReplacementPlugin(),
+          new ExtractTextPlugin('style.css'),
+          new htmlPlugin({
+              title: 'Github app',
+              template: path.join(__dirname, 'src', 'html', 'template.html')
+          })
+        ],
+
+        So 'style.css' is the file to be created in memory
+        But at the end we changed it to:
+          new extractTextPlugin('[name]-[hash].css'),
+        That render something like: "main-fb95e8f73fa5dd94b203.css"
+
+    Also:
+
+        module: {
+          preLoaders: [{
+              test: /\.js$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loader: 'standard'
+          }],
+
+          loaders: [{
+              test: /\.js$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loader: 'babel'
+          }, {
+              test: /\.css$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loader: ExtractTextPlugin.extract('style', 'raw') // <== EDITED
+          }]
+        }
+
+        it's going to use the second parameter, 'raw'. it uses the first parameter as a fall back, 'style', so only in case we get problems at 'raw'
+
+
+        Part 2.
+        
+        css-loader insted of raw-loader
+
+          Why? Cuz it understands @import and url(...)
+
+          So first we remove the raw loader:
+
+            npm rm --save-dev raw-loader
+        
+          Then install the css loader:
+
+            npm i --save-dev css-loader
+            (npm i --save-dev css-loader@0)
+
+          Then edit a line here:
+
+              module: {
+                preLoaders: [{
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: 'standard'
+                }],
+
+                loaders: [{
+                    test: /\.js$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: 'babel'
+                }, {
+                    test: /\.css$/,
+                    exclude: /node_modules/,
+                    include: /src/,
+                    loader: extractTextPlugin.extract('style', 'css') // <== EDITED
+                }]
+              } 
+
+  class #34:  Gerando o bundle de produção
+
+  https://github.com/fdaciuk/workflow-reactjs
+
+
+copy webpack.config.js and rename one of them as webpack.prod.config.js
+
+at webpack.config.js
+
+  get rid of:
+
+    - loader: extractTextPlugin.extract('style', 'css')
+    replace with: loaders: ['style', 'css']
+
+  change loaders to:
+
+    - loaders: ['style', 'css'] // so we have the hot loader working on development
+
+at webpack.prod.config.js
+
+  get rid of:
+
+    - devtool: 'sourcemap',
+
+    entry:
+    - 'react-hot-loader/patch',
+    - 'webpack-dev-server/client?http://localhost:3000',
+    - 'webpack/hot/only-dev-server',
+
+    output:
+    - publicPath: ''
+
+    plugins:
+    - new webpack.HotModuleReplacementPlugin(),
+
+
+  include these plugins:
+
+    - new webpack.DefinePlugin({
+      'process.env': {
+          'NODE_ENV': '"production'
+      }
+    }),
+
+    - new webpack.optimize.UglifyJsPlugin({
+        compress: { warnings: false } // removed some warnings for CSS and JS, on minifications.
+    }),
+
+    - new webpack.optimize.DedupePlugin(), // allows the app to use same plugins' files in diferent dependencies calls. When the code is the same, webpack will recognize it and avoid duplications.
+    - new webpack.optimize.OccurrenceOrderPlugin(), // webpacks files generate some ID's. This creates a better order, it loads soft chuncks before the heaviers.
+
+
+package.json changes:
+
+    "scripts": {
+        "start": "node server.js",
+        "build": "webpack --progress --config webpack.prod.config -p" // NEW LINE
+      },
+
+    Then run at Terminal:
+
+      npm run build // this is the creating of the 'production build'
+
+
+
+  class #35:  Webpack Dashboard
+
+  Install:
+
+    npm i --save-dev webpack-dashboard
+
+  Then edit webpack.config.js (dev):
+
+    const DashboardPlugin = require('webpack-dashboard/plugin')
+
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new extractTextPlugin('[name]-[hash].css'),
+        new DashboardPlugin(),
+
+        new htmlPlugin({
+            title: 'Github app',
+            template: path.join(__dirname, 'src', 'html', 'template.html')
+        })
+    ],
+
+  Then edit package.json:
+
+      "scripts": {
+        "start": "webpack-dashboard -- node server.js", // <== EDITED
+        "build": "webpack --progress --config webpack.prod.config -p"
+      },
+
+  class #36:  CSS Modules
+
+

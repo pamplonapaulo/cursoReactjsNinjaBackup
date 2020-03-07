@@ -37,3 +37,9 @@ it('reduce([1, 2, 3], (acc, item) => { acc[\'index\' + item ] = item; return acc
   const after = {"index-1": 1, "index-2": 2, "index-3": 3}
   expect(before).to.be.deep.equal(after)
 })
+
+it('reduce([1, 2], (acc, item, index) => acc + index) should return 1', () => {
+  const before = reduce([1, 2], (acc, item, index, array) => acc + array[index], 0)
+  const after = 3
+  expect(before).to.be.equal(after)
+})
