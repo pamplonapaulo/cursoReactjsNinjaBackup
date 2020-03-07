@@ -331,7 +331,7 @@ package.json changes:
 
     Then run at Terminal:
 
-      npm run build
+      npm run build // this is the creating of the 'production build'
 
 
 
@@ -362,4 +362,7 @@ package.json changes:
         "start": "webpack-dashboard -- node server.js", // <== EDITED
         "build": "webpack --progress --config webpack.prod.config -p"
       },
+
+  class #36:  CSS Modules
+
 
