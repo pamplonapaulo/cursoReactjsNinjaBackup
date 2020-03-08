@@ -31,7 +31,7 @@ module.exports = {
 
         new htmlPlugin({
             title: 'Github app',
-            template: path.join(__dirname, 'src', 'html', 'template.html')
+            template: path.join(__dirname, 'src', 'html', 'template-dev.html')
         })
     ],
 
@@ -53,6 +53,7 @@ module.exports = {
             exclude: /node_modules/,
             include: /src/,
             loaders: ['style', 'css?modules']
+            //loaders: ['style', 'css']
         }]
     }
 }

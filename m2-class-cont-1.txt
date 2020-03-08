@@ -376,6 +376,69 @@ package.json changes:
       it creates random classes locally.
 
 
+    Doubt and professor's answer:
+
+      Mestre, a respeito de 'css?modules', como poderíamos ajustar o código abaixo?
+
+        import React, { PropTypes } from 'react'
+        import style from './repos.css'
+
+        const Repos = ({ className, title, repos }) => (
+          <div className={style.className}>
+            <h2>{title}</h2>
+            <ul>
+              {repos.map((repo, index) => (
+                <li key={index}>
+                  <a href={repo.link}>{repo.name}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+
+      A linha da div tag originalmente estava:
+
+        <div className={className}>
+
+      Mas na aula você focou no componente search.js, que é levemente mais simples. Eu testei adicionando o style mas, obviamente, nesse caso não funciona. Devo concatenar 'style.' com o className? Ou será que nesse caso o css?module não funciona?
+
+      Oi @pamplonapaulo! Boa dúvida, vamos lá:
+      Quando estamos usando CSS Modules, o import que você faz vai te retornar um objeto com todas as classes que você definiu no arquivo CSS.
+
+      Se o seu CSS estiver assim:
+
+        .container {}
+        .link {}
+        .label {}
+
+      Quando importar o CSS como você fez, você terá essas classes disponíveis como propriedades do objeto style. Para usá-las, é só usar a sintaxe de objeto.
+
+      Para aplicar a classe .container na div, por exemplo, você só precisa fazer:
+
+        <div className={style.container}>...</div>
+
+      Se o nome da classe for dinâmica, ou não tiver caracteres permitidos para ser usada com a sintaxe de ponto, podemos usar a sintaxe de colchetes (JS padrão):
+
+        const myClass = 'container'
+        ...
+        <div className={style[myClass]}>...</div>
+
+      Exemplo de classe que não poderia ser usada com a sintaxe de ponto:
+
+        .link-active {}
+
+      Aí você pode usar assim:
+
+        <div className={style['link-active']}>...</div>
+
+      Deu pra entender a ideia? :)
+
+
+
+
+
+
+
   class #38: Assets: Critical Rendering Path
 
     - Unoptimized: user gets everything rendered at once only at 1.5s, for example.
@@ -393,9 +456,118 @@ package.json changes:
 
         <link> tag and <script> tag both block page's render. So put everything you need to load after the 'above the fold' stuff.
 
+        webpack.prod.config.js
+        new htmlPlugin({
+          title: 'Github app',
+          inject: false, // <== NEW (it removes Styles and Scripts)
+          template: path.join(__dirname, 'src', 'html', 'template.html')
+        })
+
+        template.html:
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title><%= htmlWebpackPlugin.options.title %></title>
+            <style></style> // <== NEW (the called 'Critical Rendering Path' goes here)
+        </head>
+        <body>
+            <div data-js="app"></div>
+
+            <link rel="stylesheet" href=""> // <== NEW (other styles goes here)
+            <script src=""></script> // <== NEW
+        </body>
+        </html>
 
 
+  class #39: Assets: Critical Rendering Path OPT
 
+    webpack.prod.config.js:
+
+      const crp = new ExtractTextPlugin('crp.css')
+      const styles = new ExtractTextPlugin('[name]-[hash].css')
+
+        plugins: [
+          crp,
+          styles,
+
+          Etc..
+
+
+      Changes on loaders:
+
+          module: {
+            preLoaders: [{
+                test: /\.js$/,
+                exclude: /node_modules/,
+                include: /src/,
+                loader: 'standard'
+            }],
+
+            loaders: [{
+                test: /\.js$/,
+                exclude: /node_modules/,
+                include: /src/,
+                loader: 'babel'
+            }, {
+                test: /\.css$/,
+                exclude: /node_modules|(search|style)\.css/,
+                include: /src/,
+                loader: styles.extract('style', 'css')
+            }, {
+                test: /(search|style)\.css$/,
+                exclude: /node_modules/,
+                include: /src/,
+                loader: crp.extract('style', 'css')
+            }]
+          } 
+
+
+      Then at template.html file:
+
+        <body>
+          <div data-js="app"></div>
+
+          <% htmlWebpackPlugin.files.js.forEach((jsFile) => { %>
+              <script async src="<%= jsFile %>"></script>
+          <% }) %>
+
+          <% htmlWebpackPlugin.files.css.forEach((cssFile) => { %>
+            <% if(cssFile !== 'crp.css') { %>
+              <link rel="stylesheet" href="<%= cssFile %>">
+            <% } %>
+          <% }) %>
+
+        </body>
+
+
+  class #40: Now fix the dev environment by creating a template-dev.html
+
+    Just get rid of all those last changes and save as template-dev.html, then change it at webpack.config.js
+
+
+  
+
+  class #41: cross-env
+
+    Ambiente para a geração do bundle
+
+      npm i --save-dev cross-env
+
+    Then edit package.json:
+
+    "scripts": {
+      "start": "webpack-dashboard -- node server.js",
+      "build": "cross-env NODE_ENV=production webpack --progress --config webpack.prod.config -p" // <== EDITED
+    },
+
+    This helps to get your bundle file softer. Run the build again:
+
+      npm run build
+
+    
+  class #42: alias with webpack
 
 
 

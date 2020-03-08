@@ -4,8 +4,11 @@ const path = require('path')
 const webpack = require('webpack')
 const validate = require('webpack-validator')
 
-const htmlPlugin = require('html-webpack-plugin')
-const extractTextPlugin = require('extract-text-webpack-plugin')
+const HtmlPlugin = require('html-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+
+const crp = new ExtractTextPlugin('crp.css')
+const styles = new ExtractTextPlugin('[name]-[hash].css')
 
 module.exports = {
 
@@ -17,7 +20,10 @@ module.exports = {
     },
 
     plugins: [
-        new extractTextPlugin('[name]-[hash].css'),
+        crp,
+        styles,
+
+        new ExtractTextPlugin('[name]-[hash].css'),
         new webpack.DefinePlugin({
             'process.env': {
                 'NODE_ENV': '"production"'
@@ -31,8 +37,9 @@ module.exports = {
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.OccurrenceOrderPlugin(),
 
-        new htmlPlugin({
+        new HtmlPlugin({
             title: 'Github app',
+            inject: false,
             template: path.join(__dirname, 'src', 'html', 'template.html')
         })
     ],
@@ -52,9 +59,16 @@ module.exports = {
             loader: 'babel'
         }, {
             test: /\.css$/,
+            exclude: /node_modules|(search|style)\.css/,
+            include: /src/,
+            //loader: styles.extract('style', 'css')
+            loader: styles.extract('style', 'css?modules')
+        }, {
+            test: /(search|style)\.css$/,
             exclude: /node_modules/,
             include: /src/,
-            loader: extractTextPlugin.extract('style', 'css')
+            loader: crp.extract('style', 'css?modules')
+            //loader: crp.extract('style', 'css?modules')
         }]
     }
 }
