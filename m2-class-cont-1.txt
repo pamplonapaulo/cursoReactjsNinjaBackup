@@ -363,6 +363,40 @@ package.json changes:
         "build": "webpack --progress --config webpack.prod.config -p"
       },
 
-  class #36:  CSS Modules
+  class #36:  Modularizando o CSS
+
+
+
+  class #37:  CSS Modules
+
+    webpack.config:
+
+      loaders: ['style', 'css?modules']
+
+      it creates random classes locally.
+
+
+  class #38: Assets: Critical Rendering Path
+
+    - Unoptimized: user gets everything rendered at once only at 1.5s, for example.
+    - Optimized: user starts to get something rendered at 0.3s, for example.
+
+    Above the fold ('acima da dobra' da página, onde o user começa a ver a página, before any scroll)
+
+      So make sure your website renders above the fold as fast as possible, then let it keep rendering bellow the fold async and inside the <body>.
+
+      There are a few thecniques to make this job better.
+
+      Tip: 
+
+        Load the CSS from 'above the fold' elements before everything else. And use inline style.
+
+        <link> tag and <script> tag both block page's render. So put everything you need to load after the 'above the fold' stuff.
+
+
+
+
+
+
 
 
