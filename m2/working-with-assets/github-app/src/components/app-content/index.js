@@ -24,13 +24,13 @@ const AppContent = ({
     {!!userinfo && <Actions getRepos={getRepos} getStarred={getStarred} />}
     {!!repos.length &&
       <Repos
-        className={style.repos}
+        type='repos'
         title='Repositories'
         repos={repos}
       />}
     {!!starred.length &&
       <Repos
-        className={style.starred}
+        type='starred'
         title='Favorites'
         repos={starred}
       />}
