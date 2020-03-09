@@ -544,9 +544,7 @@ package.json changes:
 
   class #40: Now fix the dev environment by creating a template-dev.html
 
-    Just get rid of all those last changes and save as template-dev.html, then change it at webpack.config.js
-
-
+    Just get rid of all those last changes and save as template-dev.html, then change it at webpack.config.js (which is the webpack for development we have been using)
   
 
   class #41: cross-env
