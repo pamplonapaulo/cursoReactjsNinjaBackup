@@ -544,9 +544,7 @@ package.json changes:
 
   class #40: Now fix the dev environment by creating a template-dev.html
 
-    Just get rid of all those last changes and save as template-dev.html, then change it at webpack.config.js
-
-
+    Just get rid of all those last changes and save as template-dev.html, then change it at webpack.config.js (which is the webpack for development we have been using)
   
 
   class #41: cross-env
@@ -562,12 +560,252 @@ package.json changes:
       "build": "cross-env NODE_ENV=production webpack --progress --config webpack.prod.config -p" // <== EDITED
     },
 
-    This helps to get your bundle file softer. Run the build again:
+    This helps to get your bundle file lighter.
+    
+    Now run the build again and check how smaller the file is:
 
       npm run build
 
     
   class #42: alias with webpack
+
+    This is what help us to avoid relative directories such as:
+
+      import Search from '../search'
+      import UserInfo from '../user-info'
+      import Actions from '../actions'
+      import Repos from '../repos'
+
+      Or even worst.
+
+    By editing webpack.config like this:
+
+        resolve: {
+            alias: {
+                src: path.join(__dirname, 'src'),
+                components: path.join(__dirname, 'src', 'components')
+            }
+        }
+
+    We gonna be able to type our directories this way:
+
+      import Search from 'components/search'
+      import UserInfo from 'components/user-info'
+      import Actions from 'components/actions'
+      import Repos from 'components/repos'
+
+    When things get more complex, we will be glad there is this option.
+
+    But please make sure we are not using folders named just like the ones we may find inside node_modules. This would be a big problem.
+
+
+  class #43: Storybook settings in an existent project
+
+    1. Make sure we got the global install:
+
+      npm i -g getstorybook
+      (npm i -g getstorybook@1.6.1)
+
+    2. Then run it at the root of your application:
+
+      getstorybook
+
+    3. To run your storybook, type:
+
+      npm run storybook 
+
+    4. Write the story file inside the component's folder:
+
+      repos.story.js
+
+        import { storiesOf } from '@kadira/storybook'
+        import React from 'react'
+
+        storiesOf('Div', module)
+          .add('first story', () => (
+            <div>Hello</div>
+          ))
+
+  
+  class #44: Storybook settings in an existent project
+
+
+    1. Real stories:
+
+    actions.story.js:
+
+      'use strict'
+
+      import { storiesOf } from '@kadira/storybook'
+      import React from 'react'
+      import Actions from './index'
+
+      storiesOf('Actions', module)
+        .add('first story', () => (
+          <Actions 
+            getRepos={() => {}}
+            getStarred={() => {}}
+          />
+        ))
+
+    -> Each story should be an different state of the component
+
+      import { storiesOf, action } from '@kadira/storybook'
+      import React from 'react'
+      import Actions from './index'
+
+      const stories = storiesOf('Actions', module)
+
+      stories.add('first story', () => (
+        <Actions 
+          getRepos={action('Get repos')}
+          getStarred={action('Get starred')}
+        />
+      ))
+
+      stories.add('second story', () => (
+        <Actions 
+          getRepos={action('Get repos')}
+          getStarred={action('Get starred')}
+        />
+      ))
+
+
+    class #45: Storybook webpack extensions
+
+    So insted of having storybook webpack.config like that:
+
+      'use strict'
+
+      module.exports = {
+        module: {
+          preLoaders: [{
+            test: /\.js$/,
+            exclude: /node_modules/,
+            include: /src/,
+            loader: 'standard'
+          }],
+
+          loaders: [{
+              test: /\.css$/,
+              exclude: /node_modules/,
+              include: /src/,
+              loaders: ['style', 'css?modules']
+          }]
+        }
+      }
+
+    You should extend from the original files, not having this kind of duplication. How it is?
+
+    https://storybook.js.org/docs/configurations/custom-webpack-config/
+
+      This is from the current website - it didn't work that way:
+
+      Using Your Existing Config
+      If you have an existing webpack config for your project and want to reuse this app’s configuration, you can either:
+
+      Import your main webpack config into Storybook’s .storybook/main.js and merge the 2 configs.
+      Example replacing the loaders from storybook with the loaders from your app’s webpack.config.js
+
+      const path = require('path');
+
+      // your app's webpack.config.js
+      const custom = require('../webpack.config.js');
+
+      module.exports = {
+        webpackFinal: (config) => {
+          return { ...config, module: { ...config.module, rules: custom.module.rules } };
+        },
+      };
+
+      This is professor's code - it didn't work neighter:
+
+      const webpackConfig = require('@kadira/storybook/dist/server/config/defaults/webpack.config.js')
+
+      module.exports = function (config, env) {
+        const newConfig = webpackConfig(config, env)
+
+        newConfig.module.preLoaders = [{
+          test: /\.js$/,
+          exclude: /node_modules/,
+          include: /src/,
+          loader: 'standard'
+        }]
+
+        return newConfig
+      }
+
+      Professor's code didn't work cuz of my use of css?modules.
+
+      Final professor's code:
+
+        const webpackConfig = require('@kadira/storybook/dist/server/config/defaults/webpack.config.js')
+
+        module.exports = function (config, env) {
+          const newConfig = webpackConfig(config, env)
+
+          newConfig.module.preLoaders = (newConfig.module.preLoaders || []).concat({
+            test: /\.js$/,
+            exclude: /node_modules/,
+            include: /src/,
+            loader: 'standard'
+          })
+
+          return newConfig
+        }
+
+
+      class #46 - Storybook - localização do arquivo de config, linter e static build
+
+      Folder: .storybook
+
+        Rename it to: storybook
+
+      Package.json: scripts:
+
+        Insted of:
+        "storybook": "start-storybook -p 6006 -c storybook",
+        "build-storybook": "build-storybook"
+
+        Change it to:
+        "storybook": "start-storybook -p 6006 -c storybook",
+        "build-storybook": "build-storybook -c storybook"
+
+      At storybook/webpack.config.js
+
+        remove it:
+
+          include: /src/,
+
+        Now Linter will be running on eveything. So double check the warnings.
+
+
+      build-storybook:
+
+       in case you need a static server to access your stories
+
+        npm run build-storybook
+
+      it creates a folder called storybook-static
+
+      So we run this command when we want to generate our static files to move it to a static server.
+
+      Static vs.
+
+        Roughly speaking, a server can serve either static or dynamic content. "Static" means "served as-is". Static websites are the easiest to set up, so we suggest you make your first site a static site. "Dynamic" means that the server processes the content or even generates it on the fly from a database.
+
+
+      class #47 - Storybook - creating stories for other components
+
+
+
+        
+
+
+
+
+
+
 
 
 
