@@ -10,9 +10,107 @@ Class Notes
         Test env.
 
         Install:
-        jest-cli + babel-jst + chai
+        jest-cli + babel-jest + chai
 
-        
+        Run:
+
+          yarn add --dev jest-cli babel-jest chai
+
+        Make some dirs:
+
+        src/ utils
+
+            / utils / pagination
+
+        New files:
+
+            / pagination / index.js
+            / pagination / pagination.test.js
+
+
+
+      class #51 - Pagination (setting up 'linter')
+
+      Since jest test watch has it's own interface to run tests, linter needs another extra command. We already got standard and standar-loader. So at our package.json:
+
+        "scripts": {
+          "lint": "standard"
+        }
+
+      But if you have a try, you will see it's poor and not enough, we can improve the way it shows our errors.
+
+      Some extra installs: snazzy  + gulp
+
+        yarn add --dev snazzy
+
+      One extra change at package.json:
+
+        "scripts": {
+          "lint": "standard --verbose | snazzy"
+        }
+
+      Boom. Now we have much more details about Linter's warnings. Run "yarn lint" to check this out.
+
+      Also: Lint:Fix
+
+        "scripts": {
+          "lint": "standard --verbose | snazzy",
+          "lint:fix": "standard --fix"
+        }
+
+      Running "yarn lint:fix" fixes the problem.
+
+      However... By default 'standard' doesn't come with a 'watch' tool. So let's install something else: GULP
+
+        yarn add --dev gulp
+        For this class 'back in time': (npm i --save-dev gulp@3.9.1)
+
+        Warning: we supposed to chose between YARN and NPM, not use both.
+
+      At our root create a 'github-app/gulp.File.js'
+
+      Edit it:
+
+        'use strict'
+
+        const gulp = require('gulp')
+        const { spawn } = require('child_process')
+
+        gulp.task('lint', (cb) => {
+          const cmd = spawn('yarn', ['lint'], { stdio: 'inherit'})
+          cmd.on('close', () => cb())
+        })
+
+        gulp.task('default', ['lint'], () => {
+          gulp.watch('src/**/*.js', ['lint'])
+        })
+
+      Then run the watch at Terminal:
+
+        yarn lint:watch
+
+      
+
+      
+          
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
 
 
 
