@@ -797,6 +797,112 @@ package.json changes:
 
       class #47 - Storybook - creating stories for other components
 
+        When a components gets a prop that is not required, how it behaves when nothing is passed? Make sure you have any previous 'defaultProps' for them:
+
+          Repos.defaultProps = {
+            type: '',
+            repos: []
+          }
+
+      Edit storybook/config.js to include extra imports that you may want:
+
+        import '../src/css/style.css'
+        import '../src/components/app-content/app.css'
+
+      Or edit a specific style inside the story itself:
+
+        .add('with repos', () => (
+          <div style={{ padding: '50px' }}>
+            <Repos
+              title='Favoritos'
+              repos={[{
+                link: 'http://blog.da2k.com.br',
+                name: 'Blog Da2K'
+              }]}
+            />
+          </div>
+        ))
+
+      class #48 - Pagination: create the component
+
+      1. Define the logic rules
+
+        What pagination style? Example:
+        
+        1... 4 5 6 ...10
+        (And '5' is the current page)
+
+        - Last and first page always visible.
+        - Active page always centered
+        - at least 3 visible pages: active, previous, next
+        - '...' represents the continuous idea
+
+      2. Define info needed
+
+        How many pages is the total? (Ex: In this case, total is 10)
+        Which page is the active page?
+
+      3. Define the method's return
+
+        We want an array.
+
+        Like that: [1, '...', 4, 5, 6, '...', 10]
+
+      4. Logic part separeted from the visual part.
+
+        Jest used to the logic.
+        Storybook used to the visual.
+
+      class #49 - Yarn
+
+      https://yarnpkg.com/
+
+      Why?
+
+        faster than NPM
+        creates cache
+
+      Global install:
+
+        npm i -g yarn
+
+      Using Yarn to install packages:
+      
+        yarn add <package>
+        (NPM is: npm install --save <package>)
+
+      To install packages from an existing package.json, it's a shorter command than the usual command from npm. And it's a faster installation. Just:
+
+        yarn
+
+      or
+
+        yarn install
+        (NPM is: npm install)
+
+      Deve dependencies:
+
+        yarn add --dev <package>
+        (NPM is: npm install --save-dev <package>)
+
+      Running scripts:
+
+        yarn <script>
+
+      or for yarn commands:
+
+        yarn run <script>
+        (NPM is: npm run <script>,
+        but 'npm start' and 'npm test' or 'npm t' you don't need the 'run')
+
+      More at: https://yarnpkg.com/
+
+
+
+
+
+
+
 
 
         

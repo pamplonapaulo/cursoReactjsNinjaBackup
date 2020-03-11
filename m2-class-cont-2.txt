@@ -1,0 +1,34 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+
+      class #50 - Pagination (starting)
+
+        Test env.
+
+        Install:
+        jest-cli + babel-jst + chai
+
+        
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
