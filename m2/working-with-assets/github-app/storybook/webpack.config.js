@@ -1,4 +1,3 @@
-
 'use strict'
 
 /*
@@ -18,7 +17,6 @@ module.exports = function (config, env) {
 }
 */
 
-
 'use strict'
 
 module.exports = {
@@ -30,9 +28,9 @@ module.exports = {
     }],
 
     loaders: [{
-        test: /\.css$/,
-        exclude: /node_modules/,
-        loaders: ['style', 'css?modules']
+      test: /\.css$/,
+      exclude: /node_modules/,
+      loaders: ['style', 'css?modules']
     }]
   }
 }

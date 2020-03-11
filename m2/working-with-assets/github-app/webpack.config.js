@@ -2,65 +2,65 @@
 
 const path = require('path')
 const webpack = require('webpack')
-const validate = require('webpack-validator')
+// const validate = require('webpack-validator')
 
-const htmlPlugin = require('html-webpack-plugin')
-const extractTextPlugin = require('extract-text-webpack-plugin')
+const HtmlPlugin = require('html-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const DashboardPlugin = require('webpack-dashboard/plugin')
 
 module.exports = {
-    devtool: 'sourcemap',
+  devtool: 'sourcemap',
 
-    entry: [
-        'react-hot-loader/patch',
-        'webpack-dev-server/client?http://localhost:3000',
-        'webpack/hot/only-dev-server',
-        path.join(__dirname, 'src', 'index')
-    ],
+  entry: [
+    'react-hot-loader/patch',
+    'webpack-dev-server/client?http://localhost:3000',
+    'webpack/hot/only-dev-server',
+    path.join(__dirname, 'src', 'index')
+  ],
 
-    output: {
-        path:path.join(__dirname, 'dist'),
-        filename: '[name]-[hash].js',
-        publicPath: ''
-    },
+  output: {
+    path: path.join(__dirname, 'dist'),
+    filename: '[name]-[hash].js',
+    publicPath: ''
+  },
 
-    plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new extractTextPlugin('[name]-[hash].css'),
-        new DashboardPlugin(),
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new ExtractTextPlugin('[name]-[hash].css'),
+    new DashboardPlugin(),
 
-        new htmlPlugin({
-            title: 'Github app',
-            template: path.join(__dirname, 'src', 'html', 'template-dev.html')
-        })
-    ],
+    new HtmlPlugin({
+      title: 'Github app',
+      template: path.join(__dirname, 'src', 'html', 'template-dev.html')
+    })
+  ],
 
-    module: {
-        preLoaders: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            include: /src/,
-            loader: 'standard'
-        }],
+  module: {
+    preLoaders: [{
+      test: /\.js$/,
+      // exclude: /node_modules/,
+      include: path.join(__dirname, 'src'),
+      // include: /\.\\src/,
+      loader: 'standard'
+    }],
 
-        loaders: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            include: /src/,
-            loader: 'babel'
-        }, {
-            test: /\.css$/,
-            exclude: /node_modules/,
-            include: /src/,
-            loaders: ['style', 'css?modules']
-            //loaders: ['style', 'css']
-        }]
-    },
+    loaders: [{
+      test: /\.js$/,
+      exclude: /node_modules/,
+      include: /src/,
+      loader: 'babel'
+    }, {
+      test: /\.css$/,
+      exclude: /node_modules/,
+      include: /src/,
+      loaders: ['style', 'css?modules']
+    }]
+  },
 
-    resolve: {
-        alias: {
-            src: path.join(__dirname, 'src'),
-            components: path.join(__dirname, 'src', 'components')
-        }
+  resolve: {
+    alias: {
+      src: path.join(__dirname, 'src'),
+      components: path.join(__dirname, 'src', 'components')
     }
+  }
 }
