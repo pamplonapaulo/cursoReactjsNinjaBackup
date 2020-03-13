@@ -12,4 +12,3 @@ stories.add('Actions component', () => (
     getStarred={action('Get starred')}
   />
 ))
-

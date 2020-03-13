@@ -14,7 +14,7 @@ Platform:
   darwin x64
 
 Trace: 
-  SyntaxError: /Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/working-with-assets/github-app/package.json: Unexpected string in JSON at position 205
+  SyntaxError: /Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/working-with-assets/github-app/package.json: Unexpected token / in JSON at position 146
       at JSON.parse (<anonymous>)
       at /usr/local/Cellar/yarn/1.21.1/libexec/lib/cli.js:1625:59
       at Generator.next (<anonymous>)
@@ -27,8 +27,9 @@ npm manifest:
       "start": "webpack-dashboard -- node server.js",
       "test": "jest --coverage",
       "test:watch": "yarn test -- --watch",
-      "lint": "standard --verbose",
-      "lint:watch": "gulp"
+      // "lint": "standard --verbose",
+      "lint": "standard --verbose 'src/**/*.js'",
+      "lint:watch": "gulp",
       "lint:fix": "standard --fix",
       "build": "cross-env NODE_ENV=production webpack --progress --config webpack.prod.config -p",
       "storybook": "start-storybook -p 6006 -c storybook",

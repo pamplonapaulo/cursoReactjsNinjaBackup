@@ -14,7 +14,7 @@ class App extends Component {
       isFetching: false
     }
 
-    this.handleSearch = this.handleSearch.bind(this)
+    this.onSearch = this.handleSearch.bind(this)
   }
 
   getGitHubApiUrl (username, type) {
@@ -70,10 +70,10 @@ class App extends Component {
   render () {
     return <AppContent
       {...this.state}
-      handleSearch={this.handleSearch}
+      handleSearch={this.onSearch}
       getRepos={this.getRepos('repos')}
       getStarred={this.getRepos('starred')}
-    />
+           />
   }
 }
 

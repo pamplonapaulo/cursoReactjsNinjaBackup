@@ -2,11 +2,9 @@
 
 import React, { PropTypes } from 'react'
 import style from './user-info.css'
-//import './user-info.css'
 
 const UserInfo = ({ userinfo }) => (
   <div className={style.userInfo}>
-  {/* <div className='userInfo'> */}
     <img src={userinfo.photo} />
 
     <h1>
@@ -16,7 +14,6 @@ const UserInfo = ({ userinfo }) => (
     </h1>
 
     <ul className={style.reposInfo}>
-    {/* <ul className='reposInfo'> */}
       <li>Repositórios: {userinfo.repos}</li>
       <li>Seguidores: {userinfo.followers}</li>
       <li>Seguindo: {userinfo.following}</li>
