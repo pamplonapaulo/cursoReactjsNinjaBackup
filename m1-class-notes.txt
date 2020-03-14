@@ -407,7 +407,7 @@ Section 2 | Class #6.0.1: ES Modules (Daciuk's notes from the 'future')
 
 Section 2 | Class #7: Setting JSX at Babel and sourcemaps at webpack
 
-    PRESET (makes Babel recogniza JSX)
+    PRESET (makes Babel recognize JSX)
 
     npm install --save-dev babel-preset-react@6 (version in this course)
 

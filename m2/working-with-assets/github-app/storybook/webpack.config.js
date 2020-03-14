@@ -1,6 +1,5 @@
 'use strict'
 
-
 const webpackConfig = require('@kadira/storybook/dist/server/config/defaults/webpack.config.js')
 
 module.exports = function (config, env) {
