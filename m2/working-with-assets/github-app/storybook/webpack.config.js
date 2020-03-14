@@ -1,6 +1,5 @@
 'use strict'
 
-/*
 const webpackConfig = require('@kadira/storybook/dist/server/config/defaults/webpack.config.js')
 
 module.exports = function (config, env) {
@@ -13,24 +12,17 @@ module.exports = function (config, env) {
     loader: 'standard'
   })
 
-  return newConfig
-}
-*/
+  newConfig.module.loaders = newConfig.module.loaders.map(loader => {
 
-'use strict'
-
-module.exports = {
-  module: {
-    preLoaders: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'standard'
-    }],
-
-    loaders: [{
-      test: /\.css$/,
-      exclude: /node_modules/,
+    if (!loader.test.test('test.css')) {
+      return loader
+    }
+  
+    return {
+      ...loader,
       loaders: ['style', 'css?modules']
-    }]
-  }
+    }  
+  })
+
+  return newConfig
 }

@@ -1,19 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1583509671693" clover="3.2.0">
-  <project timestamp="1583509671693" name="All files">
-    <metrics statements="9" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="2" coveredmethods="2" elements="17" coveredelements="17" complexity="0" loc="9" ncloc="9" packages="1" files="1" classes="1">
-      <file name="exceptions-error.js" path="/Applications/MAMP/htdocs/__FRONT/_react/_curso-daciuk/m2/m2-section-4/jest-in-practice/src/exceptions-error/exceptions-error.js">
-        <metrics statements="9" coveredstatements="9" conditionals="6" coveredconditionals="6" methods="2" coveredmethods="2"/>
-        <line num="3" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="4" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="5" count="2" type="stmt"/>
-        <line num="7" count="10" type="cond" truecount="2" falsecount="0"/>
-        <line num="8" count="2" type="stmt"/>
-        <line num="10" count="8" type="stmt"/>
-        <line num="12" count="8" type="stmt"/>
-        <line num="13" count="14" type="stmt"/>
-        <line num="15" count="8" type="stmt"/>
-      </file>
+<coverage generated="1584141279844" clover="3.2.0">
+  <project timestamp="1584141279845" name="All files">
+    <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0" elements="0" coveredelements="0" complexity="0" loc="0" ncloc="0" packages="0" files="0" classes="0">
     </metrics>
   </project>
 </coverage>

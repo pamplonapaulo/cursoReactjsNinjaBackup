@@ -3,7 +3,7 @@
     "start": "webpack-dashboard -- node server.js",
     "test": "jest --coverage",
     "test:watch": "yarn test -- --watch",
-    "lint": "standard --verbose",
+    "lint": "standard --verbose 'src/**/*.js'",
     "lint:watch": "gulp",
     "lint:fix": "standard --fix",
     "build": "cross-env NODE_ENV=production webpack --progress --config webpack.prod.config -p",
@@ -41,8 +41,6 @@
     "react-dom": "^15.4.2"
   },
   "standard": {
-    "globals": [
-      "alert"
-    ]
+    "globals": [ "test", "it", "describe" ]
   }
 }

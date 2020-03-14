@@ -29,7 +29,7 @@ Class Notes
 
 
 
-      class #51 - Pagination (setting up 'linter')
+      class #51 - Setting up 'linter'
 
       Since jest test watch has it's own interface to run tests, linter needs another extra command. We already got standard and standar-loader. So at our package.json:
 
@@ -90,6 +90,73 @@ Class Notes
         yarn lint:watch
 
       
+      class #52 - Paginação - implementação inicial
+
+          So this class starts with Daciuk running:
+
+          1. JEST
+
+            yarn test:watch (which is the testing server)
+
+              (and actually it runs:
+                yarn test -- --watch
+                plus
+                jest --coverage --watch
+              )
+
+            Since our package.json includes those scripts:
+
+                "scripts": {
+                  "test": "jest --coverage",
+                  "test:watch": "yarn test -- --watch",
+                }, (and more not showed here)
+
+          2. LINT
+
+            At another Terminal window, Daciuk also runs:
+
+              yarn lint:watch (which watches lint issues)
+
+
+        If both are watching stuff nicely, move on...
+        
+        Now at:
+
+          utils/pagination/pagination.test.js
+
+            'use strict'
+
+            import { expect } from 'chai'
+            import pagination from './index'
+
+            test('pagination should be a function', () => {
+              expect(pagination).to.be.a('function')
+            })
+
+            // But 'test' is a global function, and 'standard' still doesn't know about global functions. So let's include something else at package.json to let 'standard' understand those global functions:
+
+            package.json (at the bottom):
+
+              "standard": {
+                "globals": [ "test", "it", "describe" ]
+              }
+            
+
+
+          utils/pagination/index.js
+
+        
+
+
+            
+
+              
+
+
+
+
+          
+
 
       
           
