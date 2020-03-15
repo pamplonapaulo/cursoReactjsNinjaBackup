@@ -15,6 +15,7 @@ Class Notes
         Run:
 
           yarn add --dev jest-cli babel-jest chai
+          ==> (yarn add --dev jest-cli@15 babel-jest@15 chai)
 
         Make some dirs:
 
@@ -133,18 +134,41 @@ Class Notes
               expect(pagination).to.be.a('function')
             })
 
-            // But 'test' is a global function, and 'standard' still doesn't know about global functions. So let's include something else at package.json to let 'standard' understand those global functions:
+          // But 'test' is a global function, and 'standard' still doesn't know about global functions. So let's include something else at package.json to let 'standard' understand those global functions:
 
-            package.json (at the bottom):
+          package.json (at the bottom):
 
-              "standard": {
-                "globals": [ "test", "it", "describe" ]
-              }
+            "standard": {
+              "globals": [ "test", "it", "describe" ]
+            }
             
 
 
           utils/pagination/index.js
 
+
+          {
+              "presets": ["es2015", "stage-0", "react"],
+              "plugins": ["react-hot-loader/babel"]
+          }
+
+          OK. I got a real issue and stared over my folder from professor's WorkFlow folder link.
+
+          Then back to the code, typing the function pagiantion and it's test.
+
+          Just a reminder about 'destructuring' (from ES6):
+
+          Normally we use to code like that:
+
+            const pagination = (params) => {
+            }
+
+          With destructuring, here is the new way:
+
+            const pagination = ({ total, activePage }) => {
+            }
+
+          
         
 
 
