@@ -38,7 +38,7 @@ module.exports = {
   module: {
     preLoaders: [{
       test: /\.js$/,
-      // exclude: /node_modules/,
+      exclude: /node_modules/,
       include: path.join(__dirname, 'src'),
       // include: /\.\\src/,
       loader: 'standard'
