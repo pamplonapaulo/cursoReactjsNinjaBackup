@@ -1,10 +1,10 @@
 'use strict'
 
 // Sets the 3 centered pages at the middle of the whole array, based on the active:
-const centerRule = ({ total, activePage }) =>  activePage - 1 <= 0
-    ? 1 
+const centerRule = ({ total, activePage }) => activePage - 1 <= 0
+    ? 1
     : activePage === total
-      ? activePage - 2 
+      ? activePage - 2
       : activePage - 1
 
 const isNumber = (value) => typeof value === 'number'

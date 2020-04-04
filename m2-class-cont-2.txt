@@ -265,7 +265,46 @@ Class Notes
 
           4 - Dev passa string ao invés de number:
 
-          
+          pagination.test.js:
+
+            test('pagination({ total: 1, activePage: "abc" }) should throw an error', () => {
+              const params = { total: 1, activePage: 'abc' }
+              const result = 'activePage should be a number'
+              try {
+                pagination(params)
+              } catch (e) {
+                expect(e.message).to.be.equal(result)
+              }
+            })
+
+          pagination.js:
+
+            const isNumber = (value) => typeof value === 'number'
+
+            const pagination = ({ total = 1, activePage = 1 } = {}) => {
+              if (!isNumber(total)) {
+                throw new TypeError('total should be a number')
+              }
+
+              if (!isNumber(activePage)) {
+                throw new TypeError('activePage should be a number')
+              }
+
+
+
+          * * *  Pagination StoryBook
+
+          Create an alias at:
+
+          storybook/webpack.config.js
+
+            const path = require('path')
+
+            newConfig.resolve = {
+              alias: {
+                utils: path.join(__dirname, '..', 'src', 'utils')
+              }
+            }
 
 
 
