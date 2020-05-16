@@ -11,8 +11,8 @@
   padding: 10px 0;
 }
 
-.repos li + li,
-.starred li + li {
+.repos ul:first-of-type li + li,
+.starred ul:first-of-type li + li {
   border-top: 1px solid #ccc;
 }
 

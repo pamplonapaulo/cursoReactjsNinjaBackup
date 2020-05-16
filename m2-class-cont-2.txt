@@ -307,8 +307,23 @@ Class Notes
             }
 
 
+        Abstracting the  Webpack standard config
 
+
+        1. webpack.config.js
+        2. webpack.prod.config.js
+        3. storybook/webpack.config.js
           
+        Don't Repeat Yourself!
+
+          So...Take a look at what is inside the webpack folder of github-app:
+
+            common.js
+            dev.config.js
+            prod.config.js
+
+            
+
 
 
 
