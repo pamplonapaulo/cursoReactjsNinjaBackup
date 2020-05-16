@@ -4,15 +4,13 @@ import React, { PropTypes } from 'react'
 import pagination from 'utils/pagination'
 import Page from './page'
 
+import style from './pagination.css'
+
 const Pagination = ({ total, activePage, pageLink, onClick }) => (
-  <ul>
+  <ul className={style.pagination}>
     {pagination({ total, activePage }).map((page, index) => (
-      <li key={index} style={activePage === page ? { background: 'red' } : null}>
-        <Page
-          page={page}
-          pageLink={pageLink.replace('%page%', page)}
-          onClick={onClick}
-        />
+      <li key={index} className={`${style.paginationItem} ${activePage === page ? style.active : ''}`}>
+        <Page page={page} pageLink={pageLink.replace('%page%', page)} onClick={onClick} />
       </li>
     ))}
   </ul>
