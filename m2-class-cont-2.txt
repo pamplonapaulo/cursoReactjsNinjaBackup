@@ -324,12 +324,34 @@ Class Notes
 
             
 
+      class #69 - PropType "Shape"
 
+      It sets a custom object type.
 
+        const reposPropTypeShape = {
+          repos: PropTypes.array.isRequired,
+          pagination: PropTypes.object
+        }
 
-          
-        
+        AppContent.propTypes = {
+          repos: PropTypes.shape(reposPropTypeShape).isRequired,
+          starred: PropTypes.shape(reposPropTypeShape).isRequired,
+        }
 
+        Repos.propTypes = {
+          repos: PropTypes.shape({
+            repos: PropTypes.arrayOf(PropTypes.shape({
+              link: PropTypes.string.isRequired,
+              name: PropTypes.string.isRequired,
+            })).isRequired,
+            pagination: PropTypes.shape({
+              total: PropTypes.number,
+              activePage: PropTypes.number
+            }).isRequired
+          })
+        }        
+
+      class #
 
             
 

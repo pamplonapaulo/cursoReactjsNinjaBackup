@@ -23,14 +23,14 @@ const AppContent = ({
     {isFetching && <div>Loading...</div>}
     {!!userinfo && <UserInfo userinfo={userinfo} />}
     {!!userinfo && <Actions getRepos={getRepos} getStarred={getStarred} />}
-    {!!repos.length &&
+    {!!repos.repos.length &&
       <Repos
         type='repos'
         title='Repositories'
         repos={repos}
         handlePagination={(clicked) => handlePagination('repos', clicked)}
       />}
-    {!!starred.length &&
+    {!!starred.repos.length &&
       <Repos
         type='starred'
         title='Favorites'
@@ -41,10 +41,15 @@ const AppContent = ({
   </div>
 )
 
+const reposPropTypeShape = {
+  repos: PropTypes.array.isRequired,
+  pagination: PropTypes.object
+}
+
 AppContent.propTypes = {
   userinfo: PropTypes.object,
-  repos: PropTypes.array.isRequired,
-  starred: PropTypes.array.isRequired,
+  repos: PropTypes.shape(reposPropTypeShape).isRequired,
+  starred: PropTypes.shape(reposPropTypeShape).isRequired,
   isFetching: PropTypes.bool.isRequired,
   handleSearch: PropTypes.func.isRequired,
   handlePagination: PropTypes.func.isRequired,
