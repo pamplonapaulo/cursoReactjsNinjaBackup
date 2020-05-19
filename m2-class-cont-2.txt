@@ -351,7 +351,21 @@ Class Notes
           })
         }        
 
-      class #
+      class #72 Webpack v2
+
+      Breaking Changes
+      
+      https://github.com/fdaciuk/workflow-reactjs
+      (workflow with ReactJS + Webpack 3+)
+
+
+      class #76
+
+      Tree Shaking: comes with the WebPack 2, it discards stuff from imports that actually are not being used. So libs written in ES6 that have a lot of things may be used just for what you really need, the final bundle doesn't take everything.
+
+      
+
+
 
             
 
