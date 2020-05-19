@@ -552,6 +552,45 @@ Class Notes
         Then replaced every single line that calls those paths inside 'webpack' folder.
 
 
+      class #83
+      code splitting
+
+        make one entry point for each page the application has.
+
+        common.js:
+
+          entry: {
+            main: join(paths.src, 'index')
+          },
+
+        If it's a single page app, make different "Chunks":
+        prod.config.js:
+          
+          entry: {
+            app: common.entry,
+            vendor: ['react', 'react-dom']
+          },
+
+          The build will create 2 JS 'Chunks', one for each one set above: app & vendor
+
+          Chunckhash:
+
+            output: {
+              path: paths.dist,
+              filename: '[name]-[chunkhash].js',
+              publicPath: '/'
+            },
+
+          It creates single hashes for each file, a common hash would be equal for all.
+          
+          class #84
+          CommonsChunkPlugin
+
+          
+
+
+
+
 
             
 
