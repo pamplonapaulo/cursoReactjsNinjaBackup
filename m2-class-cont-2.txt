@@ -360,10 +360,196 @@ Class Notes
 
 
       class #76
-
       Tree Shaking: comes with the WebPack 2, it discards stuff from imports that actually are not being used. So libs written in ES6 that have a lot of things may be used just for what you really need, the final bundle doesn't take everything.
 
-      
+      class #77
+      Promises
+
+        Feature nova do ES6.
+
+        It runs an async function and 'promises' you that is going to return something, eigther with success or fail.
+
+        Most modern browsers now come with a global consrtuctor object Promise.
+
+        Never use resolve and reject together. Pick one.
+
+        1 - Resolved case:
+
+          const promise = new Promise((resolve, reject) => {
+            resolve('resolved')
+          })
+
+          promise.then((result) => console.log(result))
+
+          // resolved
+
+        2 - Rejected case:
+
+          const promise = new Promise((resolve, reject) => {
+            reject('rejeitar')
+          })
+
+          promise.then((result) => console.log(result))
+
+          // rejeitar
+
+          (node:21995) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 2)
+
+          (node:21995) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+
+        3 - Catch: it handles promise rejections
+
+          const promise = new Promise((resolve, reject) => {
+            reject('rejeitar')
+          })
+
+          promise
+            .then((result) => console.log(result))
+            .catch((error) => console.log('ERROR:', error))
+
+          // ERROR: rejeitar
+
+
+          4 - Real world example: reading a file with promise.
+
+            const fs = require('fs')
+            const path = require('path')
+
+            const readFile = (filePath, charset) => new Promise((resolve, reject) => {
+              fs.readFile(filePath, charset, (err, result) => {
+                if (err) return reject(err)
+                resolve(result)  
+              })
+            })
+
+            readFile(path.join(__dirname, '..', 'package.json'), 'utf8')
+              .then((result) => console.log(result))
+              .catch((error) => console.log('ERROR:', error))
+
+          5 - Multiples 'then'
+
+          When using multiple THENs, each time a THEN is called what is being returned by the first THEN goes to the next THEN.
+
+          readFile(path.join(__dirname, '..', 'package.json'), 'utf8')
+            .then((result) => JSON.parse(result).dependencies)
+            .then((dependencies) => console.log(dependencies))
+            .catch((error) => console.log('ERROR:', error))
+
+          So this would return:
+
+            {
+              'babel-runtime': '^6.26.0',
+              preact: '^8.2.5',
+              'preact-compat': '^3.17.0',
+              'prop-types': '^15.5.10',
+              react: '^15.6.1',
+              'react-dom': '^15.6.1'
+            }
+
+
+      class #78
+      Clean 'dist' folder - webpack Clean plugin
+
+        Instalação do clean-webpack-plugin:
+        npm i --save-dev clean-webpack-plugin@0.1.16
+
+        Every time we run build, it creates new hashes, new js and css files named with specific hashes. So cleaning it is a must.
+
+        Then, prod.config.js:
+
+          const CleanPlugin = require('clean-webpack-plugin')
+
+          module.exports = {
+
+            plugins: [
+              new CleanPlugin(['dist'], {
+                root: common.paths.root,
+                exclude: ['any-folder'],
+                dry: true
+                // 'cheats' the app - actually doesn't delete for real, but shows what would delete. Then if it's corrent remove the 'dry: true' and it will delete for real.
+                verbose: false
+                // shows what is doing. It comes true by default
+              }),
+
+              ...
+
+      class #79
+      async / await
+      (later, see also "generators")
+
+        const read = async () => {
+          const result = await readFile(path.join(__dirname, '..', 'package.json'), 'utf8')
+          // it waits for the await before keep running
+          console.log(result)
+        }
+
+        read()
+
+        // it works, returns the file.
+
+
+        const read = () => {
+          const result = readFile(path.join(__dirname, '..', 'package.json'), 'utf8')
+
+          console.log(result)
+        }
+
+        read()
+
+        // Promise { <pending> }
+
+        Errors: just use try / catch 
+
+          const read = async () => {
+            try {
+              const result = await readFile(path.join(__dirname, '..', 'package.json'), 'utf8')
+              const dependencies = JSON.parse(result).dependencies
+              console.log(dependencies)
+            } catch (error) {
+              console.log('ERROR:', error)
+            }
+          }
+
+      class #80
+      Babel upddate to use async / await (at least when the class was recorded, it was a need):
+        
+        "devDependencies": {
+          "babel-plugin-transform-runtime": "^6.23.0",
+        }
+
+        "dependencies": {
+          "babel-runtime": "^6.26.0",
+        }
+
+        also:
+
+        babellrc.js
+
+          "plugins": [
+            ["transform-runtime", {
+              "helpers": false,
+              "polyfill": false,
+              "regenerator": true
+            }]
+          ]
+
+      class #81
+      Storybook update
+
+      class #82
+      updates, put all paths together in webpack/common.js:
+
+        const paths = {
+          root: join(__dirname, '..'),
+          src: join(__dirname, '..', 'src'),
+          dist: join(__dirname, '..', 'dist')
+        }
+
+        module.exports = {
+          paths,
+        }
+
+        Then replaced every single line that calls those paths inside 'webpack' folder.
 
 
 
