@@ -5,7 +5,10 @@
 Class Notes
 
 
-      class #50 - Pagination (starting)
+
+
+      class #50 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Pagination (starting)
 
         Test env.
 
@@ -30,7 +33,9 @@ Class Notes
 
 
 
-      class #51 - Setting up 'linter'
+
+      class #51 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Setting up 'linter'
 
       Since jest test watch has it's own interface to run tests, linter needs another extra command. We already got standard and standar-loader. So at our package.json:
 
@@ -90,8 +95,11 @@ Class Notes
 
         yarn lint:watch
 
+
+
       
-      class #52 - Paginação - implementação inicial
+      class #52 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Paginação - implementação inicial
 
           So this class starts with Daciuk running:
 
@@ -324,7 +332,8 @@ Class Notes
 
             
 
-      class #69 - PropType "Shape"
+      class #69 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      PropType "Shape"
 
       It sets a custom object type.
 
@@ -351,7 +360,11 @@ Class Notes
           })
         }        
 
-      class #72 Webpack v2
+
+
+
+      class #72 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Webpack v2
 
       Breaking Changes
       
@@ -359,10 +372,13 @@ Class Notes
       (workflow with ReactJS + Webpack 3+)
 
 
-      class #76
+      class #76 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       Tree Shaking: comes with the WebPack 2, it discards stuff from imports that actually are not being used. So libs written in ES6 that have a lot of things may be used just for what you really need, the final bundle doesn't take everything.
 
-      class #77
+
+
+
+      class #77 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       Promises
 
         Feature nova do ES6.
@@ -447,7 +463,9 @@ Class Notes
             }
 
 
-      class #78
+
+
+      class #78 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       Clean 'dist' folder - webpack Clean plugin
 
         Instalação do clean-webpack-plugin:
@@ -473,7 +491,10 @@ Class Notes
 
               ...
 
-      class #79
+
+
+
+      class #79 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       async / await
       (later, see also "generators")
 
@@ -510,7 +531,10 @@ Class Notes
             }
           }
 
-      class #80
+
+
+
+      class #80 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       Babel upddate to use async / await (at least when the class was recorded, it was a need):
         
         "devDependencies": {
@@ -533,10 +557,16 @@ Class Notes
             }]
           ]
 
-      class #81
+
+
+
+      class #81 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       Storybook update
 
-      class #82
+
+
+
+      class #82 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       updates, put all paths together in webpack/common.js:
 
         const paths = {
@@ -552,7 +582,9 @@ Class Notes
         Then replaced every single line that calls those paths inside 'webpack' folder.
 
 
-      class #83
+
+
+      class #83 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       code splitting
 
         make one entry point for each page the application has.
@@ -583,16 +615,106 @@ Class Notes
 
           It creates single hashes for each file, a common hash would be equal for all.
           
-          class #84
-          CommonsChunkPlugin
 
+
+
+      class #84 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      CommonsChunkPlugin
+
+      webpack/prod.config.js:
+
+        module.exports = {
+
+          plugins: [
+
+            new webpack.optimize.CommonsChunkPlugin(vendor),
+
+
+
+
+      class #85 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      CommonsChunkPlugin Options
+
+            new webpack.optimize.CommonsChunkPlugin({
+              name: 'react-build',
+              chunks: ['main'],
+              minChunks: ({ resource }) => (
+                /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+                /node_modules\/preact(-compat)?\//.test(resource)
+              )
+            }),
+
+        options:
+
+          name: 'vendor'
+          (example)
           
+          minChunks: 2
+          (minimum amont of imports that a lib or module will have)
+          
+          minChunks using function (returning true or false):
+
+            minChunks: ({ resource }) => (
+              /node_modules/.test(resource)
+            )
+
+          'resource' => path of all imports.
+          Using Regex inside the arrow function, the filtered files with the match will be returned, becoming part of the chunk.
+
+      Later: see GZip to get shorter files.
+
+
+
+
+      class #86 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Dynamic import
+
+      The common import('') is static. Can't work like a dynamic require:
+
+      What is a dynamic require?
+
+        const title = 'title'
+        const Title = require('components' + title)
+
+      Dynamic values such those above can't be passed in a regular static import.
+      
+        constructor () {
+          super()
+          this.state = {
+            title: '...',
+            Component: 'div'
+          }
+        }
+
+        (...)
+
+        async componentDidMount () {
+          const title = await import('components/title')
+
+          this.setState({
+            title: await this.getTitle(),
+            Component: title.default
+          })
+        }
+
+        (...)
+
+        <this.state.Component>{this.state.title}</this.state.Component>
 
 
 
 
 
-            
+
+      
+
+
+
+
+
+
+
+
 
               
 
