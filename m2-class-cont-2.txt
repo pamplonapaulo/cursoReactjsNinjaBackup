@@ -699,10 +699,185 @@ Class Notes
 
         (...)
 
+        The 'default' means here. Without it, ir loads just a object, not the component.
+
         <this.state.Component>{this.state.title}</this.state.Component>
 
+        My doubts answered by the professor:
+        https://github.com/da2k/curso-reactjs-ninja/issues/474
 
 
+
+
+      class #87 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Dynamic import + Linter
+
+      Fixing the lint error from this kind of dynamic import:
+
+      'didn't expect token const title = await import('components/title')'
+
+      PS: Not sure if by this time it's already fixed in ES6 stages.
+
+      This app uses   "presets": ["stage-0"]
+
+      To fix that, first:
+
+        yarn add --dev babel-eslint
+
+      At package.json, include "--parser babel-eslint", like that:
+
+        "lint": "standard --parser babel-eslint --verbose | snazzy"
+
+      Now lint passes the test. But not when run build. So fix this at webpack/common.js, by adding "parser: 'babel-eslint'", like that:
+
+        standardPreLoader: {
+          use: {
+            options: {
+              parser: 'babel-eslint'
+            }
+          }
+        }
+
+        this 'use' can be written in different forms, such as:
+
+        as string:
+
+          use: 'standard-loader'
+
+        as array, if we have more than one loarders:
+
+          use: ['standard-loader', 'somthing-else-loader']
+
+        as object, if we need to pass an config option:
+
+          use: {
+            loader: 'standard-loader',
+            options: {
+              parser: 'babel-eslint'
+            }
+          }
+
+        also, passing modules would be an array of objects:
+
+          use: [{
+            loader: 'standard-loader',
+            options: {
+              parser: 'babel-eslint'
+            }
+          }, {
+            loader: 'lala-loader',
+            query: {
+              modules: true
+            }
+          }]
+
+
+
+
+      class #88 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      File-loader (Webpack)
+      Importing other assets byond CSS.
+
+      OBS: RESOLVE != JOIN
+        const (resolve, join } = require('path')
+
+        1. Join, just joints paths.
+        2. Resolve, from the path/url you are, 'resolve' generates an absolute url.
+
+
+      File-loader (dir m2/file-loader-example)
+
+        yarn add --dev file-loader
+
+      By default webpack doesn't handle imports of any file format, usually only JS, such as TXT files.
+
+        import name from './name.txt'
+        console.log(name)
+
+      webpack.config.js:
+
+        module: {
+          rules: [{
+            test: /\.txt$/,
+            use: 'file-loader'
+          }]
+        }
+        // fb0e8d99d80b3a3f5a5f6c0a76a20e90.txt
+      
+        Doc & Repo:
+        https://github.com/webpack-contrib/file-loader
+
+        module: {
+          rules: [{
+            test: /\.(txt|jpg|svg|jpeg|png|ico|gif|ttf|woff|off2)$/,
+            use: 'file-loader?name=[path][name][hash:8].[ext]'
+          }]
+        }
+        // namefb0e8d99.txt
+
+        Prettier than that is:
+
+          module: {
+            rules: [{
+              test: /\.(txt|jpg|svg|jpeg|png|ico|gif|ttf|woff|off2)$/,
+              use: {
+                loader: 'file-loader',
+                query: {
+                  name: '[path][name]-[hash:8].[ext]'
+                }
+              }
+            }]
+          }
+          // name-fb0e8d99.txt
+
+
+
+
+        class #89 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        URL Loader
+        
+        Uses 'file-loader' as fallback.
+
+        Install:
+
+          yarn add --dev url-loader@0.5.8
+
+        webpack.config.js:
+
+          module: {
+            rules: [{
+              test: /\.txt$/,
+              use: {
+                loader: 'url-loader'
+              }
+            }]
+          }
+
+        run webpack and check bundle.js: it generated an 'base64' url type.
+
+        query 'limit':
+
+        in bites, sets the limit of each file loaded. If bigger, it will become an separeted file.
+
+          module: {
+            rules: [{
+              test: /\.txt$/,
+              use: {
+                loader: 'url-loader',
+                query: {
+                  limit: 10
+                }
+              }
+            }]
+          }
+
+          So since the limit is set to just 10 bites and our file name.txt has 23 bites, the bundle will separate the file in another external chunk.
+
+          url-loader uses file-loader as fallback, so make sure you get both installed before use it.
+
+
+        class #90 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        
 
 
 

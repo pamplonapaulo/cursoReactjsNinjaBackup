@@ -6,7 +6,7 @@ const path = require('path')
 const readFile = (filePath, charset) => new Promise((resolve, reject) => {
   fs.readFile(filePath, charset, (err, result) => {
     if (err) return reject(err)
-    resolve(result)  
+    resolve(result)
   })
 })
 

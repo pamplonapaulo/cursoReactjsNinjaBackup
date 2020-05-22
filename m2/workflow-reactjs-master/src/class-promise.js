@@ -6,7 +6,7 @@ const path = require('path')
 const readFile = (filePath, charset) => new Promise((resolve, reject) => {
   fs.readFile(filePath, charset, (err, result) => {
     if (err) return reject(err)
-    resolve(result)  
+    resolve(result)
   })
 })
 
@@ -14,7 +14,6 @@ readFile(path.join(__dirname, '..', 'package.json'), 'utf8')
   .then((result) => JSON.parse(result).dependencies)
   .then((dependencies) => console.log(dependencies))
   .catch((error) => console.log('ERROR:', error))
-
 
 /* OBS: readFile
 
