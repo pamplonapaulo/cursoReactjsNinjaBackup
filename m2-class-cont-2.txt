@@ -699,7 +699,364 @@ Class Notes
 
         (...)
 
+        The 'default' means here. Without it, ir loads just a object, not the component.
+
         <this.state.Component>{this.state.title}</this.state.Component>
+
+        My doubts answered by the professor:
+        https://github.com/da2k/curso-reactjs-ninja/issues/474
+
+
+
+
+      class #87 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      Dynamic import + Linter
+
+      Fixing the lint error from this kind of dynamic import:
+
+      'didn't expect token const title = await import('components/title')'
+
+      PS: Not sure if by this time it's already fixed in ES6 stages.
+
+      This app uses   "presets": ["stage-0"]
+
+      To fix that, first:
+
+        yarn add --dev babel-eslint
+
+      At package.json, include "--parser babel-eslint", like that:
+
+        "lint": "standard --parser babel-eslint --verbose | snazzy"
+
+      Now lint passes the test. But not when run build. So fix this at webpack/common.js, by adding "parser: 'babel-eslint'", like that:
+
+        standardPreLoader: {
+          use: {
+            options: {
+              parser: 'babel-eslint'
+            }
+          }
+        }
+
+        this 'use' can be written in different forms, such as:
+
+        as string:
+
+          use: 'standard-loader'
+
+        as array, if we have more than one loarders:
+
+          use: ['standard-loader', 'somthing-else-loader']
+
+        as object, if we need to pass an config option:
+
+          use: {
+            loader: 'standard-loader',
+            options: {
+              parser: 'babel-eslint'
+            }
+          }
+
+        also, passing modules would be an array of objects:
+
+          use: [{
+            loader: 'standard-loader',
+            options: {
+              parser: 'babel-eslint'
+            }
+          }, {
+            loader: 'lala-loader',
+            query: {
+              modules: true
+            }
+          }]
+
+
+
+
+      class #88 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      File-loader (Webpack)
+      Importing other assets byond CSS.
+
+      OBS: RESOLVE != JOIN
+        const (resolve, join } = require('path')
+
+        1. Join, just joints paths.
+        2. Resolve, from the path/url you are, 'resolve' generates an absolute url.
+
+
+      File-loader (dir m2/file-loader-example)
+
+        yarn add --dev file-loader
+
+      By default webpack doesn't handle imports of any file format, usually only JS, such as TXT files.
+
+        import name from './name.txt'
+        console.log(name)
+
+      webpack.config.js:
+
+        module: {
+          rules: [{
+            test: /\.txt$/,
+            use: 'file-loader'
+          }]
+        }
+        // fb0e8d99d80b3a3f5a5f6c0a76a20e90.txt
+      
+        Doc & Repo:
+        https://github.com/webpack-contrib/file-loader
+
+        module: {
+          rules: [{
+            test: /\.(txt|jpg|svg|jpeg|png|ico|gif|ttf|woff|off2)$/,
+            use: 'file-loader?name=[path][name][hash:8].[ext]'
+          }]
+        }
+        // namefb0e8d99.txt
+
+        Prettier than that is:
+
+          module: {
+            rules: [{
+              test: /\.(txt|jpg|svg|jpeg|png|ico|gif|ttf|woff|off2)$/,
+              use: {
+                loader: 'file-loader',
+                query: {
+                  name: '[path][name]-[hash:8].[ext]'
+                }
+              }
+            }]
+          }
+          // name-fb0e8d99.txt
+
+
+
+
+        class #89 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        URL Loader
+        
+        Uses 'file-loader' as fallback.
+
+        Install:
+
+          yarn add --dev url-loader@0.5.8
+
+        webpack.config.js:
+
+          module: {
+            rules: [{
+              test: /\.txt$/,
+              use: {
+                loader: 'url-loader'
+              }
+            }]
+          }
+
+        run webpack and check bundle.js: it generated an 'base64' url type.
+
+        query 'limit':
+
+        in bites, sets the limit of each file loaded. If bigger, it will become an separeted file.
+
+          module: {
+            rules: [{
+              test: /\.txt$/,
+              use: {
+                loader: 'url-loader',
+                query: {
+                  limit: 10
+                }
+              }
+            }]
+          }
+
+          So since the limit is set to just 10 bites and our file name.txt has 23 bites, the bundle will separate the file in another external chunk.
+
+          url-loader uses file-loader as fallback, so make sure you get both installed before use it.
+
+          Doc & Repo:
+          https://github.com/webpack-contrib/url-loader
+
+
+
+
+        class #90 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        raw-loader
+
+        Use it to get a content of the file loaded.
+
+        Install:
+
+        yarn add --dev raw-loader@0.5.1
+
+        webpack.config.js:
+
+          module: {
+            rules: [{
+              test: /\.txt$/,
+              use: 'raw-loader'
+            }]
+          }
+
+        In this .txt file loaded, we will console.log the content of the name.txt file, as a string:
+
+        // Paulo da Silva Pamplona
+
+        Doc & Repo:
+        https://github.com/webpack-contrib/raw-loader
+
+
+
+
+        class #91 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        Update boilerplate with these loaders: file-loader + url-loader
+
+        The updated version at this point has:
+
+        package.json:
+
+            "file-loader": "^0.11.2",
+            "url-loader": "^0.5.9",
+
+
+        webpack/common.js:
+
+            fileLoader: {
+              test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|txt)(\?.*)?$/,
+              include: paths.src,
+              use: {
+                loader: 'file-loader',
+                options: {
+                  name: 'media/[name].[hash:8].[ext]'
+                }
+              }
+            },
+
+            urlLoader: {
+              test: /\.(mp4|webm|wav|mp3|m4a|aac|oga)(\?.*)?$/,
+              include: paths.src,
+              use: {
+                loader: 'url-loader',
+                options: {
+                  limit: 10000,
+                  name: 'media/[name].[hash:8].[ext]'
+                }
+              }
+            },
+
+        webpack/dev.config.js:
+
+            module: {
+              rules: [
+                common.standardPreLoader,
+                common.jsLoader,
+                common.cssLoader,
+                common.fileLoader,
+                common.urlLoader
+              ]
+            },
+
+        webpack/prod.config.js:
+
+            module: {
+              rules: [
+                common.standardPreLoader,
+                common.jsLoader,
+                common.fileLoader,
+                common.urlLoader,
+                Object.assign({}, common.cssLoader, {
+                  use: ExtractTextPlugin.extract({
+                    fallback: common.cssLoader.use[0],
+                    use: common.cssLoader.use.slice(1)
+                  })
+                })
+              ]
+            },
+
+
+
+
+        class #92 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        this.setState(): batch updates
+
+        A batch update is a set of multiple update statements that is submitted.
+
+        How to get many updates in a row at a state using setState, which is async func? 
+
+        This doesn't work:
+
+          componentDidMount () {
+            this.setState({ counter: this.state.counter + 1 })
+            this.setState({ counter: this.state.counter + 1 })
+            this.setState({ counter: this.state.counter + 1 })
+            this.setState({ counter: this.state.counter + 1 })
+          }
+
+        React checks all updates being called and run them at once. And 'this.state.counter' didn't change yet when the next line ran.
+
+
+        Using callbacks we get there:
+
+          componentDidMount () {
+            this.setState({ counter: this.state.counter + 1 }, () => {
+              this.setState({ counter: this.state.counter + 1 }, () => {
+                this.setState({ counter: this.state.counter + 1 }, () => {
+                  this.setState({ counter: this.state.counter + 1 })
+                })
+              })
+            })
+          }
+
+        What is the best practice?
+
+          componentDidMount () {
+            this.setState((state) => { counter: state.counter + 1 })
+            this.setState((state) => { counter: state.counter + 1 })
+            this.setState((state) => { counter: state.counter + 1 })
+            this.setState((state) => { counter: state.counter + 1 })
+          }
+
+        By passing 'state' as parameter with no reference to 'this', we make sure that it's value is already updated before running the next line
+
+        The this.state itself will get updated just one time, by the end of everything. It marges each object. So it renders just once, with the final correct value returned from all the batch. There is a performance gain, with less renders.
+
+        The best code for this would be somthing like:
+
+          1. Have an reference function:
+
+            incrementCounter (state) {
+              return { counter: state.counter + 1 }
+            }
+
+          2. Then call it as many times as you want:
+
+            componentDidMount () {
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)            
+            }
+
+        Also, functions don't have to be the same. Batch can handle different functions, like this extra one:
+
+            incrementCounterByTen (state) {
+              return { counter: state.counter + 10 }
+            }
+
+            componentDidMount () {
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounterByTen)            
+            }
+
+
+
+
+        
+
+
 
 
 
