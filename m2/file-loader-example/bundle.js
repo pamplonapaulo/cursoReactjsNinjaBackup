@@ -70,7 +70,7 @@
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = "data:text/plain;base64,UGE="
+module.exports = "Paulo da Silva Pamplona"
 
 /***/ }),
 /* 1 */

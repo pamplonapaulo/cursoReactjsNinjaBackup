@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "file-loader": "0.10.1",
+    "raw-loader": "0.5.1",
     "url-loader": "0.5.8",
     "webpack": "2.2.1"
   }

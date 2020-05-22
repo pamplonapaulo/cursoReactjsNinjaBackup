@@ -13,12 +13,7 @@ module.exports = {
   module: {
     rules: [{
       test: /\.txt$/,
-      use: {
-        loader: 'url-loader',
-        query: {
-          limit: 10
-        }
-      }
+      use: 'raw-loader'
     }]
   }
 }

@@ -875,9 +875,191 @@ Class Notes
 
           url-loader uses file-loader as fallback, so make sure you get both installed before use it.
 
+          Doc & Repo:
+          https://github.com/webpack-contrib/url-loader
+
+
+
 
         class #90 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        raw-loader
+
+        Use it to get a content of the file loaded.
+
+        Install:
+
+        yarn add --dev raw-loader@0.5.1
+
+        webpack.config.js:
+
+          module: {
+            rules: [{
+              test: /\.txt$/,
+              use: 'raw-loader'
+            }]
+          }
+
+        In this .txt file loaded, we will console.log the content of the name.txt file, as a string:
+
+        // Paulo da Silva Pamplona
+
+        Doc & Repo:
+        https://github.com/webpack-contrib/raw-loader
+
+
+
+
+        class #91 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        Update boilerplate with these loaders: file-loader + url-loader
+
+        The updated version at this point has:
+
+        package.json:
+
+            "file-loader": "^0.11.2",
+            "url-loader": "^0.5.9",
+
+
+        webpack/common.js:
+
+            fileLoader: {
+              test: /\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|txt)(\?.*)?$/,
+              include: paths.src,
+              use: {
+                loader: 'file-loader',
+                options: {
+                  name: 'media/[name].[hash:8].[ext]'
+                }
+              }
+            },
+
+            urlLoader: {
+              test: /\.(mp4|webm|wav|mp3|m4a|aac|oga)(\?.*)?$/,
+              include: paths.src,
+              use: {
+                loader: 'url-loader',
+                options: {
+                  limit: 10000,
+                  name: 'media/[name].[hash:8].[ext]'
+                }
+              }
+            },
+
+        webpack/dev.config.js:
+
+            module: {
+              rules: [
+                common.standardPreLoader,
+                common.jsLoader,
+                common.cssLoader,
+                common.fileLoader,
+                common.urlLoader
+              ]
+            },
+
+        webpack/prod.config.js:
+
+            module: {
+              rules: [
+                common.standardPreLoader,
+                common.jsLoader,
+                common.fileLoader,
+                common.urlLoader,
+                Object.assign({}, common.cssLoader, {
+                  use: ExtractTextPlugin.extract({
+                    fallback: common.cssLoader.use[0],
+                    use: common.cssLoader.use.slice(1)
+                  })
+                })
+              ]
+            },
+
+
+
+
+        class #92 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        this.setState(): batch updates
+
+        A batch update is a set of multiple update statements that is submitted.
+
+        How to get many updates in a row at a state using setState, which is async func? 
+
+        This doesn't work:
+
+          componentDidMount () {
+            this.setState({ counter: this.state.counter + 1 })
+            this.setState({ counter: this.state.counter + 1 })
+            this.setState({ counter: this.state.counter + 1 })
+            this.setState({ counter: this.state.counter + 1 })
+          }
+
+        React checks all updates being called and run them at once. And 'this.state.counter' didn't change yet when the next line ran.
+
+
+        Using callbacks we get there:
+
+          componentDidMount () {
+            this.setState({ counter: this.state.counter + 1 }, () => {
+              this.setState({ counter: this.state.counter + 1 }, () => {
+                this.setState({ counter: this.state.counter + 1 }, () => {
+                  this.setState({ counter: this.state.counter + 1 })
+                })
+              })
+            })
+          }
+
+        What is the best practice?
+
+          componentDidMount () {
+            this.setState((state) => { counter: state.counter + 1 })
+            this.setState((state) => { counter: state.counter + 1 })
+            this.setState((state) => { counter: state.counter + 1 })
+            this.setState((state) => { counter: state.counter + 1 })
+          }
+
+        By passing 'state' as parameter with no reference to 'this', we make sure that it's value is already updated before running the next line
+
+        The this.state itself will get updated just one time, by the end of everything. It marges each object. So it renders just once, with the final correct value returned from all the batch. There is a performance gain, with less renders.
+
+        The best code for this would be somthing like:
+
+          1. Have an reference function:
+
+            incrementCounter (state) {
+              return { counter: state.counter + 1 }
+            }
+
+          2. Then call it as many times as you want:
+
+            componentDidMount () {
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)            
+            }
+
+        Also, functions don't have to be the same. Batch can handle different functions, like this extra one:
+
+            incrementCounterByTen (state) {
+              return { counter: state.counter + 10 }
+            }
+
+            componentDidMount () {
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounter)
+              this.setState(this.incrementCounterByTen)            
+            }
+
+
+
+
         
+
+
+
+
+
 
 
 
