@@ -1,0 +1,227 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+
+
+
+        class #94 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        App: Markdown Editor
+
+        
+        1.classes são statefull
+
+        2.bind te permite subescrever o 'this' de um call feita:
+          this.handleSubmit = this.handleSubmit.bind(this)
+          sem ele, o target seria sempre o valor do próprio button clicado - o que não é nosso objetivo.
+
+        3.arrow functions têm 'escopo léxico':
+          o 'this' dentro de uma arrow func será o this do escopo da função de fora.
+
+        4.jogue certos métodos dentro do constructor():
+          utilize todos os métodos não específicos de life-cycle de react, jogue-os dentro do constructor(), pois assim poderá utilizar o próprio this do componente. Essa abordagem nos permite dispensar o uso excessivo de bind.
+
+        piece of code:
+
+          class App extends Component {
+            constructor () {
+              super()
+              this.state = { value: ''}
+
+              this.handleSubmit = (e) => {
+                e.preventDefault()
+
+                this.setState({
+                  value: e.target.textarea.value
+                })
+              }
+            }
+
+            handleSubmit (e) {
+              e.preventDefault()
+              
+              this.setState({
+                value: e.target.textarea.value
+              })
+            }
+
+            render () {
+              return (
+                blablablablabla...
+              )
+            }
+          }
+
+        class #95 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+        Melhorias
+
+        Se tem-se um componente stateful (que manipula estado), você não deveria ter marcação (markup) nele.
+
+        So insted of:
+
+          class App extends Component {
+            constructor () {
+              super()
+              this.state = { value: ''}
+
+              this.handleChange = (e) => {
+
+                this.setState({
+                  value: e.target.value
+                })
+              }
+            }
+
+            handleSubmit (e) {
+              e.preventDefault()
+              
+              this.setState({
+                value: e.target.textarea.value
+              })
+            }
+
+            render () {
+              return (
+                <div className='editor'>
+                  <textarea value={this.state.value} onChange={this.handleChange}/>
+                  
+                  <div className="view">{this.state.value}</div>
+                </div>
+              )
+            }
+          }
+
+        Correct would be:
+
+          class App extends Component {
+            constructor () {
+              super()
+              this.state = { value: ''}
+
+              this.handleChange = (e) => {
+
+                this.setState({
+                  value: e.target.value
+                })
+              }
+            }
+
+            handleSubmit (e) {
+              e.preventDefault()
+              
+              this.setState({
+                value: e.target.textarea.value
+              })
+            }
+
+            render () {
+              return (
+                <MardownEditor
+                  value={this.state.value}
+                  handleChange={this.handleChange}
+                />
+              )
+            }
+          }
+
+          markdown-editor.js:
+
+            'use strict'
+
+            import React, { PropTypes } from 'react'
+
+            const MarkdownEditor = ({ value, handleChange }) => (
+              <div className='editor'>
+                <textarea value={value} onChange={handleChange}/>
+                
+                <div className="view">{this.state.value}</div>
+              </div>
+            )
+
+            MarkdownEditor.propTypes = {
+              value: PropTypes.string.isRequired,
+              handleChange: PropTypes.func.isRequired
+            }
+
+            export default MarkdownEditor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        class #96 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+              
+
+
+
+
+          
+
+
+      
+          
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
