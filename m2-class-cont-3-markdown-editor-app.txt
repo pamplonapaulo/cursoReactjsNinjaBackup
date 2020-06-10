@@ -147,20 +147,114 @@ Class Notes
 
             export default MarkdownEditor
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         class #96 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+          Rendering HTML string in a component:
+
+            dangerouslySetInnerHTML={{ __html: value}}
+
+
+  class #97 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    Normalize.css:
+
+    terminal:
+    yarn add normalize.css
+
+    webpack/common.js edits:
+
+      const paths = {
+        normalizeCss: join(__dirname, '..', 'node_modules', 'normalize.css')
+      }
+
+      cssLoader: {
+        test: /\.css$/,
+        include: [paths.src, paths.normalizeCss],
+        use: ['style-loader', 'css-loader']
+      }
+    
+    markdown-editor.js:
+    import 'normalize.css'
+
+  class #98 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Rendering markdown code
+
+  js lib to convert html string into markdown: marked
+  https://github.com/markedjs/marked
+
+  Terminal:
+  yarn add marked
+
+  app.js:
+  import marked from 'marked'
+  
+  code:
+  return { __html: marked(this.state.value) }
+
+  class #99 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  colored markdown
+
+  lib: highlight.js
+
+  Terminal:
+  yarn add highlight.js
+
+  app.js:
+  import highlight from 'highlight.js'
+
+  code:
+  marked.setOptions({
+    highlight: (code) => {
+      return highlight.highlightAuto(code).value
+    }
+  })
+
+  highlight styles: dracula.css
+  import 'highlight.js/styles/dracula.css'
+
+  ajust in webpack/common.js:
+
+  const paths = {
+    highlightJs: join(__dirname, '..', 'node_modules', 'highlight.js', 'styles')
+  }
+
+  cssLoader: {
+    test: /\.css$/,
+    include: [paths.src, paths.normalizeCss, paths.highlightJs],
+    use: ['style-loader', 'css-loader']
+  },
+
+  note: always avoid react to swipe all your node_modules. be as much specific as possible in paths like this one above. 
+
+  note 2: we could also load this style from the css, like that:
+
+    @import '~normalize.css'
+    @import '~highlight.js/styles/dracula.css'
+
+  The tilde above means it's inside the node_modules.
+
+
+  class #100 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Gerar versão de produção:
+
+  Reason why:
+  Features do ES6 tendem a não serem reconhecidas por uma boa parte dos browsers, então a 'build' é necessária para que o Babel converta o nosso código de ES6 para ES5, removendo a sintaxe mais moderna que ainda pode não ser reconhecida por muitos browsers (import, promises, async/await, etc.)
+  
+  Terminal:
+  yarn build
+
+  'dist' folder will handle the new built files.
+
+  Each chunk will have it's own hash, as separeted files. If nothing changes, user will use the cached file. Users will download only the changes. Hashes identify each bundle.
+
+  Webpack may mark some chunks with flags such as 'big', as an alert that you should try to reduce it's sizes.
+
+  
+
+
+
+
+
 
 
 
