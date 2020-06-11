@@ -237,6 +237,8 @@ Class Notes
   class #100 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Gerar versão de produção:
 
+  Attention: highlightJs latest version (10.0.3) has issues while compiling, outputs an error with UglifyJs. To fix it, I picked the version 9.18.1
+
   Reason why:
   Features do ES6 tendem a não serem reconhecidas por uma boa parte dos browsers, então a 'build' é necessária para que o Babel converta o nosso código de ES6 para ES5, removendo a sintaxe mais moderna que ainda pode não ser reconhecida por muitos browsers (import, promises, async/await, etc.)
   
@@ -249,7 +251,203 @@ Class Notes
 
   Webpack may mark some chunks with flags such as 'big', as an alert that you should try to reduce it's sizes.
 
-  
+  "540kb é inaceitável para o tamanho de um bundle" (Daciuk)
+
+
+
+  class #101 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Analisando o chunk/bundle de produção
+
+  Terminal:
+  yarn add webpack-bundle-analyzer
+
+  webpack/prod.config.js:
+  const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+
+  plugins: [
+    new BundleAnalyzerPlugin(),
+    ...
+
+  So in this case, by looking the analyzer, we see that 'highlight.js' is the heaviest file that should be in another chunk alone.
+
+
+  class #102 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Estratégias para quebra de chunks
+
+  Edit wepback/prod.config.js:
+
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'react-build',
+        chunks: ['main'],
+        minChunks: ({ resource }) => (
+          /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+          /node_modules\/preact(-compat)?\//.test(resource)
+        )
+      }), // if regex test above returns true, that will be included in the chunk 'main'
+
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor',
+        chunks: ['main'],
+        minChunks: ({ resource }) => (
+          /node_modules/.test(resource)
+        )
+      }), // if regex test above returns true, that will be included in the chunk 'main'
+
+  It seems that the analyzer may have a bug that messes react itself together with the vendor. But there is a workaround for this issue, by creating extra entry points.
+
+  Edit wepback/common.js:
+  At:
+    module.exports = {
+
+      // before:
+      entry: join(paths.src, 'index')
+
+      // after:
+      entry: {
+        main: join(paths.src, 'index')
+      },
+
+  Then ajust webpack/dev.config.js:
+
+  module.exports = {
+  devtool: 'source-map',
+
+    // before:
+    entry: [
+      common.entry
+    ],
+
+    // after:
+    entry: [
+      common.entry.main
+    ],
+
+  Now at webpack/prod.config.js:
+
+  // before:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    minChunks: ({ resource }) => (
+      /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'vendor',
+    minChunks: ({ resource }) => (
+      /node_modules/.test(resource)
+    )
+  }),
+
+  // after:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules\/react(-dom)?\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'vendor',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules/.test(resource)
+    )
+  }),
+
+  Also moving fbjs, a heavy facebook lib that comes with react:
+
+  // before:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules\/react(-dom)?\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  // after:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  How to control the order that each chunk will be loaded?
+
+
+
+  class #103 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Ordering scripts: chunksSortMode
+
+  webpack/prod.config.js:
+
+  Insted of:
+  new HtmlPlugin(common.htmlPluginConfig),
+
+  Have this:
+  new HtmlPlugin(Object.assign({}, common.htmlPluginConfig, {
+    chunksSortMode: (chunk1, chunk2) => {
+      const order = ['react-build', 'vendor', 'main']
+      const left = order.indexOf(chunk1.names[0])
+      const right = order.indexOf(chunk2.names[0])
+      return left - right
+    }
+  })),
+
+  Also, we can minify more the html built:
+  minify: { collapseWhitespace: true }
+
+  Like this:
+  new HtmlPlugin(Object.assign({}, common.htmlPluginConfig, {
+    minify: { collapseWhitespace: true },
+
+    chunksSortMode: (chunk1, chunk2) => {
+      const order = ['react-build', 'vendor', 'main']
+      const left = order.indexOf(chunk1.names[0])
+      const right = order.indexOf(chunk2.names[0])
+      return left - right
+    }
+  })),
+
+  Finally, how to turn off the analyzer from every time we run a build?
+
+  webpack/prod.config.js:
+
+  // before:
+  module.exports = {
+    plugins:  all stuff here
+  }
+
+  // after:
+  module.exports = {
+    plugins:  [
+      all stuff here
+    ].concat(
+      process.env.ANALYZER ? new BundleAnalyzerPlugin() : []
+    ),
+  }
+
+
+
+  class #104 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
 
 
 
