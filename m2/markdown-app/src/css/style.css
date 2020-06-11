@@ -18,50 +18,63 @@ html, body {
 
 .editor {
   display: flex;
+  flex-wrap: wrap;
   height: 100%;
   width: 100%;
 }
 
-form {
+.editor-header {
+  background: #222;
   display: flex;
-  height: 85%;
-  padding: 10px;
-  resize: none;
+  height: 40px;
+  justify-content: flex-end;
   width: 100%;
 }
 
-form, .view {
+/* .editor-header .save {
+  border: 0;
+  background: green;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0 20px;
+} */
+
+.editor-header .save-message {
+  align-items: center;
+  
+  color: #fff;
+  display: flex;
+  font: 700 12px sans-serif;
+  margin: 0;
+  padding: 0 20px;
+
+}
+
+/* .editor-header .save:hover {
+  background: darkgreen;
+} */
+
+textarea,
+.view {
+  height: 100%;
   min-width: 50%;
   max-width: 50%;
 }
 
-.view {
-  background: #333;
-  color: #fff;
+textarea {
+  font-size: 18px;
   padding: 10px;
+  resize: none;
 }
 
 textarea:focus {
   outline: 0 none;
 }
 
-textarea {
-  border: 8px solid #fc0;
-  font-size: 18px;
+.view {
+  background: #333;
+  color: #fff;
+  font-family: sans-serif;
   padding: 10px;
-  resize: none;
-  width: 100%;
-}
-
-button {
-  background: linear-gradient(#ff0, #fa0);
-  border: 3px solid #fd0;
-  color: #333;
-  font-size: 20px;
-  font-weight: 700;
-  height: 15%;
-  margin: 0;
-  text-transform: uppercase;
-  transition: all 0.15s ease-in-out;
-  width: 100%;
 }

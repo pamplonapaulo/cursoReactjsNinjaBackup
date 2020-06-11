@@ -237,6 +237,8 @@ Class Notes
   class #100 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Gerar versão de produção:
 
+  Attention: highlightJs latest version (10.0.3) has issues while compiling, outputs an error with UglifyJs. To fix it, I picked the version 9.18.1
+
   Reason why:
   Features do ES6 tendem a não serem reconhecidas por uma boa parte dos browsers, então a 'build' é necessária para que o Babel converta o nosso código de ES6 para ES5, removendo a sintaxe mais moderna que ainda pode não ser reconhecida por muitos browsers (import, promises, async/await, etc.)
   
@@ -249,7 +251,406 @@ Class Notes
 
   Webpack may mark some chunks with flags such as 'big', as an alert that you should try to reduce it's sizes.
 
-  
+  "540kb é inaceitável para o tamanho de um bundle" (Daciuk)
+
+
+
+  class #101 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Analisando o chunk/bundle de produção
+
+  Terminal:
+  yarn add webpack-bundle-analyzer
+
+  webpack/prod.config.js:
+  const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+
+  plugins: [
+    new BundleAnalyzerPlugin(),
+    ...
+
+  So in this case, by looking the analyzer, we see that 'highlight.js' is the heaviest file that should be in another chunk alone.
+
+
+  class #102 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Estratégias para quebra de chunks
+
+  Edit wepback/prod.config.js:
+
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'react-build',
+        chunks: ['main'],
+        minChunks: ({ resource }) => (
+          /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+          /node_modules\/preact(-compat)?\//.test(resource)
+        )
+      }), // if regex test above returns true, that will be included in the chunk 'main'
+
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor',
+        chunks: ['main'],
+        minChunks: ({ resource }) => (
+          /node_modules/.test(resource)
+        )
+      }), // if regex test above returns true, that will be included in the chunk 'main'
+
+  It seems that the analyzer may have a bug that messes react itself together with the vendor. But there is a workaround for this issue, by creating extra entry points.
+
+  Edit wepback/common.js:
+  At:
+    module.exports = {
+
+      // before:
+      entry: join(paths.src, 'index')
+
+      // after:
+      entry: {
+        main: join(paths.src, 'index')
+      },
+
+  Then ajust webpack/dev.config.js:
+
+  module.exports = {
+  devtool: 'source-map',
+
+    // before:
+    entry: [
+      common.entry
+    ],
+
+    // after:
+    entry: [
+      common.entry.main
+    ],
+
+  Now at webpack/prod.config.js:
+
+  // before:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    minChunks: ({ resource }) => (
+      /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'vendor',
+    minChunks: ({ resource }) => (
+      /node_modules/.test(resource)
+    )
+  }),
+
+  // after:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules\/react(-dom)?\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'vendor',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules/.test(resource)
+    )
+  }),
+
+  Also moving fbjs, a heavy facebook lib that comes with react:
+
+  // before:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules\/react(-dom)?\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  // after:
+  new webpack.optimize.CommonsChunkPlugin({
+    name: 'react-build',
+    chunks: ['main'],
+    minChunks: ({ resource }) => (
+      /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+      /node_modules\/preact(-compat)?\//.test(resource)
+    )
+  }),
+
+  How to control the order that each chunk will be loaded?
+
+
+
+  class #103 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Ordering scripts: chunksSortMode
+
+  webpack/prod.config.js:
+
+  Insted of:
+  new HtmlPlugin(common.htmlPluginConfig),
+
+  Have this:
+  new HtmlPlugin(Object.assign({}, common.htmlPluginConfig, {
+    chunksSortMode: (chunk1, chunk2) => {
+      const order = ['react-build', 'vendor', 'main']
+      const left = order.indexOf(chunk1.names[0])
+      const right = order.indexOf(chunk2.names[0])
+      return left - right
+    }
+  })),
+
+  Also, we can minify more the html built:
+  minify: { collapseWhitespace: true }
+
+  Like this:
+  new HtmlPlugin(Object.assign({}, common.htmlPluginConfig, {
+    minify: { collapseWhitespace: true },
+
+    chunksSortMode: (chunk1, chunk2) => {
+      const order = ['react-build', 'vendor', 'main']
+      const left = order.indexOf(chunk1.names[0])
+      const right = order.indexOf(chunk2.names[0])
+      return left - right
+    }
+  })),
+
+  Finally, how to turn off the analyzer from every time we run a build?
+
+  webpack/prod.config.js:
+
+  // before:
+  module.exports = {
+    plugins:  all stuff here
+  }
+
+  // after:
+  module.exports = {
+    plugins:  [
+      all stuff here
+    ].concat(
+      process.env.ANALYZER ? new BundleAnalyzerPlugin() : []
+    ),
+  }
+
+
+
+  class #104 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  Async Load - dynamic import:
+
+    import('highlight.js').then((highlight) => {
+      marked.setOptions({
+        highlight: (code) => {
+          return highlight.highlightAuto(code).value
+        }
+      })
+    })
+
+    how does that change things?
+
+    // before:
+                              Asset       Size  Chunks                    Chunk Names
+       main-26cd8f5053439e24636a.js    2.43 kB       0  [emitted]         main
+     vendor-a3b73cbf6129671a2f9f.js     828 kB       1  [emitted]  [big]  vendor
+react-build-592fa9a740a5ea7db829.js    20.3 kB       2  [emitted]         react-build
+      main-c28a5d9bd0f4658b4773.css    3.02 kB       0  [emitted]         main
+                         index.html  434 bytes          [emitted]         
+
+
+    // after:
+                              Asset       Size  Chunks                    Chunk Names
+          0-5963a7d712b90a6b4fec.js     784 kB       0  [emitted]  [big]  
+       main-efcf4cb0aa7a4d5a3961.js    2.45 kB       1  [emitted]         main
+     vendor-652198edb73cbf7e2efc.js      44 kB       2  [emitted]         vendor
+react-build-aada6dde560083e80e43.js    20.9 kB       3  [emitted]         react-build
+      main-65c3aaf212000625f102.css    3.02 kB       1  [emitted]         main
+                         index.html  434 bytes          [emitted]         
+
+    Something else:
+
+      if (lang && highlight.getLanguage(lang)) {
+        return highlight.highlight(lang, code).value
+      }
+
+    That recognizes the language, when user tell it, changing the set of colors for each language.
+
+
+    class #105 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Reducing the prod bundle.
+
+    Reducing react: preact
+    preactjs.com
+
+    Terminal:
+    yarn add preact preact-compact
+
+    webpack/prod.config.js:
+
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'react-build',
+        chunks: ['main'],
+        minChunks: ({ resource }) => (
+          /node_modules\/(react(-dom)?|fbjs)\//.test(resource) ||
+          /node_modules\/preact(-compat)?\//.test(resource)
+        )
+      }),
+
+      resolve: {
+        alias: Object.assign({}, common.resolve.alias, {
+          'react': 'preact-compat',
+          'react-dom': 'preact-compat'
+        })
+      }
+
+
+
+    class #106 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    GZip
+
+    Terminal:
+    yarn add express compression
+
+    Subir um servidor Node/Express:
+    index.js:
+      'use strict'
+
+      const { join } = require('path')
+      const express = require('express')
+      const compression = require('compression')
+      const app = express()
+
+      app.use(compression())
+      app.use(express.static(join(__dirname, 'dist')))
+
+      app.get('*', (req, res) => {
+        res.sendFile(join(__dirname, 'dist', 'index.html'))
+      })
+
+      app.listen(3000, () => console.log('Listening on localhost:3000'))
+
+    // without GZIP:
+    main-65c3aaf212000625f102.css			    3.5 kB	2.25 s	
+    react-build-aada6dde560083e80e43.js		21.4 kB	2.98 s	
+    vendor-652198edb73cbf7e2efc.js	      44.4 kB	3.44 s	
+    main-efcf4cb0aa7a4d5a3961.js		      2.9 kB	2.18 s	
+    0-5963a7d712b90a6b4fec.js             784 kB	17.30 s	
+
+    // with GZIP:
+    main-65c3aaf212000625f102.css	            1.6 kB	14 ms	
+    react-build-aada6dde560083e80e43.js	      8.1 kB	14 ms	
+    vendor-652198edb73cbf7e2efc.js            15.0 kB	16 ms	
+    main-efcf4cb0aa7a4d5a3961.js              1.4 kB	16 ms	
+    0-5963a7d712b90a6b4fec.js                 253 kB	49 ms						
+
+    OBS: Many static servers already do this by default.
+
+    class #107 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    React Dev Tools
+
+    class #108 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Data's persistency:
+      localStorage.setItem()
+      localStorage.getItem()
+
+    1. backend/database
+    2. webstorage api (save at user's browser)
+
+    localStorage: glogal object from window
+
+    <button onClick={() => localStorage.setItem('md', value)}>Salvar</button>
+
+    But if you have Lint, must include this on package.json:
+
+      "standard": {
+        "globals": [ "localStorage" ]
+      },
+
+    Want to check it in the browser?
+    => Chrome Dev Tools: Application (tab) => Local Storage => Key / Value
+
+    app.js:
+    componentDidMount()
+    
+      remainding 1: componentDidMount runs only in the front-end.
+
+      remainding 2: object's property when name and value are the same.
+        this.setState({ value })
+        same as
+        this.setState({ value: value })
+
+
+    #awesome
+
+    class #109 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Refactory: remove actions from our stateless component
+    
+    Why?
+
+    1. Stateless component shouldn't have any action. It should just receive those funcs via props.
+    2. We are using the global var in two different components
+
+    So we removed the logic from markdown-editor to app.js, our stateful component.
+
+
+
+
+    class #110 * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    auto save
+
+    just:
+
+      componentDidUpdate () {
+        this.handleSave()
+      }
+
+    what if it slows down the app's performance? For long data, it will be an issue.
+
+    look at this:
+
+        componentDidUpdate () {
+          clearInterval(this.timer)
+          this.timer = setTimeout(this.handleSave, 1000)
+        }
+
+    what it does?
+    once the user keep typing, clearInterval will be nulling the setTimeout on the run. Just the last time will actually work and call the dandleSave function, 1 second after user stopps typing.
+
+    for our sacurity, include this in case component gets unmounted:
+
+      componentWillUnmount () {
+        clearInterval(this.timer)
+      }
+
+
+    #awesome
+
+
+    class #111* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    feedback autosave to user
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
