@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react'
 import marked from 'marked'
-import MardownEditor from 'components/markdown-editor'
+import MardownEditor from 'views/markdown-editor'
 
 import './css/style.css'
 
@@ -22,7 +22,7 @@ class App extends Component {
     super()
     this.state = {
       value: '',
-      isSaving: false
+      isSaving: null
     }
 
     this.handleChange = (e) => {
@@ -36,15 +36,31 @@ class App extends Component {
       return { __html: marked(this.state.value) }
     }
 
-    this.handleSave = () => {
-      localStorage.setItem('md', this.state.value)
-      this.setState({ isSaving: false })
+    this.handleSave = (value) => {
+      if (this.state.isSaving) {
+        localStorage.setItem('md', this.state.value)
+        this.setState({ isSaving: false })
+      }
+    }
+
+    this.handleRemove = () => {
+      localStorage.removeItem('md')
+      this.setState({ value: '' })
+    }
+
+    this.handleCreate = () => {
+      this.setState({ value: '' })
+      this.textarea.focus()
+    }
+
+    this.textareaRef = (node) => {
+      this.textarea = node
     }
   }
 
   componentDidMount () {
     const value = localStorage.getItem('md')
-    this.setState({ value })
+    this.setState({ value: value || '' })
   }
 
   componentDidUpdate () {
@@ -62,8 +78,10 @@ class App extends Component {
         value={this.state.value}
         isSaving={this.state.isSaving}
         handleChange={this.handleChange}
-        //handleSave={this.handleSave}
+        handleRemove={this.handleRemove}
+        handleCreate={this.handleCreate}
         getMarkup={this.getMarkup}
+        textareaRef={this.textareaRef}
       />
     )
   }

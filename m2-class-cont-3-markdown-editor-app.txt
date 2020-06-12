@@ -630,13 +630,98 @@ react-build-aada6dde560083e80e43.js    20.9 kB       3  [emitted]         react-
     class #111* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     feedback autosave to user
 
+
+
+
+    class #112* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    cleaning localStorage
+
+      this.handleRemove = () => {
+        localStorage.removeItem('md')
+      }
+
+
+    remainding 1: short circuit:
+      this.setState({ value: value || '' })
+
+    remainding 2:
+      every time you use 'componentDidUpdate' and 'this.setState()', check the value of the state, otherwise it may keep in a infinite loop updating it.
+
     
+    class #113* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    Rest Params: ...props
+
+    Here, MarkdownEditor comp gets and passes props that don't really use itself. There is a better sintax for those situations. In this case, we are talking about "isSaving", "handleRemove" and, "handleCreate".
+    
+      Insted of this:
+        const MarkdownEditor = ({ value, isSaving, handleChange, handleRemove, handleCreate, getMarkup })
+      and this:
+        <Header isSaving={isSaving} handleRemove={handleRemove} handleCreate={handleCreate} />
 
 
+      Use like that:
+        const MarkdownEditor = ({ value, handleChange, getMarkup, ...props })
+      and that:
+        <Header {...props} />
+
+    - * -
+    prop ref
+
+    <textarea ref={textareaRef} />
+
+    this.handleCreate = () => {
+      this.textarea.focus()
+    }
+
+    this.textareaRef = (node) => {
+      this.textarea = node
+    }
+
+    class #114* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    
+    Reminder: short circuit
+
+      <header>
+        {isSaving !== null && (
+          <p>Something</p>
+        )}
+      </header>
+
+    Which means: If 'isSaving' is not null, then show the <p>
 
 
+    class #115* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Button Storybook: button.story.js
+
+      'use strict'
+
+      import React from 'react'
+      import { storiesOf, action } from '@storybook/react'
+      import Button from './index'
+
+      const stories = storiesOf('Button', module)
+
+      stories.addDecorator((story) => (
+        <div style={{ display: 'flex', height: 40 }}>
+          {story()}
+        </div>
+      ))
+
+      stories.add('Button success', () => (
+        <Button onClick={action('success')} kind='success'>Success</Button>
+      ))
+
+      stories.add('Button danger', () => (
+        <Button onClick={action('danger')} kind='danger'>Danger</Button>
+      ))
+
+    class #116* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    refactoring
 
 
+    class #117* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    
 
 
 
