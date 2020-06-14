@@ -17,8 +17,7 @@ module.exports = {
   ],
 
   output: Object.assign({}, common.output, {
-    filename: '[name].js',
-    publicPath: '/'
+    filename: '[name].js'
   }),
 
   plugins: [
@@ -30,8 +29,6 @@ module.exports = {
   ],
 
   module: {
-    noParse: common.module.noParse,
-    
     rules: [
       common.standardPreLoader,
       common.jsLoader,

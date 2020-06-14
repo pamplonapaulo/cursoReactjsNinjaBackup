@@ -1,0 +1,189 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+
+    class #129 * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+    { PureComponent } X { Component }
+
+      import React, { PureComponent } from 'react'
+      class App extends PureComponent { }
+
+    Quando um comp renderiza o JSX exatamente?
+
+    React cria um virtual DOM em memória e compara-o com o DOM real. Se alguma coisa tiver mudado, ele aplica a mudança.
+
+    Sempre que você chama um setState, mesmo que o valor de fato não mude, o render é executado em um Component normal.
+
+    É um dos motivos pelos quais é recomendado enviar os states via props para os componentes.
+
+     Em um PureComponent, há diferenças.
+
+     shouldComponentUpdate() é implementado automaticamente. O PureComponent compara todos os valores em state e todos os valores em props. Não havendo mudança, não haverá novo render.
+
+     Quando usar um ou outro?
+
+     => imutabilidade: props e states ambos imutáveis, se precisar alterar, enviar um novo objeto ao invés de modificar o existente.
+     
+     Para o caso:
+
+        constructor () {
+          super()
+          this.state = {
+            color: { otherColor: 'purple' }
+          }
+        }
+
+     Exemplo de NOVO OBJETO sendo enviado ao state (ou seja, IMUTABILIDADE):
+
+      this.handleClick = () => {
+        this.setState({
+          color: {
+            otherColor: 'black'
+          }
+        })
+      }
+
+      PS: Mesmo que você envie um objeto com valores iguais, será um outro objeto.
+
+     Agora exemplo de state sendo MODIFICADO (MUTABILIDADE):
+
+      this.handleClick = () => {
+        const color = this.state.color    <-- 
+        color.otherColor = 'black'
+        this.setState({ color })
+      }
+
+      Acima, const color é um obj.
+      E objts não são passados por valor em JS, mas por referência ( = this.state.color).
+
+      No caso acima, somente se for utilizado 'Component' (e não 'PureComponent') é que haverá sempre atualização do state.
+
+      PureComponent traria um efeito colateral, pois ele verifica se o objeto passado é ou não o mesmo. Nesse caso, é o mesmo que está no state, apenas com uma mudança no valor interno dele. Ele 'acha' que o valor é o mesmo, então ele não renderizará (mesmo com o valor interno diferente).
+
+      Por isso nunca utilizar a forma acma, e sim fazer sempre com imutabilidade.
+
+      E quando houver muitas propriedades, como manter a imutabilidade?
+      Com spread operator:
+
+        constructor () {
+          super()
+          this.state = {
+            color: {
+              otherColor: 'purple',
+              moreOtherColor: 'white'
+            }
+          }
+
+          this.handleClick = () => {
+            this.setState({
+              color: {
+                ...this.state.color,      <-- spread operator
+                otherColor: 'black'
+              }
+            })
+          }
+        }
+      
+      Se quiser uma verificaçção mais profunda, utilize o { Componente } e crie seu próprio shouldComponentUpdate():
+
+        shouldComponentUpdate (nextProps, nextState) {
+          if(nextState.color.otherColor === this.state.color.otherColor) {
+            return false // if value doesn't change, don't render
+          }
+          return true // else, render.
+        }
+
+    PS: { PureComponent } foi criado antes dos "componentes funcionais", os que criamos com função.
+    Sempre que você quiser utilizar um componente e não precisar utilizar STATES, utilize sempre componentes funcionais. Se você tiver algum outro em que você não precise aplicar o shouldComponentUpadte(), então utilize o { PureComponent }
+
+    https://programmingwithmosh.com/react/react-functional-components/
+
+
+
+    class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Context API
+
+
+
+
+
+
+    
+
+
+
+    
+    class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #140 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+      
+
+
+
+
+
+
+
+
+
+              
+
+
+
+
+          
+
+
+      
+          
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+

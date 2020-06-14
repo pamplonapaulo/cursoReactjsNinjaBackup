@@ -5,9 +5,7 @@ const { join } = require('path')
 const paths = {
   root: join(__dirname, '..'),
   src: join(__dirname, '..', 'src'),
-  dist: join(__dirname, '..', 'dist'),
-  normalizeCss: join(__dirname, '..', 'node_modules', 'normalize.css'),
-  highlightJs: join(__dirname, '..', 'node_modules', 'highlight.js', 'styles')
+  dist: join(__dirname, '..', 'dist')
 }
 
 module.exports = {
@@ -18,10 +16,9 @@ module.exports = {
   },
 
   output: {
-    path: paths.dist
-    // ,
-    // filename: '[name]-[chunkhash].js',
-    // publicPath: '/'
+    path: paths.dist,
+    filename: '[name]-[chunkhash].js',
+    publicPath: '/'
   },
 
   htmlPluginConfig: {
@@ -61,7 +58,7 @@ module.exports = {
 
   cssLoader: {
     test: /\.css$/,
-    include: [paths.src, paths.normalizeCss, paths.highlightJs],
+    include: paths.src,
     use: ['style-loader', 'css-loader']
   },
 
@@ -88,16 +85,11 @@ module.exports = {
     }
   },
 
-  module: {
-    noParse: /\.min\.js$/
-  },
-
   resolve: {
     alias: {
       src: paths.src,
       components: join(paths.src, 'components'),
-      utils: join(paths.src, 'utils'),
-      views: join(paths.src, 'views')
+      utils: join(paths.src, 'utils')
     }
   }
 }

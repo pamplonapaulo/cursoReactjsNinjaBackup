@@ -43,8 +43,8 @@ html, body {
 textarea,
 .view {
   height: calc(100% - 40px);
-  min-width: 50%;
-  max-width: 50%;
+  min-width: 40%;
+  max-width: 40%;
 }
 
 textarea {
@@ -63,4 +63,10 @@ textarea:focus {
   font-family: sans-serif;
   padding: 10px;
   overflow: auto;
+}
+
+.files-list-container {
+  background: #fc0;
+  width: 20%;
+  max-width: 20%;
 }

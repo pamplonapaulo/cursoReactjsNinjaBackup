@@ -719,8 +719,322 @@ react-build-aada6dde560083e80e43.js    20.9 kB       3  [emitted]         react-
     class #116* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     refactoring
 
+    reminder: componentes de apresentação não devem ter qualquer lógica.
+
 
     class #117* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    
+    About React 15.5 (Yup, the class is old)
+
+    With the new version, we get this warning:
+    =>  PropTypes via the main React package is deprecated
+
+      We now have to include it's specific package in package.json:
+      "prop-types": "^15.5.10",
+
+      Then, insted of calling like that:
+      import React, { PropTypes } from 'react'
+
+      Use:
+      import React from 'react'
+      import PropTypes from 'prop-types'
+
+      Version 16 was entirely rewritten from scratch, it's true, but it was made behind the scenes. What does that mean? That way, the the applications didn't break.
+
+      The only thing that really changed for us, is the was we import prop-type. It's the 'fiber' version we are talking about.
+
+
+    class #118 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Lib do Daciuk: strclass
+
+    https://github.com/fdaciuk/strclass
+
+    Adding 'Conditional Classes' in the components
+
+    import strclass from 'strclass'
+
+    console.log(strclass({ highlighted: true }))
+    // 'highlighted'
+
+    console.log(strclass({ '-active': true }, 'button'))
+    // 'button -active'
+
+    console.log(strclass({ '-active': true }, 'button', 'button-default'))
+    // 'button button-default -active'
+
+    console.log(strclass({ active: false }))
+    // ''
+
+    It replaces the use of this whole thing:
+      className={`button ${kind ? '-' + kind : ''}`}
+
+    Install via Terminal:
+    yarn add strclass
+
+
+    To get this working, fist must fix something by webpack:
+
+    webpack/common.js:
+
+      module: {
+        noParse: /\.min\.js$/
+      },
+
+    webpack/dev.config.js + webpack/prod.config.js:
+
+      module: {
+        noParse: common.module.noParse,
+
+    
+    How it works:
+    <button onClick={onClick} className={css({ '-success': kind === 'success', '-danger': kind === 'danger' }, 'button')}>
+
+    But the short hand for this daciuk's sintax:
+    <button onClick={onClick} className={css({ [`-${kind}`]: kind }, 'button')}>
+
+    Reminder of the old way without this lib:
+    <button onClick={onClick} className={`button ${kind ? '-' + kind : ''}`}>
+
+    Weird!
+
+
+    class #119 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Adicionar novo MD no localStorage
+
+    We need a dynamic value, it can be a ramdom number. Otherwise will replace the same value over and over.
+
+    Node package: node-uuid
+    Gives you a random hash.
+
+    Terminal:
+    yarn add node-uuid
+
+    Usage:
+    import { v4 } from 'node-uuid'
+
+    Call:
+    v4()
+
+    Returns:
+    9f15256d-683c-4d5f-b2d6-3d5f779835af
+    a5393f7c-d450-4ce5-802b-6461bafb5d64
+    So on...
+
+    So for our app:
+
+    this.state = {
+      value: '',
+      id: v4(),
+      isSaving: null
+    }
+
+    localStorage.setItem(this.state.id, this.state.value)
+
+
+
+    class #120 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Access to each of those MD data
+
+    Just css and "markup".
+
+    class #121 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Cont.
+
+    Basicly this will do the job:
+    componentDidMount () {
+      const files = Object.keys(localStorage)
+    }
+
+    By the end something like that:
+    componentDidMount () {
+      const files = Object.keys(localStorage)
+      console.log(files)
+      this.setState({
+        files: files.reduce((acc, fileId) => ({
+          ...acc,
+          [fileId]: localStorage.getItem(fileId)
+        }), {})
+      })
+    }
+
+    class #122 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    dynamic file removal
+
+    Reminder: Do not modify objects!
+
+    Insted of:
+    delete this.state.files[this.state.id]
+    this.setState({ files })
+
+    Code like this:
+    let files = { ...this.state.files }
+    delete files[this.state.id]
+    this.setState({ files })
+
+    But 'delete' is a slow operator. Also for security reasons we gonna avoid colateral effects.
+
+    By the end:
+
+    this.handleRemove = () => {
+      localStorage.removeItem(this.state.id)
+      let files = Object.keys(this.state.files).reduce((acc, fileId) => {
+        return fileId === this.state.id ? acc : {
+          ...acc,
+          [fileId]: this.state.files[fileId]
+        }
+      }, {})
+      
+      this.setState({ files })
+      this.createNew()
+    }
+
+    Another way:
+    const { [this.state.id]: id, ...files } = this.state.files
+
+    But with a extra line to ask linter to ignore it's alert (no-unused-vars):
+    // eslint-disable-next-line no-unused-vars
+    const { [this.state.id]: id, ...files } = this.state.files
+
+
+    class #123 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    include updates at states
+
+    this.handleSave = (value) => {
+      if (this.state.isSaving) {
+        localStorage.setItem(this.state.id, this.state.value)
+        this.setState({
+          isSaving: false,
+          files: {
+            ...this.state.files,
+            [this.state.id]: this.state.value
+          }
+        })
+      }
+    }
+
+    class #124 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    titles: naming those files
+
+    Insted of:
+    {
+      id: 'hash-1231231',
+      value: '# Markdown Text'
+    }
+
+    We gonna make:
+    {
+      id: 'hash-1231231',
+      value: {
+        title: 'My Title',
+        content: 'Something'
+      }
+    }
+
+    class #125 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    prevent other entries: getting strict patterns from node-node-uuid
+
+    using regex for node-node-uuid patterns:
+    7293a8e3-3bec-4e8a-934b-3d61337a0fdc
+
+    id.match(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/)
+
+
+    class #126 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    component title (files)
+
+    class #127 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Cont.
+
+    'Header' component update:
+    <input type='text' value={title} placeholder='Sem título' onChange={handleChange('title')} />
+
+    logic updated (app.js):
+
+        this.handleChange = (field) => (e) => {
+          this.setState({
+            [field]: e.target.value,
+            isSaving: true
+          })
+        }
+
+    'MarkdownEditor' component updated:
+
+      <Header {...props} handleChange={handleChange} />
+      <textarea value={value} onChange={handleChange('value')} autoFocus ref={textareaRef} />
+
+    So depending on the 'field' argument value, our new handleChange now works eigther for textarea tag ('value') or input tag ('title').
+
+
+    class #128 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Using another strategy for the same result
+
+    Most save was to save: saving in a single entry.
+
+    Let's name this entry 'markdown-editor inside handleSave():
+
+      localStorage.setItem('markdown-editor', JSON.stringify(newFile))
+
+    old version hangleSave:
+
+        this.handleSave = (value) => {
+          if (this.state.isSaving) {
+            const newFile = {
+              title: this.state.title || 'Sem título',
+              content: this.state.value
+            }
+            localStorage.setItem(this.state.id, JSON.stringify(newFile))
+            this.setState({
+              isSaving: false,
+              files: {
+                ...this.state.files,
+                [this.state.id]: newFile
+              }
+            })
+          }
+        }
+
+      new version handleSave:
+
+        this.handleSave = (value) => {
+          if (this.state.isSaving) {
+            const files = {
+              ...this.state.files,
+              [this.state.id]: {
+                title: this.state.title || 'Sem título',
+                content: this.state.value  
+              }
+            }
+
+            localStorage.setItem('markdown-editor', JSON.stringify(files))
+            this.setState({
+              isSaving: false,
+              files
+            })
+          }
+        }
+
+      old version componentDidMount:
+
+        componentDidMount () {
+          const files = Object.keys(localStorage)
+          this.setState({
+            files: files.filter((id) => id.match(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/)).reduce((acc, fileId) => ({
+              ...acc,
+              [fileId]: JSON.parse(localStorage.getItem(fileId))
+            }), {})
+          })
+        }
+
+      new version componentDidMount:
+
+        componentDidMount () {
+          const files = JSON.parse(localStorage.getItem('markdown-editor'))
+          this.setState({ files })
+        }
+
+    class #129 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Pure Component
+
     
 
 
@@ -728,23 +1042,23 @@ react-build-aada6dde560083e80e43.js    20.9 kB       3  [emitted]         react-
 
 
 
+    class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #140 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
