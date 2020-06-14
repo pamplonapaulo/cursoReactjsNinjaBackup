@@ -11,15 +11,9 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 module.exports = {
   entry: common.entry,
 
-  //output: common.output,
-  output: Object.assign({}, common.output, {
-    filename: '[name]-[chunkhash].js',
-    publicPath: './'
-  }),
+  output: common.output,
 
   plugins: [
-    // new BundleAnalyzerPlugin(),
-
     new CleanPlugin(['dist'], {
       root: common.paths.root
     }),
@@ -70,8 +64,6 @@ module.exports = {
   ),
 
   module: {
-    noParse: common.module.noParse,
-
     rules: [
       common.standardPreLoader,
       common.jsLoader,
