@@ -1,0 +1,324 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+
+    class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Context API
+
+    1. By the time of the class was recorded, it was recommended to not use it. Cuz it could change soon. (Or did already happen? Ask Daciuk!)
+
+    The core idea is: we don't need to keep passing props down along many levels, over and over.
+
+    components/message.js:
+
+        Insted of props:
+        <li style={{ background: this.props.color }}>
+
+        Use context:
+        <li style={{ background: this.context.color }}>
+
+        contextTypes:
+        Message.contextTypes = {
+            color: PropTypes.string
+        }
+
+    app.js:
+
+        getChildContext():
+        getChildContext () {
+            return {
+            color: 'purple'
+            }
+        }
+
+        childContextTypes:
+        App.childContextTypes = {
+            color: PropTypes.string
+        }
+
+    
+    How about using a stateless component?
+
+    components/message.js:
+        
+        const Message = (props, context) => (
+            <li style={{ background: context.color }}>
+                {props.text}
+            </li>
+        )
+
+        Or using destructuring:
+
+        const Message = ({ text }, { color }) => (
+            <li style={{ background: color }}>
+                {text}
+            </li>
+        )
+
+
+    
+    class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    Dynamic Data via Context API
+
+    Our app might face issues if an intermediate component between the statefull component and the final stateless component has a function 'shouldComponentUpdate()' returning false. By the reasons we saw earlier in the PureComponent class, this would block the page update.
+   
+    class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    So how we fix that?
+
+    app.js triggers the context api,
+    message-list.js is in the middle and has the shouldComponentUpdate(),
+    and message.js at the end receives the context.color and context.setColor.
+
+    there is a function which forces the ecxecution of an component:
+
+    forceUpdate()
+
+        class Message extends Component {
+            render () {
+                return (
+                <li style={{ background: this.context.color }}>
+                    {this.props.text}
+                    <button onClick={this.context.setColor(this.props.color)}>Change color</button>
+                    <button onClick={() => { this.updated = 'atualizou'; this.forceUpdate() }}>Forçar atualização: {this.updated}</button>
+                </li>
+                )
+            }
+            }
+
+    But not recomended that you abuse the use of forceUpdate()
+    In this particular case, we could avoid it by coding:
+
+    class Message extends Component {
+        constructor () {
+            super()
+            this.state = { updated: '' }
+        }
+
+        render () {
+            return (
+                <li style={{ background: this.context.color }}>
+                    {this.props.text}
+                    <button onClick={this.context.setColor(this.props.color)}>Change color</button>
+                    <button onClick={() => { this.setState({ updated: 'atualizou' }) }}>Forçar atualização: {this.state.updated}</button>
+                    {/* <button onClick={() => { this.updated = 'atualizou'; this.forceUpdate() }}>Forçar atualização: {this.updated}</button> */}
+                </li>
+            )
+        }
+    }
+
+    class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    context api by events
+
+    Using a single instance to pass Context
+
+    this.store inside constructor() will be created just once, at the construction of the component.
+
+    app.js:
+
+        class App extends PureComponent {
+            constructor () {
+                super()
+                this.setColor = (color, update) => (e) => {
+                    this.store.color = color
+                    update()
+                }
+
+                this.store = {
+                    color: 'purple',
+                    setColor: setColor
+                }
+            }
+            getChildContext () {
+                return {
+                    store: this.store
+                }
+            }
+        }
+
+    message.js:
+
+        <button
+            onClick={
+                this.context.store.setColor(
+                    this.props.color, () => this.forceUpdate()
+                )
+            }>
+            Change color
+        </button>
+
+
+    Emissor de eventos: subscribe
+
+    app.js:
+
+        constructor () {
+            super ()
+
+            const subscriptions = []
+
+            const subscribe = (f) => {
+                subscriptions.push(f)
+                return () => subscriptions.filter((func) => func !== f)
+            }
+
+            const setColor = (color) => (e) => {
+                this.store.color = color
+                subscriptions.forEach(f => f())
+            }
+
+            this.store = {
+                color: 'purple',
+                setColor: setColor,
+                subscribe: subscribe <-- 
+            }
+        }
+
+    message.js:
+
+        class Message extends Component {
+    
+            componentDidMount () {
+                this.context.store.subscribe(() => this.forceUpdate()) <--
+            }
+
+            shouldComponentUpdate () {
+                return false
+            }
+
+            render () {
+                return (
+                    blabla...
+                )
+            }
+        }
+
+    unsubscribe:
+
+        message.js:
+
+            class Message extends Component {
+                componentDidMount () {
+                    this.unsubscribe = this.context.store.subscribe(() => this.forceUpdate())
+                }
+                componentWillUnmount () {
+                    this.unsubscribe()
+                }
+
+                Etc..
+            }
+
+
+    class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Isolando a Context API
+
+    Context is not a stable API so far. So we may have to rewrite our code. Let's keep it aawy from the rest of the application, which helps to update it alter.
+
+
+
+
+
+    class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Higher Order Functions
+
+        It's a function that returns a new function or receives another function (via parameter)
+        Example:
+        const subscribe = (f) => {
+            subscriptions.push(f)
+            return () => {
+                subscriptions = subscriptions.filter((func) => func !== f)
+            }
+        }
+        Above, subscribe does both ways: receives and returns a function.
+
+        WHen you call a function that returns a function, you will include extra parentesis to actually call it:
+
+            subscriptions()()
+
+        The first pair of parentesis calls the funtion and the second calls the returned function.
+        
+
+
+    Higher Order Ccomponents
+
+
+
+    class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #140 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+    Other Random Tips * * * * * * * * * * * * * * * * * * * * * * * 
+
+    Terminal multiple file creation:
+
+    touch src/components/{message,message-list}.js
+
+      
+
+
+
+
+
+
+
+
+
+              
+
+
+
+
+          
+
+
+      
+          
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
