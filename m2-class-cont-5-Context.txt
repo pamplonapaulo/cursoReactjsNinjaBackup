@@ -1,0 +1,882 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 2 *
+
+Class Notes
+
+
+    class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Context API
+
+    1. By the time of the class was recorded, it was recommended to not use it. Cuz it could change soon. (Or did already happen? Ask Daciuk!)
+
+    The core idea is: we don't need to keep passing props down along many levels, over and over.
+
+    components/message.js:
+
+        Insted of props:
+        <li style={{ background: this.props.color }}>
+
+        Use context:
+        <li style={{ background: this.context.color }}>
+
+        contextTypes:
+        Message.contextTypes = {
+            color: PropTypes.string
+        }
+
+    app.js:
+
+        getChildContext():
+        getChildContext () {
+            return {
+            color: 'purple'
+            }
+        }
+
+        childContextTypes:
+        App.childContextTypes = {
+            color: PropTypes.string
+        }
+
+    
+    How about using a stateless component?
+
+    components/message.js:
+        
+        const Message = (props, context) => (
+            <li style={{ background: context.color }}>
+                {props.text}
+            </li>
+        )
+
+        Or using destructuring:
+
+        const Message = ({ text }, { color }) => (
+            <li style={{ background: color }}>
+                {text}
+            </li>
+        )
+
+
+    
+    class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    Dynamic Data via Context API
+
+    Our app might face issues if an intermediate component between the statefull component and the final stateless component has a function 'shouldComponentUpdate()' returning false. By the reasons we saw earlier in the PureComponent class, this would block the page update.
+   
+    class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    So how we fix that?
+
+    app.js triggers the context api,
+    message-list.js is in the middle and has the shouldComponentUpdate(),
+    and message.js at the end receives the context.color and context.setColor.
+
+    there is a function which forces the ecxecution of an component:
+
+    forceUpdate()
+
+        class Message extends Component {
+            render () {
+                return (
+                <li style={{ background: this.context.color }}>
+                    {this.props.text}
+                    <button onClick={this.context.setColor(this.props.color)}>Change color</button>
+                    <button onClick={() => { this.updated = 'atualizou'; this.forceUpdate() }}>Forçar atualização: {this.updated}</button>
+                </li>
+                )
+            }
+            }
+
+    But not recomended that you abuse the use of forceUpdate()
+    In this particular case, we could avoid it by coding:
+
+    class Message extends Component {
+        constructor () {
+            super()
+            this.state = { updated: '' }
+        }
+
+        render () {
+            return (
+                <li style={{ background: this.context.color }}>
+                    {this.props.text}
+                    <button onClick={this.context.setColor(this.props.color)}>Change color</button>
+                    <button onClick={() => { this.setState({ updated: 'atualizou' }) }}>Forçar atualização: {this.state.updated}</button>
+                    {/* <button onClick={() => { this.updated = 'atualizou'; this.forceUpdate() }}>Forçar atualização: {this.updated}</button> */}
+                </li>
+            )
+        }
+    }
+
+    class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    context api by events
+
+    Using a single instance to pass Context
+
+    this.store inside constructor() will be created just once, at the construction of the component.
+
+    app.js:
+
+        class App extends PureComponent {
+            constructor () {
+                super()
+                this.setColor = (color, update) => (e) => {
+                    this.store.color = color
+                    update()
+                }
+
+                this.store = {
+                    color: 'purple',
+                    setColor: setColor
+                }
+            }
+            getChildContext () {
+                return {
+                    store: this.store
+                }
+            }
+        }
+
+    message.js:
+
+        <button
+            onClick={
+                this.context.store.setColor(
+                    this.props.color, () => this.forceUpdate()
+                )
+            }>
+            Change color
+        </button>
+
+
+    Emissor de eventos: subscribe
+
+    app.js:
+
+        constructor () {
+            super ()
+
+            const subscriptions = []
+
+            const subscribe = (f) => {
+                subscriptions.push(f)
+                return () => subscriptions.filter((func) => func !== f)
+            }
+
+            const setColor = (color) => (e) => {
+                this.store.color = color
+                subscriptions.forEach(f => f())
+            }
+
+            this.store = {
+                color: 'purple',
+                setColor: setColor,
+                subscribe: subscribe <-- 
+            }
+        }
+
+    message.js:
+
+        class Message extends Component {
+    
+            componentDidMount () {
+                this.context.store.subscribe(() => this.forceUpdate()) <--
+            }
+
+            shouldComponentUpdate () {
+                return false
+            }
+
+            render () {
+                return (
+                    blabla...
+                )
+            }
+        }
+
+    unsubscribe:
+
+        message.js:
+
+            class Message extends Component {
+                componentDidMount () {
+                    this.unsubscribe = this.context.store.subscribe(() => this.forceUpdate())
+                }
+                componentWillUnmount () {
+                    this.unsubscribe()
+                }
+
+                Etc..
+            }
+
+
+    class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Isolando a Context API
+
+    Context is not a stable API so far. So we may have to rewrite our code. Let's keep it aawy from the rest of the application, which helps to update it alter.
+
+app.js
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import PropTypes from 'prop-types'
+    import MessageList from 'components/message-list'
+
+    import './css/style.css'
+
+    class App extends PureComponent {
+    constructor () {
+        super()
+
+        let subscriptions = []
+
+        const subscribe = (f) => {
+        subscriptions.push(f)
+        return () => {
+            subscriptions = subscriptions.filter((func) => func !== f)
+        }
+        }
+
+        const setColor = (color) => (e) => {
+        this.store.color = color
+        subscriptions.forEach(f => {
+            f()
+        })
+        }
+
+        this.store = {
+        color: 'purple',
+        setColor,
+        subscribe
+        }
+    }
+
+    getChildContext () {
+        return {
+        store: this.store
+        }
+    }
+
+    render () {
+        return (
+        <MessageList
+            messages={[
+            { text: 'hey', color: 'orange' },
+            { text: 'ho', color: 'lightblue' },
+            { text: 'let\'s go', color: 'red' }
+            ]}
+        />
+        )
+    }
+    }
+
+    App.childContextTypes = {
+    store: PropTypes.object
+    // color: PropTypes.string,
+    // setColor: PropTypes.func
+    }
+
+    export default App
+
+messagelist.js
+    'use strict'
+
+    import React, { Component } from 'react'
+    import PropTypes from 'prop-types'
+    import Message from 'components/message'
+
+    class MessageList extends Component {
+    componentDidMount () {
+        this.context.store.subscribe(() => this.forceUpdate())
+    }
+
+    shouldComponentUpdate () {
+        return false
+    }
+
+    render () {
+        return (
+        <ul>
+            {this.props.messages.map((message) => (
+            <Message
+                text={message.text}
+                color={message.color}
+                key={message.text}
+            />
+            ))}
+        </ul>
+        )
+    }
+    }
+
+    MessageList.contextTypes = {
+    store: PropTypes.object
+    }
+
+    export default MessageList
+
+message.js
+    'use strict'
+
+    import React, { Component } from 'react'
+    import PropTypes from 'prop-types'
+
+    class Message extends Component {
+    componentDidMount () {
+        this.unsubscribe = this.context.store.subscribe(() => this.forceUpdate())
+    }
+
+    componentWillUnmount () {
+        this.unsubscribe()
+    }
+
+    shouldComponentUpdate () {
+        return false
+    }
+
+    render () {
+        return (
+        <li style={{ background: this.context.store.color }}>
+            {this.props.text}
+            <button onClick={this.context.store.setColor(this.props.color, () => this.forceUpdate())}>Change color</button>
+        </li>
+        )
+    }
+    }
+
+    Message.contextTypes = {
+    store: PropTypes.object
+    }
+
+    export default Message
+
+
+
+
+
+    class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    
+    Higher Order Functions:
+
+        It's a function that returns a new function or receives another function (via parameter)
+        Example:
+        const subscribe = (f) => {
+            subscriptions.push(f)
+            return () => {
+                subscriptions = subscriptions.filter((func) => func !== f)
+            }
+        }
+        Above, subscribe does both ways: receives and returns a function.
+
+        WHen you call a function that returns a function, you will include extra parentesis to actually call it:
+
+            subscriptions()()
+
+        The first pair of parentesis calls the funtion and the second calls the returned function.
+
+        addEventListener in vanilla JS is also a Higher Order Functions, cuz it receives a fucntion within parameters. Array methods such as Filter, Map, Reduce as well, all them receive function in parameters.
+
+    Higher Order Components
+
+        Basically also a function, receives a component and does something with it. Why use it?
+
+    after3s.js:
+
+        'use strict'
+
+        import React from 'react'
+
+        const after3s = (Wrapper) => (props) => (
+        <Wrapper {...props} />
+        )
+
+        export default after3s
+
+    message.js:
+        import after3s from './after3s'
+        (...)
+        export default after3s(Message)
+
+
+    class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    app.js
+    provides all store's content, via Context.
+
+    message.js
+    receives contextTypes (it could be also at message-list.js)
+
+    -> Using props to handle Context, despite calling contextTypes.
+
+    So how isolate it?
+
+    src/app.js: * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+        'use strict'
+
+        import React, { PureComponent } from 'react'
+        import PropTypes from 'prop-types'
+        import MessageList from 'components/message-list'
+
+        import './css/style.css'
+
+        class App extends PureComponent {
+        constructor () {
+            super()
+
+            let subscriptions = []
+
+            const subscribe = (f) => {
+                subscriptions.push(f)
+                return () => {
+                    subscriptions = subscriptions.filter((func) => func !== f)
+                }
+            }
+
+            const setColor = (color) => (e) => {
+                this.store.color = color
+                subscriptions.forEach(f => {
+                    f()
+                })
+            }
+
+            this.store = {
+                color: 'purple',
+                setColor,
+                subscribe
+            }
+        }
+
+        getChildContext () {
+            return {
+                store: this.store
+            }
+        }
+
+        render () {
+            return (
+            <MessageList
+                messages={[
+                { text: 'hey', color: 'orange' },
+                { text: 'ho', color: 'lightblue' },
+                { text: 'let\'s go', color: 'red' }
+                ]}
+            />
+            )
+        }
+        }
+
+        App.childContextTypes = {
+            store: PropTypes.object
+        }
+
+        export default App
+
+
+    components/with-context.js: * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+        'use strict'
+
+        import React, { PureComponent } from 'react'
+        import PropTypes from 'prop-types'
+
+        const withContext = (Wrapper) => {
+            class WithContext extends PureComponent {
+                componentDidMount () {
+                    this.unsubscribe = this.context.store.subscribe(() => this.forceUpdate())
+                }
+
+                componentWillUnmount () {
+                    this.unsubscribe()
+                }
+
+                render () {
+                    return (
+                        <Wrapper {...this.props} {...this.context} />
+                    )
+                }
+            }
+
+            WithContext.contextTypes = {
+                store: PropTypes.object
+            }
+
+            return WithContext
+        }
+
+        export default withContext
+
+
+    components/message.js: * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+        'use strict'
+
+        import React from 'react'
+        import withContext from './with-context'
+
+        const Message = ({ store, text, color }) => (
+            <li style={{ background: store.color }}>
+                {text}
+                <button onClick={store.setColor(color)}>Change color</button>
+            </li>
+        )
+
+        export default withContext(Message)
+
+    components/message-list.js: * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+        'use strict'
+
+        import React from 'react'
+        import Message from 'components/message'
+
+        const MessageList = ({ messages }) => (
+            <ul>
+                {messages.map((message) => (
+                    <Message
+                        text={message.text}
+                        color={message.color}
+                        key={message.text}
+                    />
+                ))}
+            </ul>
+        )
+
+        export default MessageList
+
+    class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    Tests: Snapshots
+
+    Terminal:
+    yarn add jest
+
+    package.json / scripts:
+    "test": "jest --no-cache",
+
+    naming files:
+
+        ./index.test.js
+        or
+        ./index.spec.js
+        or
+        __tests/index.js
+
+    'SnapShot' is like a picture from the object
+
+    ToMatchSnapshot()
+
+    For a given array like that:
+
+        const responseFromServer = () => [
+            'javascript',
+            'react',
+            'node'
+        ]
+
+    Insted of having a test so specific like this:
+
+        it('Test snapshot', () => {
+            expect(responseFromServer()).toEqual([
+                'javascript',
+                'react',
+                'node'  
+            ])
+        })
+
+    There is toMatchSnapshot:
+
+        it('Test snapshot', () => {
+            expect(responseFromServer()).toMatchSnapshot()
+        })
+
+    Also it' first run creates a folder and a file:
+
+    ./__snapshots__/index.test.js.snap
+
+    Which contains:
+
+        // Jest Snapshot v1, https://goo.gl/fbAQLP
+
+        exports[`Test snapshot 1`] = `
+        Array [
+            "javascript",
+            "react",
+            "node",
+        ]
+        `;
+
+    If the response from server changes, test now will break.
+
+    If the different response from the server is actually correct we have to update the snapshot.
+    
+    How to update?
+
+        yarn test -- -u
+
+    So the first snapshot will remain as a reference and any change will break the test, then something is wrong or you just have to update the snapshot.
+
+    class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Prof's updatings on workflow boilerplate.
+
+    Jest v 20 no not need anymore babel-jest and jest-cli
+    Our file already had it.
+    
+    package.json:
+    
+    "react-test-renderer": "^15.6.1",
+
+    .babellrc changes:
+
+    insted of:
+        {
+            "presets": [
+                ["es2015", { "modules": false }],
+                "stage-0", "react"
+            ],
+            "plugins": [
+                ["transform-runtime", {
+                "helpers": false,
+                "polyfill": false,
+                "regenerator": true
+                }]
+            ]
+        }
+
+    have this:
+        {
+        "presets": ["env", "stage-0", "react"],
+        "plugins": [
+            ["transform-runtime", {
+            "helpers": false,
+            "polyfill": false,
+            "regenerator": true
+            }]
+        ]
+        }
+
+    Why? Cuz webpack needed modules from preset es2015, but we are going to put it inside the webpack itself.
+
+    webpack/common.js:
+
+    jsLoader: {
+        test: /\.js$/,
+        include: paths.src,
+        use: ['react-hot-loader/webpack', {
+        loader: 'babel-loader',
+        options: {
+            presets: [['env', { modules: false }], 'stage-0', 'react'],
+            plugins: [
+            ['transform-runtime', {
+                helpers: false,
+                polyfill: false,
+                regenerator: true
+            }]
+            ]
+        }
+        }]
+    },
+
+    urlLoader: {
+        test: /\.(mp4|webm|wav|mp3|m4a|aac|oga)(\?.*)?$/,
+        include: paths.src,
+        use: {
+        loader: 'url-loader',
+        options: {
+            limit: 10000,
+            name: 'media/[name].[hash:8].[ext]'
+        }
+        }
+    },
+
+    Use preset 'env' insted of 'es2015'.
+    (Same for storybook webpack)
+
+    package.json:
+
+        "jest": {
+            "moduleNameMapper": {
+            "^.+\\.css$": "<rootDir>/config/CSSStub.js"
+            }
+        },
+
+    class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    Tests at our previous Markdown App
+
+    back to previous folder:
+    ./Markdown-app
+
+    run
+    yarn storybookm
+
+    got an error: "define cannot be used indirect"
+
+    Why this?
+    It's because of our 'strclass' dependency, that manipulates classes. It exports module UMD that uses 'define' method. Webpack doesn't allow it's indirect use inside an UMD module.
+
+    How to fix:
+
+    Our webpack/common.js already has this noParse:
+
+        module: {
+            noParse: /\.min\.js$/
+        },
+
+    We just have to include it also in the webpack/storybook.config.js:
+
+      newConfig.module.noParse = common.module.noParse
+
+    ----
+
+    Snapshots tests:
+
+    button.test.js:
+
+        'use strict'
+
+        import React from 'react'
+        import Button from './index'
+        import renderer from 'react-test-renderer'
+
+        it('Should button to match snapshot', () => {
+        const tree = renderer.create(
+            <Button onClick={() => null}>
+            Click Me
+            </Button>
+        ).toJSON()
+        expect(tree).toMatchSnapshot()
+        })
+
+        it('Should Button Success to match snapshot', () => {
+        const tree = renderer.create(
+            <Button onClick={() => null} kind='success'>
+            Click Me Success
+            </Button>
+        ).toJSON()
+        expect(tree).toMatchSnapshot()
+        })
+
+        it('Should Button Danger to match snapshot', () => {
+        const tree = renderer.create(
+            <Button onClick={() => null} kind='danger'>
+            Click Me Danger
+            </Button>
+        ).toJSON()
+        expect(tree).toMatchSnapshot()
+        })
+
+    yarn test:watch
+
+
+    class #140 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    Testing Component's behavior: Enzyme
+
+    Enzyme: tests logics of components
+    https://github.com/enzymejs/enzyme (originally from Airbnb developers)
+
+    Install:
+    yarn add --dev enzyme
+
+    Make sure package.json has these global vars:
+
+      "standard": {
+            "globals": [
+            "localStorage",
+            "it",
+            "expect"
+            ]
+        },
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+    Other Random Tips * * * * * * * * * * * * * * * * * * * * * * * 
+
+    Terminal multiple file creation:
+
+    touch src/components/{message,message-list}.js
+
+      
+
+
+
+
+
+
+
+
+
+              
+
+
+
+
+          
+
+
+      
+          
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
