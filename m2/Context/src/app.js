@@ -22,7 +22,6 @@ class App extends PureComponent {
     const setColor = (color) => (e) => {
       this.store.color = color
       subscriptions.forEach(f => {
-        console.log('subscriptions')
         f()
       })
     }
@@ -55,8 +54,6 @@ class App extends PureComponent {
 
 App.childContextTypes = {
   store: PropTypes.object
-  // color: PropTypes.string,
-  // setColor: PropTypes.func
 }
 
 export default App

@@ -11,6 +11,10 @@ gulp.task('lint', (cb) => {
   cmd.on('close', () => cb())
 })
 
-gulp.task('default', ['lint'], () => {
-  gulp.watch('src/**/*.js', ['lint'])
+// gulp.task('default', ['lint'], () => {
+//   gulp.watch('src/**/*.js', ['lint'])
+// })
+
+gulp.task('default', function () {
+  gulp.watch('src/**/*.js', gulp.series('lint'))
 })
