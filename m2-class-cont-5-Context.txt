@@ -792,28 +792,43 @@ message.js
             ]
         },
 
-    
+    components/button/button.test.js
+
+    Enzyme: https://airbnb.io/projects/enzyme/
+
+    import { shallow } from 'enzyme'
+
+        It creates a wrapper, with some methods.
+
+    Shallow:
+    https://enzymejs.github.io/enzyme/docs/api/shallow.html
+
+    .hasClass(className) => Boolean
+    https://enzymejs.github.io/enzyme/docs/api/ShallowWrapper/hasClass.html
+
+    use {noop}
+    const noop = () => null
+    "No Operational", it returns null. If we don't need to use a specific function running tests.
 
 
+        it('Should Button with prop kind = "success" should has class "-success"', () => {
+        const wrapper = shallow(
+            <Button onClick={noop} kind='success'>
+            Button Success
+            </Button>
+        )
+        expect(wrapper.hasClass('-success')).toBe(true)
+        })
 
+        Enzymer extra settings here: it depends on which React you are using
 
-
-
-
-
-
-
-
-
-
-
+        https://enzymejs.github.io/enzyme/docs/installation/index.html
 
 
 
     class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-
-
+    The End (this module)
 
 
 
