@@ -2,12 +2,239 @@
 
 * Module 3 *
 
-Class Notes
+class #1
+
+  - Redux
+
+  - Manipulação de estados de uma aplicação React com Redux;
+  - Conceitos - do básico ao avançado - de uso do Redux
+
+  - Higher Order Functions (HOF);
+  - Higher Order Components (HOC);
+  - Mais sobre ESNext (ES6, ES7, ES8, etc);
+  - Testes para Redux
 
 
-class #1 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #2 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Redux and it's environment
+
+  redux.js.org
+
+  What is?
+  "It's a predictable state container for JavaScript apps."
+
+  What it does?
+  Helps states' management of the application.
+
+  Something like Context api.
+
+  OBS: Doesn't have to be a React app.
+
+
+class #3 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Redux has 3 principles
+
+  #1
+  First Principle: Single source of truth
+
+  - Single object where data states are stored
+
+  (So all other components will be stateless)
+
+  Example: counter
+
+    { counter: 0 }
+
+  Serializable values
+
+  Valores serializáveis:
+  converte-se para outros formatos e depois retorna a um formato original, como um JSON and a string.
+
+  Blog app - states' structure:
+
+    {
+      posts: [
+        { id: 1, title: 'Post 1' },
+        { id: 2, title: 'Post 2' }
+      ],
+      modals: { name: 'login' },
+      environment: { isMobile: false, language: 'pt-BR' },
+      ui: { isMenuOpened: true, isSearchBarOpened: false }
+    }
+
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  #2
+  Second Principle: State is only readable
+
+  So how we change states?
+  -> Action emitters
+
+  Trigger an action,
+  which is an object with a prop type,
+  which is a string that represents what you want to do.
+
+    { type: 'INCREMENT' }
+
+  Then Redux calculate new state and adds a new value:
+
+    { counter: 1 }
+
+  Now given an app with many counters.
+
+    [ ]
+
+  Action:
+  { type: 'ADD_COUNTER' }
+
+  Then: [ 0 ]
+
+  Action:
+  { type: 'ADD_COUNTER' }
+
+  Then: [ 0, 0 ]
+
+  And now increment's action:
+  { 
+    type: 'INCREMENT',
+    index: 1
+  }
+
+  Then: [ 0, 1 ]
+
+  Again:
+  { 
+    type: 'INCREMENT',
+    index: 1
+  }
+
+  Then: [ 0, 2 ]
+
+  Again:
+  { 
+    type: 'INCREMENT',
+    index: 0
+  }
+
+  Then: [ 1, 2 ]
+
+  And so on...
+
+  Action is an objeact with a string property (cuz strings are Serializables).
+
+
+
+
+class #5 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  #3
+  Third Principle: Only 'Pure Functions' promote changes.
+
+  Pure Functions:
+
+    - Do not change any inside state;
+    - Takes a given value and returns a new value;
+
+    function double (x) {
+      return x + x
+    }
+
+    function doubleAll (items) {
+      return items.map(double)
+    }
+
+  So what would be an impure fucntion?
+
+    function double (x) {
+      requestSomeValue(x) <-- that's an external request (what it does?)
+      return x + x
+    }
+
+    function doubleAll (items) {
+      for (let i = 0; i < items.length; i++) {
+        items[i] = double(items[i]) <-- modifying the original array
+      }
+    }
+
+
+class #6 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+So how we change state?
+
+--> Reducer
+It's a function that receives the current app's state (plus an action) and returns a new state
+
+in short:
+(state, action) => state
+
+
+  const counter = (state = 0, action) => {
+    switch (action.type) {
+      case 'INCREMENT': return state + 1
+      case 'DECREMENT': return state - 1
+    }
+    return state
+  }
+
+
+
+class #7 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
