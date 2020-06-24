@@ -182,14 +182,615 @@ in short:
 
 class #7 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Hands on: Counter App
+
+  Creating some tests
+
+  main.js:
+
+    'use strict'
+
+    console.assert(
+      1 === 2,
+      'Test 1 === 2'
+    )
+
+    console.assert(
+      2 === 2,
+      'Test 2 === 2'
+    )
+
+index.html:
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Redux Counter</title>
+  </head>
+  <body>
+    <h1>0</h1>
+    <button>+</button>
+    <button>-</button>
+    <script src="main.js"></script>
+  </body>
+  </html>
+
+
+class #8 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Reducer with TDD (Test Driven Development)
+
+main.js:
+
+  'use strict'
+
+  const counter = (state, action) => {
+    if (typeof state === undefined) {
+      return 0
+    }
+    
+    if (action.type === 'INCREMENT') {
+      return state + 1
+    }
+
+    if (action.type === 'DECREMENT') {
+      return state - 1
+    }
+
+    return state
+  }
+
+  console.assert(
+    counter(0, { type: 'INCREMENT' }) === 1
+  )
+
+  console.assert(
+    counter(1, { type: 'INCREMENT' }) === 2
+  )
+
+  console.assert(
+    counter(2, { type: 'DECREMENT' }) === 1
+  )
+
+  console.assert(
+    counter(5, { type: 'DECREMENT' }) === 4
+  )
+
+  console.assert(
+    counter(3, { type: 'SOMETHING' }) === 3
+  )
+
+  // state is undefined when gets inside the app at first time, so for that:
+  console.assert(
+    counter(undefined, {}) === 0
+  )
+
+  // Same but improved:
+  const counter = (state = 0, action) => {
+    switch (action.type) {
+      case 'INCREMENT': return state + 1
+      case 'DECREMENT': return state - 1
+    }
+    return state
+  }
+
+
+class #9 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Now using reudx via cdn:
+
+  <script src="//unpkg.com/redux@latest/dist/reduz.min.js"></script>
+
+  our folder:
+  sample/2-hello-redux
+
+  Redux version at professor's class:
+  @3.7.2
+
+  Mine:
+  @4.0.5
+
+  Our files updates:
+
+  index.html:
+  <script src="//unpkg.com/redux@latest/dist/redux.min.js"></script>
+  <script src="main.js"></script>
+  <script src="tests.js"></script>
+
+  main.js:
+
+    const { createStore } = Redux
+
+    const store = createStore(counter)
+
+    console.log(store.getState())
+    // 0
+
+    store.dispatch({ type: 'INCREMENT' })
+
+    console.log(store.getState())
+    // 1
+
+    store.dispatch({ type: 'INCREMENT' })
+    store.dispatch({ type: 'INCREMENT' })
+    console.log(store.getState())
+    // 3
+
+    store.dispatch({ type: 'DECREMENT' })
+    store.dispatch({ type: 'DECREMENT' })
+    console.log(store.getState())
+    // 1
+
+
+OBS: All Redux actions are sync.
+
+Subscribe:
+store.subscribe(() => {
+  console.log('dispatch an action', store.getState())
+})
+
+class #10 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+main.js:
+
+  'use strict'
+
+  const counter = (state = 0, action) => {
+    switch (action.type) {
+      case 'INCREMENT': return state + 1
+      case 'DECREMENT': return state - 1
+    }
+    return state
+  }
+
+  const { createStore } = Redux
+  const store = createStore(counter)
+
+  const $counter = document.querySelector('[data-js="counter"]')
+  const $decrement = document.querySelector('[data-js="decrement"]')
+  const $increment = document.querySelector('[data-js="increment"]')
+
+  $decrement.addEventListener('click', decrement, false)
+  $increment.addEventListener('click', increment, false)
+
+  function decrement () {
+    store.dispatch({ type: 'DECREMENT'})
+  }
+
+  function increment () {
+    store.dispatch({ type: 'INCREMENT'})
+  }
+
+  store.subscribe(() => {
+    $counter.textContent = store.getState()
+  })
+
+The same logic without Redux?
+
+  function decrement () {
+    $counter.textContent = Number($counter.textContent) - 1
+  }
+
+  function increment () {
+    $counter.textContent = Number($counter.textContent) + 1
+  }
+
+  But doing this, we would need the DOM element to get the value. Using Redux and it's store, the application can get this data from anywhere.
+
+  So Redux isolate the state's application, allowing us to work with them from many places always well updated.
+
+
+class #11 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+createStore() behind the scenes
+
+  const createStore = () => {
+    return {
+      getState: () => null,
+      dispatch: () => null,
+      subscribe: () => null
+    }
+  }
+
+  main.js:
+
+    'use strict'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const createStore = (reducer) => {
+      let state
+      let subscriptions = []
+
+      const dispatch = (action) => {
+        state = reducer(state, action)
+        subscriptions.forEach((f) => f())
+      }
+
+      const subscribe = (func) => {
+        subscriptions.push(func)
+      }
+
+      dispatch({})
+
+      return {
+        getState: () => state,
+        dispatch,
+        subscribe
+      }
+    }
+
+    const store = createStore(counter)
+
+    const $counter = document.querySelector('[data-js="counter"]')
+    const $decrement = document.querySelector('[data-js="decrement"]')
+    const $increment = document.querySelector('[data-js="increment"]')
+
+    $decrement.addEventListener('click', decrement, false)
+    $increment.addEventListener('click', increment, false)
+
+    function decrement () {
+      store.dispatch({ type: 'DECREMENT'})
+    }
+
+    function increment () {
+      store.dispatch({ type: 'INCREMENT'})
+    }
+
+    function render () {
+      $counter.textContent = store.getState()
+    }
+
+    store.subscribe(render)
+    render()
+
+
+class #12 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+COUNTER WITH REACT
+
+app.js:
+
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+
+    const App = () => (
+      <Counter />
+    )
+
+    export default App
+
+
+index.js:
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import Counter from './counter'
+
+    class CounterContainer extends PureComponent {
+      constructor () {
+        super()
+        this.state = {
+          counter: 0
+        }
+
+        this.increment = () => {
+          this.setState({
+            counter: this.state.counter + 1
+          })
+        }
+
+        this.decrement = () => {
+          this.setState({
+            counter: this.state.counter - 1
+          })
+        }
+      }
+
+      render () {
+        const { counter } = this.state
+
+        return (
+          <Counter
+            counter={counter}
+            increment={this.increment}
+            decrement={this.decrement}
+          />
+        )
+      }
+    }
+
+    export default CounterContainer
+
+counter.js:
+
+    'use strict'
+
+    import React from 'react'
+
+    const Counter = ({ counter, increment, decrement }) => (
+      <div>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+      </div>
+    )
+
+    export default Counter
+
+class #13 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+COUNTER WITH REACT + REDUX
+
+  Terminal:
+  yarn add redux
+
+  Prof's version: 3.7.2
+  Mine: 4.0.5
+
+import { createStore } from 'redux'
+
+
+index.js:
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import Counter from './counter'
+    import { createStore } from 'redux'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const store = createStore(counter)
+
+    class CounterContainer extends PureComponent {
+      constructor () {
+        super()
+
+        this.increment = () => {
+          store.dispatch({ type: 'INCREMENT' })
+        }
+
+        this.decrement = () => {
+          store.dispatch({ type: 'DECREMENT' })
+        }
+      }
+
+      componentDidMount () {
+        store.subscribe(() => this.forceUpdate())
+      }
+
+      render () {
+        return (
+          <Counter
+            counter={store.getState()}
+            increment={this.increment}
+            decrement={this.decrement}
+          />
+        )
+      }
+    }
+
+    export default CounterContainer
+
+
+Now not inside counter/index.js, but src/index.js and src/app.js
+
+src/index.js:
+
+    'use strict'
+
+    import React from 'react'
+    import { render } from 'react-dom'
+    import { AppContainer } from 'react-hot-loader'
+    import { createStore } from 'redux'
+    import App from './app'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const store = createStore(counter)
+
+    const renderApp = (NextApp) => {
+      render(
+        <AppContainer>
+          <NextApp store={store}/>
+        </AppContainer>,
+        document.querySelector('[data-js="app"]')
+      )
+    }
+
+    renderApp(App)
+
+    if (module.hot) {
+      module.hot.accept('./app', () => {
+        const NextApp = require('./app').default
+        renderApp(NextApp)
+      })
+    }
 
 
 
+src/app.js:
+
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+
+    const App = ({ store }) => (
+      <Counter store={store} />
+    )
+
+    export default App
 
 
+counter/index.js:
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import Counter from './counter'
+
+    class CounterContainer extends PureComponent {
+      constructor () {
+        super()
+
+        this.increment = () => {
+          this.props.store.dispatch({ type: 'INCREMENT' })
+        }
+
+        this.decrement = () => {
+          this.props.store.dispatch({ type: 'DECREMENT' })
+        }
+      }
+
+      componentDidMount () {
+        this.unsubscribe = this.props.store.subscribe(() => this.forceUpdate())
+      }
+
+      componentWillUnmount () {
+        this.unsubscribe()
+      }
+
+      render () {
+        return (
+          <Counter
+            counter={this.props.store.getState()}
+            increment={this.increment}
+            decrement={this.decrement}
+          />
+        )
+      }
+    }
+
+    export default CounterContainer
 
 
+class #14 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Previously, our last version had a problem:
+
+  'store' is created at src/index.js and passed throw src/app.js,
+  then app.js get it and passes to counter/index.js. There, finally, this component uses it.
+
+  How could we jump all this?
+
+    Terminal:
+      
+      yarn add react-redux
+
+    It works like Context API
+
+    Profe's version: 5.0.6
+    Mine: 7.2.0
+
+    src/index.js:
+
+    import { Provider } from 'react-redux'
+
+    Then, insted of:
+      const renderApp = (NextApp) => {
+        render(
+          <AppContainer>
+            <NextApp store={store}/>
+          </AppContainer>,
+          document.querySelector('[data-js="app"]')
+        )
+      }
+
+    Use it:
+      const renderApp = (NextApp) => {
+        render(
+          <AppContainer>
+            <Provider store={store}>
+              <NextApp />
+            </Provider>
+          </AppContainer>,
+          document.querySelector('[data-js="app"]')
+        )
+      }
+
+    It should wrap the whole application, but the reac-hot-loader (here AppContainer).
+
+    This maps the store over the application.
+
+    With this, so we don't need to move the 'store' manually on each child. That said, we get rid of that in the src/app.js:
+
+        'use strict'
+
+        import React from 'react'
+        import Counter from 'components/counter'
+
+        const App = () => (
+          <Counter />
+        )
+
+        export default App
+
+    Also, now at our counter/index.js, we no longer need the 'subscribe()' and 'unsubscribe()':
+
+    Remove this:
+
+        componentDidMount () {
+          this.unsubscribe = this.props.store.subscribe(() => this.forceUpdate())
+        }
+
+        componentWillUnmount () {
+          this.unsubscribe()
+        }
+
+    And include this:
+
+    import { connect } from 'react-redux'
+
+    It's a function that returns a new component, which will be a container.
+    We saw something like this at Context classes, look how we export this now:
+
+    export default connect()(CounterContainer)
+
+    Now this:
+
+      const mapStateToProps = (state) => {
+        return {
+          counter: state
+        }
+      }
+
+    export default connect(mapStateToProps)(CounterContainer)
+
+      Above, every time 'state' updates, the connect()() will render again and will call the CounterContainer, so we don't have to force it's update.
+
+      'mapStateToProps' is transforming the state into props to be passed to CounterContainer.
+
+
+Recap:
+- Provider (with store) - it maps store by itself.
+- then Provider talks directly with 'connect', which passes forward including dispatch on that.
+
+
+class #15 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
