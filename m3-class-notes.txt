@@ -791,19 +791,635 @@ Recap:
 
 
 class #15 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+How to isolate also the dispatch method that is being part of contructor in CounterContainer?
+
+Insted of having dispatch here on the constructor:
+
+class CounterContainer extends PureComponent {
+  constructor () {
+    super()
+
+    this.increment = () => {
+      this.props.dispatch({ type: 'INCREMENT' })
+    }
+
+    this.decrement = () => {
+      this.props.dispatch({ type: 'DECREMENT' })
+    }
+  }
+
+  Our code end up like this:
+    const mapDispatchToProps = (dispatch) => ({
+      increment: () => dispatch({ type: 'INCREMENT' }),
+      decrement: () => dispatch({ type: 'DECREMENT' })
+    })
+    export default connect(mapStateToProps, mapDispatchToProps)(CounterContainer)
+
+
+  OBS: Note that in arrow functions that return just one thing we actually can remove the 'return' command and go direct to what is being returned. From this:
+    const mapStateToProps = (state) => {
+      return {
+        counter: state
+      }
+    }
+  To:
+    const mapStateToProps = (state) => ({
+      counter: state
+    })
+
+  How to use StoryBook with an redux app?
+
+  If we use Redux in the storybook, we can test it isolated
+
+  Use 'export' in the component:
+
+  counter/index.js:
+
+    'use strict'
+
+    import React from 'react'
+    import { connect } from 'react-redux'
+
+    export const Counter = ({ counter, increment, decrement }) => (
+      <div>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+      </div>
+    )
+
+    const mapStateToProps = (state) => ({
+      counter: state
+    })
+
+    const mapDispatchToProps = (dispatch) => ({
+      increment: () => dispatch({ type: 'INCREMENT' }),
+      decrement: () => dispatch({ type: 'DECREMENT' })
+    })
+
+    export default connect(mapStateToProps, mapDispatchToProps)(Counter)
+
+  counter.story.js:
+
+    'use strict'
+
+    import React from 'react'
+    import { Counter } from './index'
+    import { storiesOf, action } from '@storybook/react'
+
+    const stories = storiesOf('Counter', module)
+
+    stories.add('Counter', () => (
+      <Counter counter={1} increment={action('increment')} decrement={action('decrement')} />
+    ))
+
+
+
+class #16 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding more counters
+
+src/app.js:
+    import Counter from 'components/counters'
+    <Counters />
+
+
+All files at the end:
+
+src/index.js:
+    'use strict'
+
+    import React from 'react'
+    import { render } from 'react-dom'
+    import { AppContainer } from 'react-hot-loader'
+    import { Provider } from 'react-redux'
+    import { createStore } from 'redux'
+    import App from './app'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const store = createStore(counter)
+
+    const renderApp = (NextApp) => {
+      render(
+        <AppContainer>
+          <Provider store={store}>
+            <NextApp />
+          </Provider>
+        </AppContainer>,
+        document.querySelector('[data-js="app"]')
+      )
+    }
+
+    renderApp(App)
+
+    if (module.hot) {
+      module.hot.accept('./app', () => {
+        const NextApp = require('./app').default
+        renderApp(NextApp)
+      })
+    }
+
+src/app.js:
+    'use strict'
+
+    import React from 'react'
+    import Counters from 'components/counters'
+
+    const App = () => (
+      <Counters />
+    )
+
+    export default App
 
 
 
 
+components/counter/index.js:
+    'use strict'
+
+    import React from 'react'
+
+    const Counter = ({ counter, increment, decrement }) => (
+      <div>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+      </div>
+    )
+
+    export default Counter
+
+components/counters/index.js:
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+    import { connect } from 'react-redux'
+
+    const Counters = ({ counter, increment, decrement }) => (
+      <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+        {[0, 0, 0].map((item, index) => (
+          <Counter
+            key={index}
+            counter={counter}
+            increment={increment}
+            decrement={decrement}
+          />
+        ))}
+      </div>
+    )
+
+    const mapStateToProps = (state) => ({
+      counter: state
+    })
+
+    const mapDispatchToProps = (dispatch) => ({
+      increment: () => dispatch({ type: 'INCREMENT' }),
+      decrement: () => dispatch({ type: 'DECREMENT' })
+    })
+
+    export default connect(mapStateToProps, mapDispatchToProps)(Counters)
+
+class #17 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding more counters - New reducer
+
+new reducer. recap:
+- have to be pure function
+- can't change data
+- return a new value based on previous state + action
+
+new folders:
+
+    src/redux-flow-reducers/counters
+
+Terminal
+yarn test:watch
+
+Write first the test itself:
+
+counters.test.js:
+
+    'use strict'
+
+    import counters from './index'
+    import { expect } from 'chai'
+
+    it('counters should be a function', () => {
+      expect(counters).to.be.a('function')
+    })
+
+counters/index.js:
+
+    'use strict'
+
+    export default () => {}
 
 
+happy path / baby steps
+
+class #18 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+WRONG EXAMPLE: THIS CHANGES THE STATE
+
+'use strict'
+
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      state.push(0)
+      return state
+  }
+}
+
+We supposed to create a new array or return another array, despite modify the existing one
+
+Don't change 'state'(or 'before' if you will) or 'action', those should remain the same.
+
+You can see what we are talking about:
+
+  it('Should add a new counter again', () => {
+    const before = [0, 1]
+    const action = { type: 'ADD_COUNTER' }
+    const after = [0, 1, 0]
+    console.log('before:' + before)
+    expect(counters(before, action)).to.be.deep.equal(after)
+    console.log('before:' + before)
+  })
+
+  console.log src/redux-flow/reducers/counters/counters.test.js:21
+    before:0,1
+
+  console.log src/redux-flow/reducers/counters/counters.test.js:23
+    before:0,1,0
+
+  To solve that, we gonna install a module: deep-freeze
+
+    Terminal:
+    yarn add --dev deep-freeze
+
+    Import it at the test file:
+
+      import deepFreeze from 'deep-freeze'
+
+    It's a function and we call it on 'before' and 'action':
+
+      const before = deepFreeze([])
+      const action = deepFreeze({ type: 'ADD_COUNTER' })
+
+    Now our test throws an error. DeepFreeze creates a kind of safety lock, we won't be able to make the mistake of modifying our state or action anymore.
+
+  So insted of push, we will use concat, which creates a new array without modifying the original:
+
+      'use strict'
+
+      export default (state, action) => {
+        switch (action.type) {
+          case 'ADD_COUNTER':
+            return state.concat(0)
+        }
+      }
+
+  Now everything works, all tests pass.
+
+class #19 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Testing a next action: Remove
+
+    Recap all actions:
+
+      add,
+      remove,
+      increment,
+      decrement
+
+text:
+it('Should remove a counter', () => {
+  const vefore = deepFreeze([0, 1, 2])
+  const action = deepFreeze({ type: 'REMOVE_COUNTER', index: 1 })
+  const after = [0, 2]
+  expect(counters(before, action)).to.be.deep.equal(after)
+})
+
+baby step:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return [0, 2]
+  }
+}
+
+and now for real:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((counter, index) => {
+        return index !== action.index
+      })
+  }
+}
+
+refactoring:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+  }
+}
+
+class #20 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Testing a next action: Increment
+
+test:
+it('Should increment a counter', () => {
+  const before = deepFreeze([0, 0])
+  const action = deepFreeze({ type: 'INCREMENT', index: 0 })
+  const after = [1, 0]
+  expect(counters(before, action)).to.be.deep.equal(after)
+})
+
+ALWAYS do baby steps first!!! So code for this baby step would be:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return [1, 0]
+  }
+}
+
+the real one:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((counter, index) => {
+        if (index === action.index) {
+          return counter + 1
+        }
+        return counter
+      })
+  }
+}
+
+refactoring it:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((c, index) => index === action.index ? c + 1 : c)
+  }
+}
+
+Testing a next action: Decrement
+
+the test:
+it('Should decrement counter', () => {
+  const before = deepFreeze([0, 2, 1])
+  const action = deepFreeze({ type: 'DECREMENT', index: 2 })
+  const after = [0, 2, 0]
+  expect(counters(before, action)).to.be.deep.equal(after)
+})
+
+the baby step:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((c, index) => index === action.index ? c + 1 : c)
+    case 'DECREMENT':
+      return [0, 2, 0]
+  }
+}
+
+the real thing:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((c, index) => index === action.index ? c + 1 : c)
+    case 'DECREMENT':
+      return state.map((c, index) => index === action.index ? c - 1 : c)
+  }
+}
 
 
+class #21 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Tests the errors
 
+    test itself:
+    it('Should return same state if action is unknown', () => {
+      const before = deepFreeze([0, 0, 1])
+      const action = deepFreeze({ type: 'UNKNOWN' })
+      const after = [0, 0, 1]
+      expect(counters(before, action)).to.be.deep.equal(after)
+    })
 
+    the code:
+    export default (state, action) => {
+      switch (action.type) {
+        case 'ADD_COUNTER':
+          return state.concat(0)
+        case 'REMOVE_COUNTER':
+          return state.filter((_, i) => i !== action.index)
+        case 'INCREMENT':
+          return state.map((c, i) => i === action.index ? c + 1 : c)
+        case 'DECREMENT':
+          return state.map((c, i) => i === action.index ? c - 1 : c)
+      }
+      return state
+    }
 
+    If state is undefined:
+      it('Should return initial state if last state is undefined', () => {
+        const before = undefined
+        const action = deepFreeze({})
+        const after = []
+        expect(counters(before, action)).to.be.deep.equal(after)
+      })
 
+    the code:
+      export default (state = [], action) => {
+        switch (action.type) {
+          case 'ADD_COUNTER':
+            return state.concat(0)
+          case 'REMOVE_COUNTER':
+            return state.filter((_, i) => i !== action.index)
+          case 'INCREMENT':
+            return state.map((c, i) => i === action.index ? c + 1 : c)
+          case 'DECREMENT':
+            return state.map((c, i) => i === action.index ? c - 1 : c)
+        }
+        return state
+      }
+
+    Some improvements:
+
+    How abotu a typo in your code?
+
+    We should have this:
+
+      export const ADD_COUNTER = 'ADD_COUNTER'
+      export const REMOVE_COUNTER = 'REMOVE_COUNTER'
+      export const INCREMENT = 'INCREMENT'
+      export const DECREMENT = 'DECREMENT'
+
+      export default (state = [], action) => {
+        switch (action.type) {
+          case ADD_COUNTER:
+            return state.concat(0)
+          case REMOVE_COUNTER:
+            return state.filter((_, i) => i !== action.index)
+          case INCREMENT:
+            return state.map((c, i) => i === action.index ? c + 1 : c)
+          case DECREMENT:
+            return state.map((c, i) => i === action.index ? c - 1 : c)
+        }
+        return state
+      }
+
+    test:
+
+        import counters, {
+          ADD_COUNTER,
+          REMOVE_COUNTER,
+          INCREMENT,
+          DECREMENT
+        } from './index'
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+
+        it('counters should be a function', () => {
+          expect(counters).to.be.a('function')
+        })
+
+        it('Should add a counter', () => {
+          const before = deepFreeze([])
+          const action = deepFreeze({ type: ADD_COUNTER })
+          const after = [0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should add a new counter again', () => {
+          const before = deepFreeze([0, 1])
+          const action = deepFreeze({ type: ADD_COUNTER })
+          const after = [0, 1, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should remove a counter', () => {
+          const before = deepFreeze([0, 1, 2])
+          const action = deepFreeze({ type: REMOVE_COUNTER, index: 1 })
+          const after = [0, 2]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should remove a counter', () => {
+          const before = deepFreeze([3, 1])
+          const action = deepFreeze({ type: REMOVE_COUNTER, index: 0 })
+          const after = [1]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should increment a counter', () => {
+          const before = deepFreeze([0, 0])
+          const action = deepFreeze({ type: INCREMENT, index: 0 })
+          const after = [1, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should increment another counter', () => {
+          const before = deepFreeze([1, 0])
+          const action = deepFreeze({ type: INCREMENT, index: 1 })
+          const after = [1, 1]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should decrement counter', () => {
+          const before = deepFreeze([0, 2, 1])
+          const action = deepFreeze({ type: DECREMENT, index: 2 })
+          const after = [0, 2, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should decrement another counter', () => {
+          const before = deepFreeze([0, 2, 0])
+          const action = deepFreeze({ type: DECREMENT, index: 1 })
+          const after = [0, 1, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should return same state if action is unknown', () => {
+          const before = deepFreeze([0, 0, 1])
+          const action = deepFreeze({ type: 'UNKNOWN' })
+          const after = [0, 0, 1]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should return initial state if last state is undefined', () => {
+          const before = undefined
+          const action = deepFreeze({})
+          const after = []
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+By having those variables, an error is thrown if you have a typo. Like that:
+
+    ReferenceError: ADD_CsOUNTER is not defined
+
+  
+Also, let's include a variable 'initialState':
+
+index.js:
+    export const initialState = []
+    export default (state = initialState, action) => { ... }
+
+counters.text.js:
+    import counters, {
+      initialState,
+      ADD_COUNTER,
+      REMOVE_COUNTER,
+      INCREMENT,
+      DECREMENT
+    } from './index'
+
+    it('Should return initial state if last state is undefined', () => {
+      const before = undefined
+      const action = deepFreeze({})
+      const after = initialState
+      expect(counters(before, action)).to.be.deep.equal(after)
+    })
+
+    If we change our initial state from [] to [{}], we don't have to change all over the code.
+
+    
 
 
 
