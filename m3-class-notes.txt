@@ -1420,11 +1420,150 @@ counters.text.js:
     If we change our initial state from [] to [{}], we don't have to change all over the code.
 
     
+class #22 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Ajustments in order to have more counters
+
+include extra alias in webpack/common.js:
+
+  reducers: join(paths.src, 'redux-flow', 'reducers')
+
+  resolve: {
+    alias: {
+      src: paths.src,
+      components: join(paths.src, 'components'),
+      utils: join(paths.src, 'utils'),
+      reducers: join(paths.src, 'redux-flow', 'reducers')
+    }
+  }
+
+files the end of the class....
+
+counters/index.js:
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+    import { connect } from 'react-redux'
+    import { ADD_COUNTER, REMOVE_COUNTER, INCREMENT, DECREMENT } from 'reducers/counters'
+
+    const Counters = ({ counters, addCounter, removeCounter, increment, decrement }) => (
+
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {counters.map((counter, index) => (
+            <Counter
+              {...{
+                key: index,
+                counter,
+                removeCounter: removeCounter(index),
+                increment: increment(index),
+                decrement: decrement(index)
+              }}
+            />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 10 }}>
+          <button onClick={addCounter}>Add counter</button>
+        </div>
+      </div>
+    )
+
+    const mapStateToProps = (state) => ({
+      counters: state
+    })
+
+    const mapDispatchToProps = (dispatch) => ({
+      addCounter: () => dispatch({ type: ADD_COUNTER }),
+      removeCounter: (index) => () => dispatch({ type: REMOVE_COUNTER, index }),
+      increment: (index) => () => dispatch({ type: INCREMENT, index }),
+      decrement: (index) => () => dispatch({ type: DECREMENT, index })
+    })
+
+    export default connect(mapStateToProps, mapDispatchToProps)(Counters)
 
 
+counter/index.js:
+    'use strict'
+
+    import React from 'react'
+
+    const Counter = ({ counter, increment, decrement, removeCounter }) => (
+      <div style={{ position: 'relative', border: '1px solid #000', padding: 5 }}>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+        <button
+          style={{ fontSize: 7, position: 'absolute', right: 5, top: 5 }}
+          onClick={removeCounter}
+        >
+          &times;
+        </button>
+
+      </div>
+    )
+
+    export default Counter
 
 
+class #23 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+actionCreators
 
+So insted of calling dispatch and passing the action's type every time here at counters/index.js:
+
+    const mapDispatchToProps = (dispatch) => ({
+      addCounter: () => dispatch({ type: ADD_COUNTER }),
+      removeCounter: (index) => () => dispatch({ type: REMOVE_COUNTER, index }),
+      increment: (index) => () => dispatch({ type: INCREMENT, index }),
+      decrement: (index) => () => dispatch({ type: DECREMENT, index })
+    })
+
+This new approach consist in:
+
+new files:
+src/redux-flow/reducers/action-creators.js
+
+src/redux-flow/reducers/actions.js (we'll move all actions to here):
+
+  export const ADD_COUNTER = 'ADD_COUNTER'
+  export const REMOVE_COUNTER = 'REMOVE_COUNTER'
+  export const INCREMENT = 'INCREMENT'
+  export const DECREMENT = 'DECREMENT'
+
+then update this:
+src/redux-flow/reducers/counters/counters.test.js
+
+    import { ADD_COUNTER, REMOVE_COUNTER, INCREMENT, DECREMENT } from './actions'
+
+and update this:
+src/redux-flow/reducers/counters/index.js
+
+    import { ADD_COUNTER, REMOVE_COUNTER, INCREMENT, DECREMENT } from './actions'
+
+'actionCreators' are basicly functions that abstract our functions. They have dispatch's code content.
+
+By the end would replace this:
+
+      const mapDispatchToProps = (dispatch) => ({
+        addCounter: () => dispatch({ type: ADD_COUNTER }),
+        removeCounter: (index) => () => dispatch({ type: REMOVE_COUNTER, index }),
+        increment: (index) => () => dispatch({ type: INCREMENT, index }),
+        decrement: (index) => () => dispatch({ type: DECREMENT, index })
+      })
+
+With this:
+
+      const mapDispatchToProps = (dispatch) => ({
+        addCounter: () => dispatch(addCounter()),
+        removeCounter: (index) => () => dispatch(removeCounter(index)),
+        increment: (index) => () => dispatch(increment(index)),
+        decrement: (index) => () => dispatch(decrement(index))
+      })
+
+Professor claims that this new code is more readable.  "Redux gives some extra fat to our boilerplate but makes the code more abstract, reducing repetition."
+
+
+class #24 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
