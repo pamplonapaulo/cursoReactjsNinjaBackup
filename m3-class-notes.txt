@@ -1564,6 +1564,808 @@ Professor claims that this new code is more readable.  "Redux gives some extra f
 
 
 class #24 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+New App: ToDo List
+
+  just settings updates at Deciuk's boilerplate, most of them about:
+
+      react-hot-loader/webpack
+
+
+class #25 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  cont. of settings updates, most of them about:
+
+      new webpack.NamedModulesPlugin(),
+
+  and checked all scripts on package.json.
+
+
+class #26 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  cont. of settings updates, most of them about:
+
+    storybook
+    
+  new website: https://storybook.js.org
+
+  "@storybook/react": "^3.2.8" (goodbye @kadira)
+
+class #27 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  lastly: errors settings
+
+  server.js:
+
+    new WebpackDevServer(webpack(config), {
+      overlay: true
+      ......
+    }).listen(3000, (err) => {.....})
+
+class #28 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+To Do List (starting)
+
+The very initial idea of our project:
+
+      'use strict'
+
+      import React from 'react'
+
+      const App = () => (
+        <div>
+          <input type='text' />
+
+          <ul>
+            <li style={{ textDecoration: 'line-through' }}>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+            <li>Item 4</li>
+            <li>Item 5</li>
+          </ul>
+
+          <div>
+            <h3>Mostrar</h3>
+            <a href="#">Todos</a> | <a href="#">Finalizados</a> | <a href="#">A fazer</a>
+          </div>
+
+
+        </div>
+      )
+
+      export default App
+
+
+class #29 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding redux
+
+todo.test.js:
+
+      'use strict'
+
+      import { expect } from 'chai'
+      import deepFreeze from 'deep-freeze'
+      import todos from './index'
+      import { ADD_TODO } from './actions'
+
+      it('Should todos be a function', () => {
+        expect(todos).to.be.a('function')
+      })
+
+      it('Should add a todo item', () => {
+        const before = deepFreeze([])
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 0, text: 'Hey' }
+        })
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+actions.js:
+
+      'use strict'
+
+      export const ADD_TODO = 'ADD_TODO'
+
+index.js:
+
+      'use strict'
+
+      const todos = () => {
+        return [{ id: 0, text: 'Hey', completed: false }]
+      }
+
+      export default todos
+
+
+class #30 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+index.js:
+      'use strict'
+
+      import { ADD_TODO, TOGGLE_TODO} from './actions'
+
+      const initialState = []
+
+      const todos = (state = initialState, action) => {
+        switch (action.type) {
+          case ADD_TODO:
+            return state.concat({
+              id: action.payload.id,
+              text: action.payload.text,
+              completed: false
+            })
+            
+          case TOGGLE_TODO:
+            return state.map((todo) => {
+              if (todo.id !== action.payload.id) {
+                return todo
+              }
+
+              return {
+                ...todo,
+                completed: !todo.completed
+              }
+            })
+        }
+      }
+
+      export default todos
+
+
+
+todo.test.js:
+      'use strict'
+
+      import { expect } from 'chai'
+      import deepFreeze from 'deep-freeze'
+      import todos from './index'
+      import { ADD_TODO, TOGGLE_TODO } from './actions'
+
+      it('Should todos be a function', () => {
+        expect(todos).to.be.a('function')
+      })
+
+      it('Should add a todo item', () => {
+        const before = deepFreeze([])
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 0, text: 'Hey' }
+        })
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should add a new item', () => {
+        const before = deepFreeze([
+          { id: 0, text: 'Hey', completed: false }
+        ])
+
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 1, text: 'Ho' }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should toggle first todo', () => {
+        const before = deepFreeze([
+          {id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false}
+        ])
+
+        const action = deepFreeze({
+          type: TOGGLE_TODO,
+          payload: { id: 0 }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: true },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+        
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+class #31 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+todos/index.js:
+
+      'use strict'
+
+      import { ADD_TODO, TOGGLE_TODO} from './actions'
+
+      export const initialState = []
+
+      const todos = (state = initialState, action) => {
+        switch (action.type) {
+          case ADD_TODO:
+            return state.concat({
+              id: action.payload.id,
+              text: action.payload.text,
+              completed: false
+            })
+            
+          case TOGGLE_TODO:
+            return state.map((todo) => {
+              if (todo.id !== action.payload.id) {
+                return todo
+              }
+
+              return {
+                ...todo,
+                completed: !todo.completed
+              }
+            })
+        }
+        return state
+      }
+
+      export default todos
+
+todos/todos.test.js:
+
+      'use strict'
+
+      import { expect } from 'chai'
+      import deepFreeze from 'deep-freeze'
+      import todos, { initialState } from './index'
+      import { ADD_TODO, TOGGLE_TODO } from './actions'
+
+      it('Should todos be a function', () => {
+        expect(todos).to.be.a('function')
+      })
+
+      it('Should add a todo item', () => {
+        const before = deepFreeze([])
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 0, text: 'Hey' }
+        })
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should add a new item', () => {
+        const before = deepFreeze([
+          { id: 0, text: 'Hey', completed: false }
+        ])
+
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 1, text: 'Ho' }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should toggle first todo', () => {
+        const before = deepFreeze([
+          {id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false}
+        ])
+
+        const action = deepFreeze({
+          type: TOGGLE_TODO,
+          payload: { id: 0 }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: true },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+        
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should toggle second todo', () => {
+        const before = deepFreeze([
+          {id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false}
+        ])
+
+        const action = deepFreeze({
+          type: TOGGLE_TODO,
+          payload: { id: 1 }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: true }
+        ]
+        
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should return the latest state when action is unknown', () => {
+        const before = deepFreeze([{ id: 0, text: 'Hey', completed: false }])
+        const action = deepFreeze({ type: 'ANYTHING'})
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should return initialState when state before is undefined', () => {
+        const before = undefined
+        const action = deepFreeze({})
+        const after = initialState
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+class #32 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Setting up Redux
+
+  yarn add redux (not only --dev, it will be used even in the build)
+
+  webpack/common.js:
+
+        resolve: {
+          alias: {
+            src: paths.src,
+            components: join(paths.src, 'components'),
+            utils: join(paths.src, 'utils'),
+            reducers: join(paths.src, 'redux-flow', 'reducers')
+          }
+        }
+
+  src/index.js:
+
+        import { createStore } from 'redux'
+        import reducer from 'reducers/todos'
+
+        const store = createStore(reducer)
+
+class #33 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+React Redux
+
+  yarn add react-redux
+
+  src/index.js:
+
+        import { Provider } from 'react-redux'
+
+        const renderApp = (NextApp) => {
+          render(
+            <AppContainer>
+              <Provider store={store}>
+                <NextApp />
+              </Provider>
+            </AppContainer>,
+            document.querySelector('[data-js="app"]')
+          )
+        }
+
+class #34 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+src/app.js:
+
+      import { connect } from 'react-redux'
+
+      const mapStateToProps = (state) => ({
+        todos: state
+      })
+
+      export default connect()(App)
+
+      Forms in React: how to get an input's value without manipulate the DOM?
+
+            <form>
+              <input type='text' />
+              <button>Add Item</button>
+            </form>
+
+      Manipulate functions that have to use dispatch in a action:
+
+              const mapDispatchToProps = (dispatch) => ({
+                handleAddTodo: (e) => {
+                  e.preventDefault()
+                }
+              })
+
+      src/app.js so far:
+
+              'use strict'
+
+              import React from 'react'
+              import { connect } from 'react-redux'
+
+              const App = ({ todos, handleAddTodo }) => (
+                <div>
+                  <form onSubmit={handleAddTodo}>
+                    <input type='text' name='todo' />
+                    <button type='submit'>Add Item</button>
+                  </form>
+
+                  {console.log(todos)}
+
+                  <ul>
+                    <li style={{ textDecoration: 'line-through' }}>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                    <li>Item 4</li>
+                    <li>Item 5</li>
+                  </ul>
+
+                  <div>
+                    <h3>Mostrar</h3>
+                    <a href='#'>Todos</a> | <a href='#'>Finalizados</a> | <a href='#'>A fazer</a>
+                  </div>
+
+                </div>
+              )
+
+              const mapStateToProps = (state) => ({
+                todos: state
+              })
+
+              const mapDispatchToProps = (dispatch) => ({
+                handleAddTodo: (e) => {
+                  e.preventDefault()
+                  dispatch({
+                    type: 'ADD_TODO',
+                    payload: { id: 0, text: 'Hey'}
+                  })
+                }
+              })
+
+              export default connect(mapStateToProps, mapDispatchToProps)(App)
+
+
+
+    redux-flow/reducres/todos/action-creators.js:
+
+          'use strict'
+
+          import { ADD_TODO } from './actions'
+
+          export const addTodo = (text) => ({
+            type: ADD_TODO,
+            payload: {
+              id: 0, text: text
+            }
+          })
+
+
+    How to get form's submit event: <input type='text' name='todo' />
+
+          const mapDispatchToProps = (dispatch) => ({
+            handleAddTodo: (e) => {
+              e.preventDefault()
+              console.log(e.target.todo.value)
+              dispatch(addTodo(e.target.todo.value))
+            }
+          })
+
+  ID generator:
+
+    yarn add uuid
+
+src/redux-flow/reducers/todos/action-creators.js:
+
+        'use strict'
+
+        import { ADD_TODO } from './actions'
+        import { v4 } from 'uuid'
+
+        export const addTodo = (text) => ({
+          type: ADD_TODO,
+          payload: {
+            id: v4(), text: text
+          }
+        })
+
+class #35 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Mapping todo's array:
+
+          <ul>
+            {todos.map((todo) => (
+              <li key={todo.id} style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
+                {todo.text}
+              </li>
+            ))}
+          </ul>
+
+
+class #36 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+cleaning up input's filed after insertion:
+
+        const mapDispatchToProps = (dispatch) => ({
+          handleAddTodo: (e) => {
+            e.preventDefault()
+            dispatch(addTodo(e.target.todo.value))
+
+            //HERE:
+            e.target.todo.value = ''
+          }
+        })
+
+OBS: Component above is non-controlled form, doesn't have onChange, doesn't update via React. He have to clean it up manually.
+
+
+
+todo's toggle:
+
+action-creators.js:
+
+        export const toggleTodo = (id) => ({
+          type: TOGGLE_TODO,
+          payload: { id }
+        })
+
+reminder about 'Closure':
+
+        <li onClick={handleToggleTodo(todo.id)}>
+        
+        handleToggleTodo: (id) => (e) => {
+          dispatch(toggleTodo(id))
+        }
+
+        1st function receives the 'id' and returns a 2nd function.
+        2nd function runs the action itself when the event occurs.
+
+
+TIP:
+
+exports that aren't 'export default':
+
+        import { ADD_TODO as ADD, TOGGLE_TODO as TOGGLE } from './actions'
+
+        export const addTodo = (text) => ({
+          type: ADD,
+        })
+
+        export const toggleTodo = (id) => ({
+          type: TOGGLE,
+        })
+
+or:
+
+        import * as actions from './actions'
+
+        export const addTodo = (text) => ({
+          type: actions.ADD_TODO,
+        })
+
+        export const toggleTodo = (id) => ({
+          type: actions.TOGGLE_TODO,
+        })
+
+But it's up to you, there isn't a standard pattern for those imports.
+
+
+class #37 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Reducer Visibility Filter
+
+
+visibility-filter.test.js:
+
+        'use strict'
+
+        import visibilityFilter from './index.js'
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+
+        it('VisibilityFilter should be a function', () => {
+          expect(visibilityFilter).to.be.a('function')
+        })
+
+        it('Should show all todos', () => {
+          const before = 'SHOW_COMPLETED'
+          const action = deepFreeze({
+            type: 'SET_VISIBILITY_FILTER',
+            payload: { filter: 'SHOW_ALL'}
+          })
+          const after = 'SHOW_ALL'
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+
+visibility-filter/index.js:
+
+        'use strict'
+
+        const visibilityFilter = () => {
+          return 'SHOW_ALL'
+        }
+
+        export default visibilityFilter
+
+class #38 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+Primitive Types in JS are unmutable. That's why we skip 'deepFreeze()' when before is just a string.
+There are 6 primitive data types: string, number, bigint, boolean, undefined, and symbol.
+
+Objects & Arrays need deepFreeze().
+
+visibility-filter.test.js:
+
+        it('Should show just completed todos', () => {
+          const before = 'SHOW_ALL'
+          const action = deepFreeze({
+            type: 'SET_VISIBILITY_FILTER',
+            payload: { filter: 'SHOW_COMPLETED'}
+          })
+          const after = 'SHOW_COMPLETED'
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+visibility-filter.js:
+
+        'use strict'
+
+        const visibilityFilter = (state, action) => {
+          return action.payload.filter
+        }
+
+        export default visibilityFilter
+
+
+filter-visibility/action-creators.js:
+        'use strict'
+
+        import { ADD_TODO, TOGGLE_TODO } from './actions'
+        import { v4 } from 'uuid'
+
+        export const addTodo = (text) => ({
+          type: ADD_TODO,
+          payload: {
+            id: v4(), text: text
+          }
+        })
+
+        export const toggleTodo = (id) => ({
+          type: TOGGLE_TODO,
+          payload: { id }
+        })
+
+filter-visibility/actions.js:
+        'use strict'
+
+        export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
+        export const SHOW_ALL = 'SHOW_ALL'
+        export const SHOW_COMPLETED = 'SHOW_COMPLETED'
+        export const SHOW_ACTIVE = 'SHOW_ACTIVE'
+
+filter-visibility/index.js:
+        'use strict'
+
+        import { SET_VISIBILITY_FILTER, SHOW_ALL } from './actions'
+
+        export const initialState = SHOW_ALL
+
+        const visibilityFilter = (state = initialState, action) => {
+          switch (action.type) {
+            case SET_VISIBILITY_FILTER:
+              return action.payload.filter
+          }
+          return state
+        }
+
+        export default visibilityFilter
+
+
+
+filter-visibility/filter-visibility.test.js:
+        'use strict'
+
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+        import visibilityFilter, { initialState } from './index.js'
+        import {
+          SET_VISIBILITY_FILTER,
+          SHOW_ALL,
+          SHOW_COMPLETED,
+          SHOW_ACTIVE
+        } from './actions'
+
+        it('VisibilityFilter should be a function', () => {
+          expect(visibilityFilter).to.be.a('function')
+        })
+
+        it('Should show all todos', () => {
+          const before = SHOW_COMPLETED
+          const action = deepFreeze({
+            type: SET_VISIBILITY_FILTER,
+            payload: { filter: SHOW_ALL}
+          })
+          const after = SHOW_ALL
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should show just completed todos', () => {
+          const before = SHOW_ALL
+          const action = deepFreeze({
+            type: SET_VISIBILITY_FILTER,
+            payload: { filter: SHOW_COMPLETED}
+          })
+          const after = SHOW_COMPLETED
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should show just active todos', () => {
+          const before = SHOW_ALL
+          const action = deepFreeze({
+            type: SET_VISIBILITY_FILTER,
+            payload: { filter: SHOW_ACTIVE}
+          })
+          const after = SHOW_ACTIVE
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should return latest state when action is unknown', () => {
+          const before = SHOW_COMPLETED
+          const action = deepFreeze({
+            type: 'UNKNOWN',
+            payload: { filter: SHOW_ALL}
+          })
+          const after = SHOW_COMPLETED
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should return initialState when latest state is undefined', () => {
+          const before = undefined
+          const action = deepFreeze({})
+          const after = initialState
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+
+class #39 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+How to use more than one reducer?
+
+src/index.js:
+
+import reducerTodos from 'reducers/todos'
+import reducerVisibilityFilter from 'reducers/visibility-filter'
+
+const reducer = (state = {}, action) => {
+  return {
+    todos: reducerTodos(
+      state.todos,
+      action
+    ),
+
+    visibilityFilter: reducerVisibilityFilter(
+      state.visibilityFilter,
+      action
+    )
+  }
+}
+
+or save it in another file:
+src/redux-flow/index.js:
+
+        'use strict'
+
+        import reducerTodos from './todos'
+        import reducerVisibilityFilter from './visibility-filter'
+
+        const rootReducer = (state = {}, action) => {
+          return {
+            todos: reducerTodos(state.todos, action),
+            visibilityFilter: reducerVisibilityFilter(state.visibilityFilter, action)
+          }
+        }
+
+        export default rootReducer
+
+class #40 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
@@ -1581,16 +2383,15 @@ class #24 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
 
 
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+class #41 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #42 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #43 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #44 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #45 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #46 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #47 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #48 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #49 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #50 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
