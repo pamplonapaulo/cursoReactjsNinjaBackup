@@ -2657,24 +2657,218 @@ src/components/finter-link.js:
 
 
 class #47 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Show filtered 'Todos'
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/29-todo-list
+
+src/components/todos-list/index.js:
+
+first:
+        coconst mapStateToProps = (state) => ({
+          todos: state.todos,
+          activeFilter: state.visibilityFilter
+        })
+
+Then it could be:
+        const TodosList = ({ todos, activeFilter, handleToggleTodo }) => (
+          <ul>
+            {todos.filter().map((todo) => (
+              <li></li>
+            ))}
+          </ul>
+        )
+
+But better writting an extra function to handle it: getVisibleTodos(todos, activeFilter)
+
+        const TodosList = ({ todos, activeFilter, handleToggleTodo }) => (
+          <ul>
+            {getVisibleTodos(todos, activeFilter).map((todo) => (
+              <li></li>
+            ))}
+          </ul>
+        )
+
+        const getVisibleTodos = (todos, activeFilter) => {
+          switch (activeFilter) {
+            case filterActions.SHOW_ALL:
+              return todos
+
+            case filterActions.SHOW_COMPLETED:
+              return todos.filter((todo) => todo.completed)
+
+            case filterActions.SHOW_ACTIVE:
+              return todos.filter((todo) => !todo.completed)
+          }
+        }
+
+But 'switch' doesn't have the best performance. So let's refact it.
+
+        const getVisibleTodos = (todos, activeFilter) => {
+
+          const filterItems = {
+            [filterActions.SHOW_ALL]: todos,
+            [filterActions.SHOW_COMPLETED]: todos.filter((todo) => todo.completed),
+            [filterActions.SHOW_ACTIVE]: todos.filter((todo) => !todo.completed)
+          }
+
+          return filterItems[activeFilter]
+        }
+
+The code above uses 'bracket notation' from ES6, naming properties with dynamic values. It allows us to get the variable's value. Meaning the same as:
+
+        {
+          'visibilityFilter:SHOW_ACTIVE': todos,
+          'visibilityFilter:SHOW_ALL': todos.filter((todo) => todo.completed),
+          'visibilityFilter:SHOW_COMPLETED': todos.filter((todo) => !todo.completed)
+        }
+
+remember those variables were declared at:
+src/redux-flow/reducers/visibility-filter/actions.js:
+
+        export const SET_VISIBILITY_FILTER = 'visibilityFilter:SET_VISIBILITY_FILTER'
+
+        export const SHOW_ALL = 'visibilityFilter:SHOW_ALL'
+        export const SHOW_COMPLETED = 'visibilityFilter:SHOW_COMPLETED'
+        export const SHOW_ACTIVE = 'visibilityFilter:SHOW_ACTIVE'
+
+Fromt there and whiches' import here is: * as filterActions
+
+        So [filterActions.SHOW_ALL] and so on.
+
+Other sources:
+https://www.samanthaming.com/tidbits/37-dynamic-property-name-with-es6/
 
 
+Want a code even prettier than that? Wait for it:
 
-
+        const getVisibleTodos = (todos, activeFilter) => {
+          return {
+            [filterActions.SHOW_ALL]: todos,
+            [filterActions.SHOW_COMPLETED]: todos.filter((todo) => todo.completed),
+            [filterActions.SHOW_ACTIVE]: todos.filter((todo) => !todo.completed)
+          }[activeFilter]
+        }
 
 
 class #48 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+createReducer()
+Reducer's creation by Daciuk's standard:
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/30-todo-list
 
+Basically, how does a REDUCER works?
 
+      1. It is a function
+      2. It receives 2 parameters: a state and an action
+      3. It checks what kind of action is being passed
+      4. It returns a state (based on it's action plus it's previous/current state)
+      5. If action doesn't match the expected ones, it just returns the previous/current state.
 
+All reducers have this same signature.
 
+Those redundances could be removed or reduced. Also, the use of switch makes our code too 'verbose'.
+
+src/redux-flow/reducers/todos/index.js:
+
+So insted of:
+
+        const todos = (state = initialState, action) => {
+          switch (action.type) {
+            case ADD_TODO:
+              return state.concat({
+                id: action.payload.id,
+                text: action.payload.text,
+                completed: false
+              })
+
+            case TOGGLE_TODO:
+              return state.map((todo) => {
+                if (todo.id !== action.payload.id) {
+                  return todo
+                }
+
+                return {
+                  ...todo,
+                  completed: !todo.completed
+                }
+              })
+          }
+          return state
+        }
+
+  We will use:
+
+        const todos = createReducer(initialState, {
+          [ADD_TODO]: (state, action) => state.concat({
+              id: action.payload.id,
+              text: action.payload.text,
+              completed: false
+            }),
+
+          [TOGGLE_TODO]: (state, action) => state.map((todo) => {
+            if (todo.id !== action.payload.id) {
+              return todo
+            }
+
+            return {
+              ...todo,
+              completed: !todo.completed
+            }
+          })
+        })
 
 class #49 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+So finishing code from previous class, we need the 'createReducer()':
+
+        const createReducer = (initialState, handleActions) => {
+          return (state = initialState, action) => {
+            if (handleActions.hasOwnProperty(action.type)) {
+              return handleActions[action.type](state, action)
+            }
+            return state
+          }
+        }
+
+refactoring it:
+
+        const createReducer = (initialState, handleActions) =>
+          (state = initialState, action) => {
+            return handleActions.hasOwnProperty(action.type)
+              ? handleActions[action.type](state, action)
+              : state
+          }
+
+more refactoring:
+
+        const createReducer = (initialState, handleActions) =>
+          (state = initialState, action) =>
+            handleActions.hasOwnProperty(action.type)
+              ? handleActions[action.type](state, action)
+              : state
 
 
+The save this function isolated:
+
+        src/redux-flow/reducers/create-reducers.js
 
 
+Now let's update the other reducers!
+
+src/redux-flow/reducers/visibility-filter:
+
+Insted of:
+        const visibilityFilter = (state = initialState, action) => {
+          switch (action.type) {
+            case SET_VISIBILITY_FILTER:
+              return action.payload.filter
+          }
+          return state
+        }
+
+Get this:
+        const visibilityFilter = createReducer(initialState, {
+          [SET_VISIBILITY_FILTER]: (state, action) => action.payload.filter
+        })
 
 
 class #50 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
