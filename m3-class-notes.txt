@@ -2367,31 +2367,315 @@ src/redux-flow/index.js:
 
 class #40 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+combineReducers
 
+there is a built-in method for accomplishing what we just did manually on last class here:
 
+      src/redux-flow/reducers/index.js:
 
+          import reducerTodos from './todos'
+          import reducerVisibilityFilter from './visibility-filter'
 
+          const rootReducer = (state = {}, action) => {
+            return {
+              todos: reducerTodos(state.todos, action),
+              visibilityFilter: reducerVisibilityFilter(state.visibilityFilter, action)
+            }
+          }
+          export default rootReducer
 
+      gets replaced for just that:
 
+          import { combineReducers } from 'redux'
+          import reducerTodos from './todos'
+          import reducerVisibilityFilter from './visibility-filter'
 
+          export default combineReducers({
+            todos: reducerTodos,
+            visibilityFilter: reducerVisibilityFilter
+          })
 
+      let's make it even better?
+      
+          import { combineReducers } from 'redux'
+          import todos from './todos'
+          import visibilityFilter from './visibility-filter'
 
+          export default combineReducers({
+            todos,
+            visibilityFilter
+          })
 
+      Boom!
 
-
-
-
-
-
-
-
+      
 class #41 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+combineReducers manually (behind the scenes)
+
+How does this work?
+
+That way:
+
+      import todos from './todos'
+      import visibilityFilter from './visibility-filter'
+
+      const combineReducers = (reducers) => (state = {}, action) => {
+        return Object.keys(reducers).reduce((nextState, key) => {
+          nextState[key] = reducers[key](state[key], action)
+          return nextState
+        }, {})
+      }
+
+Or with imutability of the {} that reduce returns:
+
+      const combineReducers = (reducers) => (state = {}, action) => {
+        return Object.keys(reducers).reduce((nextState, key) => {
+          return {
+            ...nextState,
+            [key]: reducers[key](state[key], action)
+          }
+        }, {})
+      }
+
 class #42 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Isolating components (refactoring)
+
+Right now everything is happening in src/app.js
+
+make some dirs inside 'src/components':
+
+    mkdir -p src/components/{form,todos-list,filter}
+
+    https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/24-todo-list
+
+
 class #43 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Naming actions:
+
+  https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/25-todo-list
+
+
+redux-flor/reducers/todos/actions.js:
+    export const ADD_TODO = 'ADD_TODO'
+    export const TOGGLE_TODO = 'TOGGLE_TODO'
+
+redux-flor/reducers/visibility-filter/actions.js;
+    export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
+    export const SHOW_ALL = 'SHOW_ALL'
+    export const SHOW_COMPLETED = 'SHOW_COMPLETED'
+    export const SHOW_ACTIVE = 'SHOW_ACTIVE'
+
+Actions are global, you can use it anywhere.
+Since the app keeps growing, we may miss a reference of their origins.
+That said, here is the standard we are starting to follow now:
+
+    --> reducers' name camel casing plus ':' plus action's name in uppercase.
+    --> and exports the variable name only with actions' name.
+
+redux-flor/reducers/todos/actions.js:
+    export const ADD_TODO = 'todos:ADD_TODO'
+    export const TOGGLE_TODO = 'todos:TOGGLE_TODO'
+
+redux-flor/reducers/visibility-filter/actions.js;
+    export const SET_VISIBILITY_FILTER = 'visibilityFilter:SET_VISIBILITY_FILTER'
+    export const SHOW_ALL = 'visibilityFilter:SHOW_ALL'
+    export const SHOW_COMPLETED = 'visibilityFilter:SHOW_COMPLETED'
+    export const SHOW_ACTIVE = 'visibilityFilter:SHOW_ACTIVE'
+
 class #44 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Connect FILTER at state
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/26-todo-list
+
+src/components/filter/index.js:
+
+        'use strict'
+
+        import React from 'react'
+        import { connect } from 'react-redux'
+        import * as actions from 'reducers/visibility-filter/actions'
+
+        const Filter = ({ activeFilter }) => (
+          <div>
+            <h3>Mostrar</h3>
+            {filterItems.map((item) => {
+              if (item.action === activeFilter) {
+                return <span key={item.action} style={{ marginRight: 10 }}>{item.label}</span>
+              }
+              return <a href='' key={item.action} style={{ marginRight: 10 }}>{item.label}</a>
+            })}
+          </div>
+        )
+
+        const filterItems = [
+          { label: 'Todos', action: actions.SHOW_ALL },
+          { label: 'Finalizados', action: actions.SHOW_COMPLETED },
+          { label: 'A fazer', action: actions.SHOW_ACTIVE }
+        ]
+
+        const mapStateToProps = (state) => ({
+          activeFilter: state.visibilityFilter
+        })
+
+        export default connect(mapStateToProps)(Filter)
+
 class #45 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Filter state update
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/27-todo-list
+
+
+src/components/filter/index.js:
+        'use strict'
+
+        import React from 'react'
+        import { connect } from 'react-redux'
+        import * as actions from 'reducers/visibility-filter/actions'
+        import { setVisibilityFilter } from 'reducers/visibility-filter/action-creators'
+
+        const Filter = ({ activeFilter, handleFilter }) => (
+          <div>
+            <h3>Mostrar</h3>
+            {filterItems.map((item) => {
+              if (item.action === activeFilter) {
+                return <span key={item.action} style={{ marginRight: 10 }}>{item.label}</span>
+              }
+              return <a
+                href=''
+                key={item.action}
+                style={{ marginRight: 10 }}
+                onClick={handleFilter(item.action)}
+              >{item.label}</a>
+            })}
+          </div>
+        )
+
+        const filterItems = [
+          { label: 'Todos', action: actions.SHOW_ALL },
+          { label: 'Finalizados', action: actions.SHOW_COMPLETED },
+          { label: 'A fazer', action: actions.SHOW_ACTIVE }
+        ]
+
+        const mapStateToProps = (state) => ({
+          activeFilter: state.visibilityFilter
+        })
+
+        const mapDispatchToProps = (dispatch) => ({
+          handleFilter: (filter) => (e) => {
+            e.preventDefault()
+            dispatch(setVisibilityFilter(filter))
+          }
+        })
+
+        export default connect(mapStateToProps, mapDispatchToProps)(Filter)
+
+
+reducers/visibility-filter/action-creators:
+        'use strict'
+
+        import { SET_VISIBILITY_FILTER } from './actions'
+
+        export const setVisibilityFilter = (filter) => ({
+          type: SET_VISIBILITY_FILTER,
+          payload: { filter }
+        })
+
 class #46 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring at Filter's component's link
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/28-todo-list
+
+
+src/components/filter/index.js:
+      'use strict'
+
+      import React from 'react'
+      import { connect } from 'react-redux'
+      import * as actions from 'reducers/visibility-filter/actions'
+      import { setVisibilityFilter } from 'reducers/visibility-filter/action-creators'
+      import FilterLink from './filter-link'
+
+      const Filter = ({ activeFilter, handleFilter }) => (
+        <div>
+          <h3>Mostrar</h3>
+          {filterItems.map((item) => (
+            <FilterLink
+              key={item.action}
+              action={item.action}
+              activeFilter={activeFilter}
+              onClick={handleFilter(item.action)}
+            >
+              {item.label}
+            </FilterLink>
+          ))}
+        </div>
+      )
+
+      const filterItems = [
+        { label: 'Todos', action: actions.SHOW_ALL },
+        { label: 'Finalizados', action: actions.SHOW_COMPLETED },
+        { label: 'A fazer', action: actions.SHOW_ACTIVE }
+      ]
+
+      const mapStateToProps = (state) => ({
+        activeFilter: state.visibilityFilter
+      })
+
+      const mapDispatchToProps = (dispatch) => ({
+        handleFilter: (filter) => (e) => {
+          e.preventDefault()
+          dispatch(setVisibilityFilter(filter))
+        }
+      })
+
+      export default connect(mapStateToProps, mapDispatchToProps)(Filter)
+
+src/components/finter-link.js:
+        'use strict'
+
+        import React from 'react'
+
+        const FilterLink = ({ action, activeFilter, children, onClick }) => {
+          const span = { tag: 'span' }
+          const a = { tag: 'a', href: '#', onClick }
+
+          const component = action === activeFilter ? span : a
+
+          return (
+            <component.tag
+              href={component.href}
+              onClick={component.onClick}
+              style={{ marginRight: 10 }}
+            >
+              {children}
+            </component.tag>
+          )
+        }
+
+        export default FilterLink
+
+
+
 class #47 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
 class #48 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
 class #49 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
 class #50 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
