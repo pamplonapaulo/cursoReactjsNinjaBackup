@@ -1,0 +1,2873 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 3 * Part 1
+
+class #1
+
+  - Redux
+
+  - Manipulação de estados de uma aplicação React com Redux;
+  - Conceitos - do básico ao avançado - de uso do Redux
+
+  - Higher Order Functions (HOF);
+  - Higher Order Components (HOC);
+  - Mais sobre ESNext (ES6, ES7, ES8, etc);
+  - Testes para Redux
+
+
+class #2 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Redux and it's environment
+
+  redux.js.org
+
+  What is?
+  "It's a predictable state container for JavaScript apps."
+
+  What it does?
+  Helps states' management of the application.
+
+  Something like Context api.
+
+  OBS: Doesn't have to be a React app.
+
+
+class #3 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Redux has 3 principles
+
+  #1
+  First Principle: Single source of truth
+
+  - Single object where data states are stored
+
+  (So all other components will be stateless)
+
+  Example: counter
+
+    { counter: 0 }
+
+  Serializable values
+
+  Valores serializáveis:
+  converte-se para outros formatos e depois retorna a um formato original, como um JSON and a string.
+
+  Blog app - states' structure:
+
+    {
+      posts: [
+        { id: 1, title: 'Post 1' },
+        { id: 2, title: 'Post 2' }
+      ],
+      modals: { name: 'login' },
+      environment: { isMobile: false, language: 'pt-BR' },
+      ui: { isMenuOpened: true, isSearchBarOpened: false }
+    }
+
+class #4 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  #2
+  Second Principle: State is only readable
+
+  So how we change states?
+  -> Action emitters
+
+  Trigger an action,
+  which is an object with a prop type,
+  which is a string that represents what you want to do.
+
+    { type: 'INCREMENT' }
+
+  Then Redux calculate new state and adds a new value:
+
+    { counter: 1 }
+
+  Now given an app with many counters.
+
+    [ ]
+
+  Action:
+  { type: 'ADD_COUNTER' }
+
+  Then: [ 0 ]
+
+  Action:
+  { type: 'ADD_COUNTER' }
+
+  Then: [ 0, 0 ]
+
+  And now increment's action:
+  { 
+    type: 'INCREMENT',
+    index: 1
+  }
+
+  Then: [ 0, 1 ]
+
+  Again:
+  { 
+    type: 'INCREMENT',
+    index: 1
+  }
+
+  Then: [ 0, 2 ]
+
+  Again:
+  { 
+    type: 'INCREMENT',
+    index: 0
+  }
+
+  Then: [ 1, 2 ]
+
+  And so on...
+
+  Action is an objeact with a string property (cuz strings are Serializables).
+
+
+
+
+class #5 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  #3
+  Third Principle: Only 'Pure Functions' promote changes.
+
+  Pure Functions:
+
+    - Do not change any inside state;
+    - Takes a given value and returns a new value;
+
+    function double (x) {
+      return x + x
+    }
+
+    function doubleAll (items) {
+      return items.map(double)
+    }
+
+  So what would be an impure fucntion?
+
+    function double (x) {
+      requestSomeValue(x) <-- that's an external request (what it does?)
+      return x + x
+    }
+
+    function doubleAll (items) {
+      for (let i = 0; i < items.length; i++) {
+        items[i] = double(items[i]) <-- modifying the original array
+      }
+    }
+
+
+class #6 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+So how we change state?
+
+--> Reducer
+It's a function that receives the current app's state (plus an action) and returns a new state
+
+in short:
+(state, action) => state
+
+
+  const counter = (state = 0, action) => {
+    switch (action.type) {
+      case 'INCREMENT': return state + 1
+      case 'DECREMENT': return state - 1
+    }
+    return state
+  }
+
+
+
+class #7 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Hands on: Counter App
+
+  Creating some tests
+
+  main.js:
+
+    'use strict'
+
+    console.assert(
+      1 === 2,
+      'Test 1 === 2'
+    )
+
+    console.assert(
+      2 === 2,
+      'Test 2 === 2'
+    )
+
+index.html:
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Redux Counter</title>
+  </head>
+  <body>
+    <h1>0</h1>
+    <button>+</button>
+    <button>-</button>
+    <script src="main.js"></script>
+  </body>
+  </html>
+
+
+class #8 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Reducer with TDD (Test Driven Development)
+
+main.js:
+
+  'use strict'
+
+  const counter = (state, action) => {
+    if (typeof state === undefined) {
+      return 0
+    }
+    
+    if (action.type === 'INCREMENT') {
+      return state + 1
+    }
+
+    if (action.type === 'DECREMENT') {
+      return state - 1
+    }
+
+    return state
+  }
+
+  console.assert(
+    counter(0, { type: 'INCREMENT' }) === 1
+  )
+
+  console.assert(
+    counter(1, { type: 'INCREMENT' }) === 2
+  )
+
+  console.assert(
+    counter(2, { type: 'DECREMENT' }) === 1
+  )
+
+  console.assert(
+    counter(5, { type: 'DECREMENT' }) === 4
+  )
+
+  console.assert(
+    counter(3, { type: 'SOMETHING' }) === 3
+  )
+
+  // state is undefined when gets inside the app at first time, so for that:
+  console.assert(
+    counter(undefined, {}) === 0
+  )
+
+  // Same but improved:
+  const counter = (state = 0, action) => {
+    switch (action.type) {
+      case 'INCREMENT': return state + 1
+      case 'DECREMENT': return state - 1
+    }
+    return state
+  }
+
+
+class #9 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Now using reudx via cdn:
+
+  <script src="//unpkg.com/redux@latest/dist/reduz.min.js"></script>
+
+  our folder:
+  sample/2-hello-redux
+
+  Redux version at professor's class:
+  @3.7.2
+
+  Mine:
+  @4.0.5
+
+  Our files updates:
+
+  index.html:
+  <script src="//unpkg.com/redux@latest/dist/redux.min.js"></script>
+  <script src="main.js"></script>
+  <script src="tests.js"></script>
+
+  main.js:
+
+    const { createStore } = Redux
+
+    const store = createStore(counter)
+
+    console.log(store.getState())
+    // 0
+
+    store.dispatch({ type: 'INCREMENT' })
+
+    console.log(store.getState())
+    // 1
+
+    store.dispatch({ type: 'INCREMENT' })
+    store.dispatch({ type: 'INCREMENT' })
+    console.log(store.getState())
+    // 3
+
+    store.dispatch({ type: 'DECREMENT' })
+    store.dispatch({ type: 'DECREMENT' })
+    console.log(store.getState())
+    // 1
+
+
+OBS: All Redux actions are sync.
+
+Subscribe:
+store.subscribe(() => {
+  console.log('dispatch an action', store.getState())
+})
+
+class #10 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+main.js:
+
+  'use strict'
+
+  const counter = (state = 0, action) => {
+    switch (action.type) {
+      case 'INCREMENT': return state + 1
+      case 'DECREMENT': return state - 1
+    }
+    return state
+  }
+
+  const { createStore } = Redux
+  const store = createStore(counter)
+
+  const $counter = document.querySelector('[data-js="counter"]')
+  const $decrement = document.querySelector('[data-js="decrement"]')
+  const $increment = document.querySelector('[data-js="increment"]')
+
+  $decrement.addEventListener('click', decrement, false)
+  $increment.addEventListener('click', increment, false)
+
+  function decrement () {
+    store.dispatch({ type: 'DECREMENT'})
+  }
+
+  function increment () {
+    store.dispatch({ type: 'INCREMENT'})
+  }
+
+  store.subscribe(() => {
+    $counter.textContent = store.getState()
+  })
+
+The same logic without Redux?
+
+  function decrement () {
+    $counter.textContent = Number($counter.textContent) - 1
+  }
+
+  function increment () {
+    $counter.textContent = Number($counter.textContent) + 1
+  }
+
+  But doing this, we would need the DOM element to get the value. Using Redux and it's store, the application can get this data from anywhere.
+
+  So Redux isolate the state's application, allowing us to work with them from many places always well updated.
+
+
+class #11 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+createStore() behind the scenes
+
+  const createStore = () => {
+    return {
+      getState: () => null,
+      dispatch: () => null,
+      subscribe: () => null
+    }
+  }
+
+  main.js:
+
+    'use strict'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const createStore = (reducer) => {
+      let state
+      let subscriptions = []
+
+      const dispatch = (action) => {
+        state = reducer(state, action)
+        subscriptions.forEach((f) => f())
+      }
+
+      const subscribe = (func) => {
+        subscriptions.push(func)
+      }
+
+      dispatch({})
+
+      return {
+        getState: () => state,
+        dispatch,
+        subscribe
+      }
+    }
+
+    const store = createStore(counter)
+
+    const $counter = document.querySelector('[data-js="counter"]')
+    const $decrement = document.querySelector('[data-js="decrement"]')
+    const $increment = document.querySelector('[data-js="increment"]')
+
+    $decrement.addEventListener('click', decrement, false)
+    $increment.addEventListener('click', increment, false)
+
+    function decrement () {
+      store.dispatch({ type: 'DECREMENT'})
+    }
+
+    function increment () {
+      store.dispatch({ type: 'INCREMENT'})
+    }
+
+    function render () {
+      $counter.textContent = store.getState()
+    }
+
+    store.subscribe(render)
+    render()
+
+
+class #12 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+COUNTER WITH REACT
+
+app.js:
+
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+
+    const App = () => (
+      <Counter />
+    )
+
+    export default App
+
+
+index.js:
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import Counter from './counter'
+
+    class CounterContainer extends PureComponent {
+      constructor () {
+        super()
+        this.state = {
+          counter: 0
+        }
+
+        this.increment = () => {
+          this.setState({
+            counter: this.state.counter + 1
+          })
+        }
+
+        this.decrement = () => {
+          this.setState({
+            counter: this.state.counter - 1
+          })
+        }
+      }
+
+      render () {
+        const { counter } = this.state
+
+        return (
+          <Counter
+            counter={counter}
+            increment={this.increment}
+            decrement={this.decrement}
+          />
+        )
+      }
+    }
+
+    export default CounterContainer
+
+counter.js:
+
+    'use strict'
+
+    import React from 'react'
+
+    const Counter = ({ counter, increment, decrement }) => (
+      <div>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+      </div>
+    )
+
+    export default Counter
+
+class #13 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+COUNTER WITH REACT + REDUX
+
+  Terminal:
+  yarn add redux
+
+  Prof's version: 3.7.2
+  Mine: 4.0.5
+
+import { createStore } from 'redux'
+
+
+index.js:
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import Counter from './counter'
+    import { createStore } from 'redux'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const store = createStore(counter)
+
+    class CounterContainer extends PureComponent {
+      constructor () {
+        super()
+
+        this.increment = () => {
+          store.dispatch({ type: 'INCREMENT' })
+        }
+
+        this.decrement = () => {
+          store.dispatch({ type: 'DECREMENT' })
+        }
+      }
+
+      componentDidMount () {
+        store.subscribe(() => this.forceUpdate())
+      }
+
+      render () {
+        return (
+          <Counter
+            counter={store.getState()}
+            increment={this.increment}
+            decrement={this.decrement}
+          />
+        )
+      }
+    }
+
+    export default CounterContainer
+
+
+Now not inside counter/index.js, but src/index.js and src/app.js
+
+src/index.js:
+
+    'use strict'
+
+    import React from 'react'
+    import { render } from 'react-dom'
+    import { AppContainer } from 'react-hot-loader'
+    import { createStore } from 'redux'
+    import App from './app'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const store = createStore(counter)
+
+    const renderApp = (NextApp) => {
+      render(
+        <AppContainer>
+          <NextApp store={store}/>
+        </AppContainer>,
+        document.querySelector('[data-js="app"]')
+      )
+    }
+
+    renderApp(App)
+
+    if (module.hot) {
+      module.hot.accept('./app', () => {
+        const NextApp = require('./app').default
+        renderApp(NextApp)
+      })
+    }
+
+
+
+src/app.js:
+
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+
+    const App = ({ store }) => (
+      <Counter store={store} />
+    )
+
+    export default App
+
+
+counter/index.js:
+
+    'use strict'
+
+    import React, { PureComponent } from 'react'
+    import Counter from './counter'
+
+    class CounterContainer extends PureComponent {
+      constructor () {
+        super()
+
+        this.increment = () => {
+          this.props.store.dispatch({ type: 'INCREMENT' })
+        }
+
+        this.decrement = () => {
+          this.props.store.dispatch({ type: 'DECREMENT' })
+        }
+      }
+
+      componentDidMount () {
+        this.unsubscribe = this.props.store.subscribe(() => this.forceUpdate())
+      }
+
+      componentWillUnmount () {
+        this.unsubscribe()
+      }
+
+      render () {
+        return (
+          <Counter
+            counter={this.props.store.getState()}
+            increment={this.increment}
+            decrement={this.decrement}
+          />
+        )
+      }
+    }
+
+    export default CounterContainer
+
+
+class #14 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Previously, our last version had a problem:
+
+  'store' is created at src/index.js and passed throw src/app.js,
+  then app.js get it and passes to counter/index.js. There, finally, this component uses it.
+
+  How could we jump all this?
+
+    Terminal:
+      
+      yarn add react-redux
+
+    It works like Context API
+
+    Profe's version: 5.0.6
+    Mine: 7.2.0
+
+    src/index.js:
+
+    import { Provider } from 'react-redux'
+
+    Then, insted of:
+      const renderApp = (NextApp) => {
+        render(
+          <AppContainer>
+            <NextApp store={store}/>
+          </AppContainer>,
+          document.querySelector('[data-js="app"]')
+        )
+      }
+
+    Use it:
+      const renderApp = (NextApp) => {
+        render(
+          <AppContainer>
+            <Provider store={store}>
+              <NextApp />
+            </Provider>
+          </AppContainer>,
+          document.querySelector('[data-js="app"]')
+        )
+      }
+
+    It should wrap the whole application, but the reac-hot-loader (here AppContainer).
+
+    This maps the store over the application.
+
+    With this, so we don't need to move the 'store' manually on each child. That said, we get rid of that in the src/app.js:
+
+        'use strict'
+
+        import React from 'react'
+        import Counter from 'components/counter'
+
+        const App = () => (
+          <Counter />
+        )
+
+        export default App
+
+    Also, now at our counter/index.js, we no longer need the 'subscribe()' and 'unsubscribe()':
+
+    Remove this:
+
+        componentDidMount () {
+          this.unsubscribe = this.props.store.subscribe(() => this.forceUpdate())
+        }
+
+        componentWillUnmount () {
+          this.unsubscribe()
+        }
+
+    And include this:
+
+    import { connect } from 'react-redux'
+
+    It's a function that returns a new component, which will be a container.
+    We saw something like this at Context classes, look how we export this now:
+
+    export default connect()(CounterContainer)
+
+    Now this:
+
+      const mapStateToProps = (state) => {
+        return {
+          counter: state
+        }
+      }
+
+    export default connect(mapStateToProps)(CounterContainer)
+
+      Above, every time 'state' updates, the connect()() will render again and will call the CounterContainer, so we don't have to force it's update.
+
+      'mapStateToProps' is transforming the state into props to be passed to CounterContainer.
+
+
+Recap:
+- Provider (with store) - it maps store by itself.
+- then Provider talks directly with 'connect', which passes forward including dispatch on that.
+
+
+class #15 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+How to isolate also the dispatch method that is being part of contructor in CounterContainer?
+
+Insted of having dispatch here on the constructor:
+
+class CounterContainer extends PureComponent {
+  constructor () {
+    super()
+
+    this.increment = () => {
+      this.props.dispatch({ type: 'INCREMENT' })
+    }
+
+    this.decrement = () => {
+      this.props.dispatch({ type: 'DECREMENT' })
+    }
+  }
+
+  Our code end up like this:
+    const mapDispatchToProps = (dispatch) => ({
+      increment: () => dispatch({ type: 'INCREMENT' }),
+      decrement: () => dispatch({ type: 'DECREMENT' })
+    })
+    export default connect(mapStateToProps, mapDispatchToProps)(CounterContainer)
+
+
+  OBS: Note that in arrow functions that return just one thing we actually can remove the 'return' command and go direct to what is being returned. From this:
+    const mapStateToProps = (state) => {
+      return {
+        counter: state
+      }
+    }
+  To:
+    const mapStateToProps = (state) => ({
+      counter: state
+    })
+
+  How to use StoryBook with an redux app?
+
+  If we use Redux in the storybook, we can test it isolated
+
+  Use 'export' in the component:
+
+  counter/index.js:
+
+    'use strict'
+
+    import React from 'react'
+    import { connect } from 'react-redux'
+
+    export const Counter = ({ counter, increment, decrement }) => (
+      <div>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+      </div>
+    )
+
+    const mapStateToProps = (state) => ({
+      counter: state
+    })
+
+    const mapDispatchToProps = (dispatch) => ({
+      increment: () => dispatch({ type: 'INCREMENT' }),
+      decrement: () => dispatch({ type: 'DECREMENT' })
+    })
+
+    export default connect(mapStateToProps, mapDispatchToProps)(Counter)
+
+  counter.story.js:
+
+    'use strict'
+
+    import React from 'react'
+    import { Counter } from './index'
+    import { storiesOf, action } from '@storybook/react'
+
+    const stories = storiesOf('Counter', module)
+
+    stories.add('Counter', () => (
+      <Counter counter={1} increment={action('increment')} decrement={action('decrement')} />
+    ))
+
+
+
+class #16 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding more counters
+
+src/app.js:
+    import Counter from 'components/counters'
+    <Counters />
+
+
+All files at the end:
+
+src/index.js:
+    'use strict'
+
+    import React from 'react'
+    import { render } from 'react-dom'
+    import { AppContainer } from 'react-hot-loader'
+    import { Provider } from 'react-redux'
+    import { createStore } from 'redux'
+    import App from './app'
+
+    const counter = (state = 0, action) => {
+      switch (action.type) {
+        case 'INCREMENT': return state + 1
+        case 'DECREMENT': return state - 1
+      }
+      return state
+    }
+
+    const store = createStore(counter)
+
+    const renderApp = (NextApp) => {
+      render(
+        <AppContainer>
+          <Provider store={store}>
+            <NextApp />
+          </Provider>
+        </AppContainer>,
+        document.querySelector('[data-js="app"]')
+      )
+    }
+
+    renderApp(App)
+
+    if (module.hot) {
+      module.hot.accept('./app', () => {
+        const NextApp = require('./app').default
+        renderApp(NextApp)
+      })
+    }
+
+src/app.js:
+    'use strict'
+
+    import React from 'react'
+    import Counters from 'components/counters'
+
+    const App = () => (
+      <Counters />
+    )
+
+    export default App
+
+
+
+
+components/counter/index.js:
+    'use strict'
+
+    import React from 'react'
+
+    const Counter = ({ counter, increment, decrement }) => (
+      <div>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+      </div>
+    )
+
+    export default Counter
+
+components/counters/index.js:
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+    import { connect } from 'react-redux'
+
+    const Counters = ({ counter, increment, decrement }) => (
+      <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+        {[0, 0, 0].map((item, index) => (
+          <Counter
+            key={index}
+            counter={counter}
+            increment={increment}
+            decrement={decrement}
+          />
+        ))}
+      </div>
+    )
+
+    const mapStateToProps = (state) => ({
+      counter: state
+    })
+
+    const mapDispatchToProps = (dispatch) => ({
+      increment: () => dispatch({ type: 'INCREMENT' }),
+      decrement: () => dispatch({ type: 'DECREMENT' })
+    })
+
+    export default connect(mapStateToProps, mapDispatchToProps)(Counters)
+
+class #17 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding more counters - New reducer
+
+new reducer. recap:
+- have to be pure function
+- can't change data
+- return a new value based on previous state + action
+
+new folders:
+
+    src/redux-flow-reducers/counters
+
+Terminal
+yarn test:watch
+
+Write first the test itself:
+
+counters.test.js:
+
+    'use strict'
+
+    import counters from './index'
+    import { expect } from 'chai'
+
+    it('counters should be a function', () => {
+      expect(counters).to.be.a('function')
+    })
+
+counters/index.js:
+
+    'use strict'
+
+    export default () => {}
+
+
+happy path / baby steps
+
+class #18 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+WRONG EXAMPLE: THIS CHANGES THE STATE
+
+'use strict'
+
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      state.push(0)
+      return state
+  }
+}
+
+We supposed to create a new array or return another array, despite modify the existing one
+
+Don't change 'state'(or 'before' if you will) or 'action', those should remain the same.
+
+You can see what we are talking about:
+
+  it('Should add a new counter again', () => {
+    const before = [0, 1]
+    const action = { type: 'ADD_COUNTER' }
+    const after = [0, 1, 0]
+    console.log('before:' + before)
+    expect(counters(before, action)).to.be.deep.equal(after)
+    console.log('before:' + before)
+  })
+
+  console.log src/redux-flow/reducers/counters/counters.test.js:21
+    before:0,1
+
+  console.log src/redux-flow/reducers/counters/counters.test.js:23
+    before:0,1,0
+
+  To solve that, we gonna install a module: deep-freeze
+
+    Terminal:
+    yarn add --dev deep-freeze
+
+    Import it at the test file:
+
+      import deepFreeze from 'deep-freeze'
+
+    It's a function and we call it on 'before' and 'action':
+
+      const before = deepFreeze([])
+      const action = deepFreeze({ type: 'ADD_COUNTER' })
+
+    Now our test throws an error. DeepFreeze creates a kind of safety lock, we won't be able to make the mistake of modifying our state or action anymore.
+
+  So insted of push, we will use concat, which creates a new array without modifying the original:
+
+      'use strict'
+
+      export default (state, action) => {
+        switch (action.type) {
+          case 'ADD_COUNTER':
+            return state.concat(0)
+        }
+      }
+
+  Now everything works, all tests pass.
+
+class #19 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Testing a next action: Remove
+
+    Recap all actions:
+
+      add,
+      remove,
+      increment,
+      decrement
+
+text:
+it('Should remove a counter', () => {
+  const vefore = deepFreeze([0, 1, 2])
+  const action = deepFreeze({ type: 'REMOVE_COUNTER', index: 1 })
+  const after = [0, 2]
+  expect(counters(before, action)).to.be.deep.equal(after)
+})
+
+baby step:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return [0, 2]
+  }
+}
+
+and now for real:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((counter, index) => {
+        return index !== action.index
+      })
+  }
+}
+
+refactoring:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+  }
+}
+
+class #20 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Testing a next action: Increment
+
+test:
+it('Should increment a counter', () => {
+  const before = deepFreeze([0, 0])
+  const action = deepFreeze({ type: 'INCREMENT', index: 0 })
+  const after = [1, 0]
+  expect(counters(before, action)).to.be.deep.equal(after)
+})
+
+ALWAYS do baby steps first!!! So code for this baby step would be:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return [1, 0]
+  }
+}
+
+the real one:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((counter, index) => {
+        if (index === action.index) {
+          return counter + 1
+        }
+        return counter
+      })
+  }
+}
+
+refactoring it:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((c, index) => index === action.index ? c + 1 : c)
+  }
+}
+
+Testing a next action: Decrement
+
+the test:
+it('Should decrement counter', () => {
+  const before = deepFreeze([0, 2, 1])
+  const action = deepFreeze({ type: 'DECREMENT', index: 2 })
+  const after = [0, 2, 0]
+  expect(counters(before, action)).to.be.deep.equal(after)
+})
+
+the baby step:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((c, index) => index === action.index ? c + 1 : c)
+    case 'DECREMENT':
+      return [0, 2, 0]
+  }
+}
+
+the real thing:
+export default (state, action) => {
+  switch (action.type) {
+    case 'ADD_COUNTER':
+      return state.concat(0)
+    case 'REMOVE_COUNTER':
+      return state.filter((_, index) => index !== action.index)
+    case 'INCREMENT':
+      return state.map((c, index) => index === action.index ? c + 1 : c)
+    case 'DECREMENT':
+      return state.map((c, index) => index === action.index ? c - 1 : c)
+  }
+}
+
+
+class #21 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Tests the errors
+
+    test itself:
+    it('Should return same state if action is unknown', () => {
+      const before = deepFreeze([0, 0, 1])
+      const action = deepFreeze({ type: 'UNKNOWN' })
+      const after = [0, 0, 1]
+      expect(counters(before, action)).to.be.deep.equal(after)
+    })
+
+    the code:
+    export default (state, action) => {
+      switch (action.type) {
+        case 'ADD_COUNTER':
+          return state.concat(0)
+        case 'REMOVE_COUNTER':
+          return state.filter((_, i) => i !== action.index)
+        case 'INCREMENT':
+          return state.map((c, i) => i === action.index ? c + 1 : c)
+        case 'DECREMENT':
+          return state.map((c, i) => i === action.index ? c - 1 : c)
+      }
+      return state
+    }
+
+    If state is undefined:
+      it('Should return initial state if last state is undefined', () => {
+        const before = undefined
+        const action = deepFreeze({})
+        const after = []
+        expect(counters(before, action)).to.be.deep.equal(after)
+      })
+
+    the code:
+      export default (state = [], action) => {
+        switch (action.type) {
+          case 'ADD_COUNTER':
+            return state.concat(0)
+          case 'REMOVE_COUNTER':
+            return state.filter((_, i) => i !== action.index)
+          case 'INCREMENT':
+            return state.map((c, i) => i === action.index ? c + 1 : c)
+          case 'DECREMENT':
+            return state.map((c, i) => i === action.index ? c - 1 : c)
+        }
+        return state
+      }
+
+    Some improvements:
+
+    How abotu a typo in your code?
+
+    We should have this:
+
+      export const ADD_COUNTER = 'ADD_COUNTER'
+      export const REMOVE_COUNTER = 'REMOVE_COUNTER'
+      export const INCREMENT = 'INCREMENT'
+      export const DECREMENT = 'DECREMENT'
+
+      export default (state = [], action) => {
+        switch (action.type) {
+          case ADD_COUNTER:
+            return state.concat(0)
+          case REMOVE_COUNTER:
+            return state.filter((_, i) => i !== action.index)
+          case INCREMENT:
+            return state.map((c, i) => i === action.index ? c + 1 : c)
+          case DECREMENT:
+            return state.map((c, i) => i === action.index ? c - 1 : c)
+        }
+        return state
+      }
+
+    test:
+
+        import counters, {
+          ADD_COUNTER,
+          REMOVE_COUNTER,
+          INCREMENT,
+          DECREMENT
+        } from './index'
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+
+        it('counters should be a function', () => {
+          expect(counters).to.be.a('function')
+        })
+
+        it('Should add a counter', () => {
+          const before = deepFreeze([])
+          const action = deepFreeze({ type: ADD_COUNTER })
+          const after = [0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should add a new counter again', () => {
+          const before = deepFreeze([0, 1])
+          const action = deepFreeze({ type: ADD_COUNTER })
+          const after = [0, 1, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should remove a counter', () => {
+          const before = deepFreeze([0, 1, 2])
+          const action = deepFreeze({ type: REMOVE_COUNTER, index: 1 })
+          const after = [0, 2]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should remove a counter', () => {
+          const before = deepFreeze([3, 1])
+          const action = deepFreeze({ type: REMOVE_COUNTER, index: 0 })
+          const after = [1]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should increment a counter', () => {
+          const before = deepFreeze([0, 0])
+          const action = deepFreeze({ type: INCREMENT, index: 0 })
+          const after = [1, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should increment another counter', () => {
+          const before = deepFreeze([1, 0])
+          const action = deepFreeze({ type: INCREMENT, index: 1 })
+          const after = [1, 1]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should decrement counter', () => {
+          const before = deepFreeze([0, 2, 1])
+          const action = deepFreeze({ type: DECREMENT, index: 2 })
+          const after = [0, 2, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should decrement another counter', () => {
+          const before = deepFreeze([0, 2, 0])
+          const action = deepFreeze({ type: DECREMENT, index: 1 })
+          const after = [0, 1, 0]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should return same state if action is unknown', () => {
+          const before = deepFreeze([0, 0, 1])
+          const action = deepFreeze({ type: 'UNKNOWN' })
+          const after = [0, 0, 1]
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should return initial state if last state is undefined', () => {
+          const before = undefined
+          const action = deepFreeze({})
+          const after = []
+          expect(counters(before, action)).to.be.deep.equal(after)
+        })
+
+By having those variables, an error is thrown if you have a typo. Like that:
+
+    ReferenceError: ADD_CsOUNTER is not defined
+
+  
+Also, let's include a variable 'initialState':
+
+index.js:
+    export const initialState = []
+    export default (state = initialState, action) => { ... }
+
+counters.text.js:
+    import counters, {
+      initialState,
+      ADD_COUNTER,
+      REMOVE_COUNTER,
+      INCREMENT,
+      DECREMENT
+    } from './index'
+
+    it('Should return initial state if last state is undefined', () => {
+      const before = undefined
+      const action = deepFreeze({})
+      const after = initialState
+      expect(counters(before, action)).to.be.deep.equal(after)
+    })
+
+    If we change our initial state from [] to [{}], we don't have to change all over the code.
+
+    
+class #22 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Ajustments in order to have more counters
+
+include extra alias in webpack/common.js:
+
+  reducers: join(paths.src, 'redux-flow', 'reducers')
+
+  resolve: {
+    alias: {
+      src: paths.src,
+      components: join(paths.src, 'components'),
+      utils: join(paths.src, 'utils'),
+      reducers: join(paths.src, 'redux-flow', 'reducers')
+    }
+  }
+
+files the end of the class....
+
+counters/index.js:
+    'use strict'
+
+    import React from 'react'
+    import Counter from 'components/counter'
+    import { connect } from 'react-redux'
+    import { ADD_COUNTER, REMOVE_COUNTER, INCREMENT, DECREMENT } from 'reducers/counters'
+
+    const Counters = ({ counters, addCounter, removeCounter, increment, decrement }) => (
+
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {counters.map((counter, index) => (
+            <Counter
+              {...{
+                key: index,
+                counter,
+                removeCounter: removeCounter(index),
+                increment: increment(index),
+                decrement: decrement(index)
+              }}
+            />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 10 }}>
+          <button onClick={addCounter}>Add counter</button>
+        </div>
+      </div>
+    )
+
+    const mapStateToProps = (state) => ({
+      counters: state
+    })
+
+    const mapDispatchToProps = (dispatch) => ({
+      addCounter: () => dispatch({ type: ADD_COUNTER }),
+      removeCounter: (index) => () => dispatch({ type: REMOVE_COUNTER, index }),
+      increment: (index) => () => dispatch({ type: INCREMENT, index }),
+      decrement: (index) => () => dispatch({ type: DECREMENT, index })
+    })
+
+    export default connect(mapStateToProps, mapDispatchToProps)(Counters)
+
+
+counter/index.js:
+    'use strict'
+
+    import React from 'react'
+
+    const Counter = ({ counter, increment, decrement, removeCounter }) => (
+      <div style={{ position: 'relative', border: '1px solid #000', padding: 5 }}>
+        <h1>{counter}</h1>
+        <button onClick={decrement}>-</button>
+        <button onClick={increment}>+</button>
+        <button
+          style={{ fontSize: 7, position: 'absolute', right: 5, top: 5 }}
+          onClick={removeCounter}
+        >
+          &times;
+        </button>
+
+      </div>
+    )
+
+    export default Counter
+
+
+class #23 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+actionCreators
+
+So insted of calling dispatch and passing the action's type every time here at counters/index.js:
+
+    const mapDispatchToProps = (dispatch) => ({
+      addCounter: () => dispatch({ type: ADD_COUNTER }),
+      removeCounter: (index) => () => dispatch({ type: REMOVE_COUNTER, index }),
+      increment: (index) => () => dispatch({ type: INCREMENT, index }),
+      decrement: (index) => () => dispatch({ type: DECREMENT, index })
+    })
+
+This new approach consist in:
+
+new files:
+src/redux-flow/reducers/action-creators.js
+
+src/redux-flow/reducers/actions.js (we'll move all actions to here):
+
+  export const ADD_COUNTER = 'ADD_COUNTER'
+  export const REMOVE_COUNTER = 'REMOVE_COUNTER'
+  export const INCREMENT = 'INCREMENT'
+  export const DECREMENT = 'DECREMENT'
+
+then update this:
+src/redux-flow/reducers/counters/counters.test.js
+
+    import { ADD_COUNTER, REMOVE_COUNTER, INCREMENT, DECREMENT } from './actions'
+
+and update this:
+src/redux-flow/reducers/counters/index.js
+
+    import { ADD_COUNTER, REMOVE_COUNTER, INCREMENT, DECREMENT } from './actions'
+
+'actionCreators' are basicly functions that abstract our functions. They have dispatch's code content.
+
+By the end would replace this:
+
+      const mapDispatchToProps = (dispatch) => ({
+        addCounter: () => dispatch({ type: ADD_COUNTER }),
+        removeCounter: (index) => () => dispatch({ type: REMOVE_COUNTER, index }),
+        increment: (index) => () => dispatch({ type: INCREMENT, index }),
+        decrement: (index) => () => dispatch({ type: DECREMENT, index })
+      })
+
+With this:
+
+      const mapDispatchToProps = (dispatch) => ({
+        addCounter: () => dispatch(addCounter()),
+        removeCounter: (index) => () => dispatch(removeCounter(index)),
+        increment: (index) => () => dispatch(increment(index)),
+        decrement: (index) => () => dispatch(decrement(index))
+      })
+
+Professor claims that this new code is more readable.  "Redux gives some extra fat to our boilerplate but makes the code more abstract, reducing repetition."
+
+
+class #24 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+New App: ToDo List
+
+  just settings updates at Deciuk's boilerplate, most of them about:
+
+      react-hot-loader/webpack
+
+
+class #25 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  cont. of settings updates, most of them about:
+
+      new webpack.NamedModulesPlugin(),
+
+  and checked all scripts on package.json.
+
+
+class #26 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  cont. of settings updates, most of them about:
+
+    storybook
+    
+  new website: https://storybook.js.org
+
+  "@storybook/react": "^3.2.8" (goodbye @kadira)
+
+class #27 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  lastly: errors settings
+
+  server.js:
+
+    new WebpackDevServer(webpack(config), {
+      overlay: true
+      ......
+    }).listen(3000, (err) => {.....})
+
+class #28 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+To Do List (starting)
+
+The very initial idea of our project:
+
+      'use strict'
+
+      import React from 'react'
+
+      const App = () => (
+        <div>
+          <input type='text' />
+
+          <ul>
+            <li style={{ textDecoration: 'line-through' }}>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+            <li>Item 4</li>
+            <li>Item 5</li>
+          </ul>
+
+          <div>
+            <h3>Mostrar</h3>
+            <a href="#">Todos</a> | <a href="#">Finalizados</a> | <a href="#">A fazer</a>
+          </div>
+
+
+        </div>
+      )
+
+      export default App
+
+
+class #29 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding redux
+
+todo.test.js:
+
+      'use strict'
+
+      import { expect } from 'chai'
+      import deepFreeze from 'deep-freeze'
+      import todos from './index'
+      import { ADD_TODO } from './actions'
+
+      it('Should todos be a function', () => {
+        expect(todos).to.be.a('function')
+      })
+
+      it('Should add a todo item', () => {
+        const before = deepFreeze([])
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 0, text: 'Hey' }
+        })
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+actions.js:
+
+      'use strict'
+
+      export const ADD_TODO = 'ADD_TODO'
+
+index.js:
+
+      'use strict'
+
+      const todos = () => {
+        return [{ id: 0, text: 'Hey', completed: false }]
+      }
+
+      export default todos
+
+
+class #30 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+index.js:
+      'use strict'
+
+      import { ADD_TODO, TOGGLE_TODO} from './actions'
+
+      const initialState = []
+
+      const todos = (state = initialState, action) => {
+        switch (action.type) {
+          case ADD_TODO:
+            return state.concat({
+              id: action.payload.id,
+              text: action.payload.text,
+              completed: false
+            })
+            
+          case TOGGLE_TODO:
+            return state.map((todo) => {
+              if (todo.id !== action.payload.id) {
+                return todo
+              }
+
+              return {
+                ...todo,
+                completed: !todo.completed
+              }
+            })
+        }
+      }
+
+      export default todos
+
+
+
+todo.test.js:
+      'use strict'
+
+      import { expect } from 'chai'
+      import deepFreeze from 'deep-freeze'
+      import todos from './index'
+      import { ADD_TODO, TOGGLE_TODO } from './actions'
+
+      it('Should todos be a function', () => {
+        expect(todos).to.be.a('function')
+      })
+
+      it('Should add a todo item', () => {
+        const before = deepFreeze([])
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 0, text: 'Hey' }
+        })
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should add a new item', () => {
+        const before = deepFreeze([
+          { id: 0, text: 'Hey', completed: false }
+        ])
+
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 1, text: 'Ho' }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should toggle first todo', () => {
+        const before = deepFreeze([
+          {id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false}
+        ])
+
+        const action = deepFreeze({
+          type: TOGGLE_TODO,
+          payload: { id: 0 }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: true },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+        
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+class #31 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+todos/index.js:
+
+      'use strict'
+
+      import { ADD_TODO, TOGGLE_TODO} from './actions'
+
+      export const initialState = []
+
+      const todos = (state = initialState, action) => {
+        switch (action.type) {
+          case ADD_TODO:
+            return state.concat({
+              id: action.payload.id,
+              text: action.payload.text,
+              completed: false
+            })
+            
+          case TOGGLE_TODO:
+            return state.map((todo) => {
+              if (todo.id !== action.payload.id) {
+                return todo
+              }
+
+              return {
+                ...todo,
+                completed: !todo.completed
+              }
+            })
+        }
+        return state
+      }
+
+      export default todos
+
+todos/todos.test.js:
+
+      'use strict'
+
+      import { expect } from 'chai'
+      import deepFreeze from 'deep-freeze'
+      import todos, { initialState } from './index'
+      import { ADD_TODO, TOGGLE_TODO } from './actions'
+
+      it('Should todos be a function', () => {
+        expect(todos).to.be.a('function')
+      })
+
+      it('Should add a todo item', () => {
+        const before = deepFreeze([])
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 0, text: 'Hey' }
+        })
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should add a new item', () => {
+        const before = deepFreeze([
+          { id: 0, text: 'Hey', completed: false }
+        ])
+
+        const action = deepFreeze({
+          type: ADD_TODO,
+          payload: { id: 1, text: 'Ho' }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should toggle first todo', () => {
+        const before = deepFreeze([
+          {id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false}
+        ])
+
+        const action = deepFreeze({
+          type: TOGGLE_TODO,
+          payload: { id: 0 }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: true },
+          { id: 1, text: 'Ho', completed: false }
+        ]
+        
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should toggle second todo', () => {
+        const before = deepFreeze([
+          {id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: false}
+        ])
+
+        const action = deepFreeze({
+          type: TOGGLE_TODO,
+          payload: { id: 1 }
+        })
+
+        const after = [
+          { id: 0, text: 'Hey', completed: false },
+          { id: 1, text: 'Ho', completed: true }
+        ]
+        
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should return the latest state when action is unknown', () => {
+        const before = deepFreeze([{ id: 0, text: 'Hey', completed: false }])
+        const action = deepFreeze({ type: 'ANYTHING'})
+        const after = [{ id: 0, text: 'Hey', completed: false }]
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+      it('Should return initialState when state before is undefined', () => {
+        const before = undefined
+        const action = deepFreeze({})
+        const after = initialState
+        expect(todos(before, action)).to.be.deep.equal(after)
+      })
+
+class #32 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Setting up Redux
+
+  yarn add redux (not only --dev, it will be used even in the build)
+
+  webpack/common.js:
+
+        resolve: {
+          alias: {
+            src: paths.src,
+            components: join(paths.src, 'components'),
+            utils: join(paths.src, 'utils'),
+            reducers: join(paths.src, 'redux-flow', 'reducers')
+          }
+        }
+
+  src/index.js:
+
+        import { createStore } from 'redux'
+        import reducer from 'reducers/todos'
+
+        const store = createStore(reducer)
+
+class #33 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+React Redux
+
+  yarn add react-redux
+
+  src/index.js:
+
+        import { Provider } from 'react-redux'
+
+        const renderApp = (NextApp) => {
+          render(
+            <AppContainer>
+              <Provider store={store}>
+                <NextApp />
+              </Provider>
+            </AppContainer>,
+            document.querySelector('[data-js="app"]')
+          )
+        }
+
+class #34 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+src/app.js:
+
+      import { connect } from 'react-redux'
+
+      const mapStateToProps = (state) => ({
+        todos: state
+      })
+
+      export default connect()(App)
+
+      Forms in React: how to get an input's value without manipulate the DOM?
+
+            <form>
+              <input type='text' />
+              <button>Add Item</button>
+            </form>
+
+      Manipulate functions that have to use dispatch in a action:
+
+              const mapDispatchToProps = (dispatch) => ({
+                handleAddTodo: (e) => {
+                  e.preventDefault()
+                }
+              })
+
+      src/app.js so far:
+
+              'use strict'
+
+              import React from 'react'
+              import { connect } from 'react-redux'
+
+              const App = ({ todos, handleAddTodo }) => (
+                <div>
+                  <form onSubmit={handleAddTodo}>
+                    <input type='text' name='todo' />
+                    <button type='submit'>Add Item</button>
+                  </form>
+
+                  {console.log(todos)}
+
+                  <ul>
+                    <li style={{ textDecoration: 'line-through' }}>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                    <li>Item 4</li>
+                    <li>Item 5</li>
+                  </ul>
+
+                  <div>
+                    <h3>Mostrar</h3>
+                    <a href='#'>Todos</a> | <a href='#'>Finalizados</a> | <a href='#'>A fazer</a>
+                  </div>
+
+                </div>
+              )
+
+              const mapStateToProps = (state) => ({
+                todos: state
+              })
+
+              const mapDispatchToProps = (dispatch) => ({
+                handleAddTodo: (e) => {
+                  e.preventDefault()
+                  dispatch({
+                    type: 'ADD_TODO',
+                    payload: { id: 0, text: 'Hey'}
+                  })
+                }
+              })
+
+              export default connect(mapStateToProps, mapDispatchToProps)(App)
+
+
+
+    redux-flow/reducres/todos/action-creators.js:
+
+          'use strict'
+
+          import { ADD_TODO } from './actions'
+
+          export const addTodo = (text) => ({
+            type: ADD_TODO,
+            payload: {
+              id: 0, text: text
+            }
+          })
+
+
+    How to get form's submit event: <input type='text' name='todo' />
+
+          const mapDispatchToProps = (dispatch) => ({
+            handleAddTodo: (e) => {
+              e.preventDefault()
+              console.log(e.target.todo.value)
+              dispatch(addTodo(e.target.todo.value))
+            }
+          })
+
+  ID generator:
+
+    yarn add uuid
+
+src/redux-flow/reducers/todos/action-creators.js:
+
+        'use strict'
+
+        import { ADD_TODO } from './actions'
+        import { v4 } from 'uuid'
+
+        export const addTodo = (text) => ({
+          type: ADD_TODO,
+          payload: {
+            id: v4(), text: text
+          }
+        })
+
+class #35 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Mapping todo's array:
+
+          <ul>
+            {todos.map((todo) => (
+              <li key={todo.id} style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
+                {todo.text}
+              </li>
+            ))}
+          </ul>
+
+
+class #36 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+cleaning up input's filed after insertion:
+
+        const mapDispatchToProps = (dispatch) => ({
+          handleAddTodo: (e) => {
+            e.preventDefault()
+            dispatch(addTodo(e.target.todo.value))
+
+            //HERE:
+            e.target.todo.value = ''
+          }
+        })
+
+OBS: Component above is non-controlled form, doesn't have onChange, doesn't update via React. He have to clean it up manually.
+
+
+
+todo's toggle:
+
+action-creators.js:
+
+        export const toggleTodo = (id) => ({
+          type: TOGGLE_TODO,
+          payload: { id }
+        })
+
+reminder about 'Closure':
+
+        <li onClick={handleToggleTodo(todo.id)}>
+        
+        handleToggleTodo: (id) => (e) => {
+          dispatch(toggleTodo(id))
+        }
+
+        1st function receives the 'id' and returns a 2nd function.
+        2nd function runs the action itself when the event occurs.
+
+
+TIP:
+
+exports that aren't 'export default':
+
+        import { ADD_TODO as ADD, TOGGLE_TODO as TOGGLE } from './actions'
+
+        export const addTodo = (text) => ({
+          type: ADD,
+        })
+
+        export const toggleTodo = (id) => ({
+          type: TOGGLE,
+        })
+
+or:
+
+        import * as actions from './actions'
+
+        export const addTodo = (text) => ({
+          type: actions.ADD_TODO,
+        })
+
+        export const toggleTodo = (id) => ({
+          type: actions.TOGGLE_TODO,
+        })
+
+But it's up to you, there isn't a standard pattern for those imports.
+
+
+class #37 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Reducer Visibility Filter
+
+
+visibility-filter.test.js:
+
+        'use strict'
+
+        import visibilityFilter from './index.js'
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+
+        it('VisibilityFilter should be a function', () => {
+          expect(visibilityFilter).to.be.a('function')
+        })
+
+        it('Should show all todos', () => {
+          const before = 'SHOW_COMPLETED'
+          const action = deepFreeze({
+            type: 'SET_VISIBILITY_FILTER',
+            payload: { filter: 'SHOW_ALL'}
+          })
+          const after = 'SHOW_ALL'
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+
+visibility-filter/index.js:
+
+        'use strict'
+
+        const visibilityFilter = () => {
+          return 'SHOW_ALL'
+        }
+
+        export default visibilityFilter
+
+class #38 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+Primitive Types in JS are unmutable. That's why we skip 'deepFreeze()' when before is just a string.
+There are 6 primitive data types: string, number, bigint, boolean, undefined, and symbol.
+
+Objects & Arrays need deepFreeze().
+
+visibility-filter.test.js:
+
+        it('Should show just completed todos', () => {
+          const before = 'SHOW_ALL'
+          const action = deepFreeze({
+            type: 'SET_VISIBILITY_FILTER',
+            payload: { filter: 'SHOW_COMPLETED'}
+          })
+          const after = 'SHOW_COMPLETED'
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+visibility-filter.js:
+
+        'use strict'
+
+        const visibilityFilter = (state, action) => {
+          return action.payload.filter
+        }
+
+        export default visibilityFilter
+
+
+filter-visibility/action-creators.js:
+        'use strict'
+
+        import { ADD_TODO, TOGGLE_TODO } from './actions'
+        import { v4 } from 'uuid'
+
+        export const addTodo = (text) => ({
+          type: ADD_TODO,
+          payload: {
+            id: v4(), text: text
+          }
+        })
+
+        export const toggleTodo = (id) => ({
+          type: TOGGLE_TODO,
+          payload: { id }
+        })
+
+filter-visibility/actions.js:
+        'use strict'
+
+        export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
+        export const SHOW_ALL = 'SHOW_ALL'
+        export const SHOW_COMPLETED = 'SHOW_COMPLETED'
+        export const SHOW_ACTIVE = 'SHOW_ACTIVE'
+
+filter-visibility/index.js:
+        'use strict'
+
+        import { SET_VISIBILITY_FILTER, SHOW_ALL } from './actions'
+
+        export const initialState = SHOW_ALL
+
+        const visibilityFilter = (state = initialState, action) => {
+          switch (action.type) {
+            case SET_VISIBILITY_FILTER:
+              return action.payload.filter
+          }
+          return state
+        }
+
+        export default visibilityFilter
+
+
+
+filter-visibility/filter-visibility.test.js:
+        'use strict'
+
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+        import visibilityFilter, { initialState } from './index.js'
+        import {
+          SET_VISIBILITY_FILTER,
+          SHOW_ALL,
+          SHOW_COMPLETED,
+          SHOW_ACTIVE
+        } from './actions'
+
+        it('VisibilityFilter should be a function', () => {
+          expect(visibilityFilter).to.be.a('function')
+        })
+
+        it('Should show all todos', () => {
+          const before = SHOW_COMPLETED
+          const action = deepFreeze({
+            type: SET_VISIBILITY_FILTER,
+            payload: { filter: SHOW_ALL}
+          })
+          const after = SHOW_ALL
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should show just completed todos', () => {
+          const before = SHOW_ALL
+          const action = deepFreeze({
+            type: SET_VISIBILITY_FILTER,
+            payload: { filter: SHOW_COMPLETED}
+          })
+          const after = SHOW_COMPLETED
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should show just active todos', () => {
+          const before = SHOW_ALL
+          const action = deepFreeze({
+            type: SET_VISIBILITY_FILTER,
+            payload: { filter: SHOW_ACTIVE}
+          })
+          const after = SHOW_ACTIVE
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should return latest state when action is unknown', () => {
+          const before = SHOW_COMPLETED
+          const action = deepFreeze({
+            type: 'UNKNOWN',
+            payload: { filter: SHOW_ALL}
+          })
+          const after = SHOW_COMPLETED
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should return initialState when latest state is undefined', () => {
+          const before = undefined
+          const action = deepFreeze({})
+          const after = initialState
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+
+class #39 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+How to use more than one reducer?
+
+src/index.js:
+
+import reducerTodos from 'reducers/todos'
+import reducerVisibilityFilter from 'reducers/visibility-filter'
+
+const reducer = (state = {}, action) => {
+  return {
+    todos: reducerTodos(
+      state.todos,
+      action
+    ),
+
+    visibilityFilter: reducerVisibilityFilter(
+      state.visibilityFilter,
+      action
+    )
+  }
+}
+
+or save it in another file:
+src/redux-flow/index.js:
+
+        'use strict'
+
+        import reducerTodos from './todos'
+        import reducerVisibilityFilter from './visibility-filter'
+
+        const rootReducer = (state = {}, action) => {
+          return {
+            todos: reducerTodos(state.todos, action),
+            visibilityFilter: reducerVisibilityFilter(state.visibilityFilter, action)
+          }
+        }
+
+        export default rootReducer
+
+class #40 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+combineReducers
+
+there is a built-in method for accomplishing what we just did manually on last class here:
+
+      src/redux-flow/reducers/index.js:
+
+          import reducerTodos from './todos'
+          import reducerVisibilityFilter from './visibility-filter'
+
+          const rootReducer = (state = {}, action) => {
+            return {
+              todos: reducerTodos(state.todos, action),
+              visibilityFilter: reducerVisibilityFilter(state.visibilityFilter, action)
+            }
+          }
+          export default rootReducer
+
+      gets replaced for just that:
+
+          import { combineReducers } from 'redux'
+          import reducerTodos from './todos'
+          import reducerVisibilityFilter from './visibility-filter'
+
+          export default combineReducers({
+            todos: reducerTodos,
+            visibilityFilter: reducerVisibilityFilter
+          })
+
+      let's make it even better?
+      
+          import { combineReducers } from 'redux'
+          import todos from './todos'
+          import visibilityFilter from './visibility-filter'
+
+          export default combineReducers({
+            todos,
+            visibilityFilter
+          })
+
+      Boom!
+
+      
+class #41 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+combineReducers manually (behind the scenes)
+
+How does this work?
+
+That way:
+
+      import todos from './todos'
+      import visibilityFilter from './visibility-filter'
+
+      const combineReducers = (reducers) => (state = {}, action) => {
+        return Object.keys(reducers).reduce((nextState, key) => {
+          nextState[key] = reducers[key](state[key], action)
+          return nextState
+        }, {})
+      }
+
+Or with imutability of the {} that reduce returns:
+
+      const combineReducers = (reducers) => (state = {}, action) => {
+        return Object.keys(reducers).reduce((nextState, key) => {
+          return {
+            ...nextState,
+            [key]: reducers[key](state[key], action)
+          }
+        }, {})
+      }
+
+class #42 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Isolating components (refactoring)
+
+Right now everything is happening in src/app.js
+
+make some dirs inside 'src/components':
+
+    mkdir -p src/components/{form,todos-list,filter}
+
+    https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/24-todo-list
+
+
+class #43 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+  Naming actions:
+
+  https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/25-todo-list
+
+
+redux-flor/reducers/todos/actions.js:
+    export const ADD_TODO = 'ADD_TODO'
+    export const TOGGLE_TODO = 'TOGGLE_TODO'
+
+redux-flor/reducers/visibility-filter/actions.js;
+    export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
+    export const SHOW_ALL = 'SHOW_ALL'
+    export const SHOW_COMPLETED = 'SHOW_COMPLETED'
+    export const SHOW_ACTIVE = 'SHOW_ACTIVE'
+
+Actions are global, you can use it anywhere.
+Since the app keeps growing, we may miss a reference of their origins.
+That said, here is the standard we are starting to follow now:
+
+    --> reducers' name camel casing plus ':' plus action's name in uppercase.
+    --> and exports the variable name only with actions' name.
+
+redux-flor/reducers/todos/actions.js:
+    export const ADD_TODO = 'todos:ADD_TODO'
+    export const TOGGLE_TODO = 'todos:TOGGLE_TODO'
+
+redux-flor/reducers/visibility-filter/actions.js;
+    export const SET_VISIBILITY_FILTER = 'visibilityFilter:SET_VISIBILITY_FILTER'
+    export const SHOW_ALL = 'visibilityFilter:SHOW_ALL'
+    export const SHOW_COMPLETED = 'visibilityFilter:SHOW_COMPLETED'
+    export const SHOW_ACTIVE = 'visibilityFilter:SHOW_ACTIVE'
+
+class #44 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Connect FILTER at state
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/26-todo-list
+
+src/components/filter/index.js:
+
+        'use strict'
+
+        import React from 'react'
+        import { connect } from 'react-redux'
+        import * as actions from 'reducers/visibility-filter/actions'
+
+        const Filter = ({ activeFilter }) => (
+          <div>
+            <h3>Mostrar</h3>
+            {filterItems.map((item) => {
+              if (item.action === activeFilter) {
+                return <span key={item.action} style={{ marginRight: 10 }}>{item.label}</span>
+              }
+              return <a href='' key={item.action} style={{ marginRight: 10 }}>{item.label}</a>
+            })}
+          </div>
+        )
+
+        const filterItems = [
+          { label: 'Todos', action: actions.SHOW_ALL },
+          { label: 'Finalizados', action: actions.SHOW_COMPLETED },
+          { label: 'A fazer', action: actions.SHOW_ACTIVE }
+        ]
+
+        const mapStateToProps = (state) => ({
+          activeFilter: state.visibilityFilter
+        })
+
+        export default connect(mapStateToProps)(Filter)
+
+class #45 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Filter state update
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/27-todo-list
+
+
+src/components/filter/index.js:
+        'use strict'
+
+        import React from 'react'
+        import { connect } from 'react-redux'
+        import * as actions from 'reducers/visibility-filter/actions'
+        import { setVisibilityFilter } from 'reducers/visibility-filter/action-creators'
+
+        const Filter = ({ activeFilter, handleFilter }) => (
+          <div>
+            <h3>Mostrar</h3>
+            {filterItems.map((item) => {
+              if (item.action === activeFilter) {
+                return <span key={item.action} style={{ marginRight: 10 }}>{item.label}</span>
+              }
+              return <a
+                href=''
+                key={item.action}
+                style={{ marginRight: 10 }}
+                onClick={handleFilter(item.action)}
+              >{item.label}</a>
+            })}
+          </div>
+        )
+
+        const filterItems = [
+          { label: 'Todos', action: actions.SHOW_ALL },
+          { label: 'Finalizados', action: actions.SHOW_COMPLETED },
+          { label: 'A fazer', action: actions.SHOW_ACTIVE }
+        ]
+
+        const mapStateToProps = (state) => ({
+          activeFilter: state.visibilityFilter
+        })
+
+        const mapDispatchToProps = (dispatch) => ({
+          handleFilter: (filter) => (e) => {
+            e.preventDefault()
+            dispatch(setVisibilityFilter(filter))
+          }
+        })
+
+        export default connect(mapStateToProps, mapDispatchToProps)(Filter)
+
+
+reducers/visibility-filter/action-creators:
+        'use strict'
+
+        import { SET_VISIBILITY_FILTER } from './actions'
+
+        export const setVisibilityFilter = (filter) => ({
+          type: SET_VISIBILITY_FILTER,
+          payload: { filter }
+        })
+
+class #46 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring at Filter's component's link
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/28-todo-list
+
+
+src/components/filter/index.js:
+      'use strict'
+
+      import React from 'react'
+      import { connect } from 'react-redux'
+      import * as actions from 'reducers/visibility-filter/actions'
+      import { setVisibilityFilter } from 'reducers/visibility-filter/action-creators'
+      import FilterLink from './filter-link'
+
+      const Filter = ({ activeFilter, handleFilter }) => (
+        <div>
+          <h3>Mostrar</h3>
+          {filterItems.map((item) => (
+            <FilterLink
+              key={item.action}
+              action={item.action}
+              activeFilter={activeFilter}
+              onClick={handleFilter(item.action)}
+            >
+              {item.label}
+            </FilterLink>
+          ))}
+        </div>
+      )
+
+      const filterItems = [
+        { label: 'Todos', action: actions.SHOW_ALL },
+        { label: 'Finalizados', action: actions.SHOW_COMPLETED },
+        { label: 'A fazer', action: actions.SHOW_ACTIVE }
+      ]
+
+      const mapStateToProps = (state) => ({
+        activeFilter: state.visibilityFilter
+      })
+
+      const mapDispatchToProps = (dispatch) => ({
+        handleFilter: (filter) => (e) => {
+          e.preventDefault()
+          dispatch(setVisibilityFilter(filter))
+        }
+      })
+
+      export default connect(mapStateToProps, mapDispatchToProps)(Filter)
+
+src/components/finter-link.js:
+        'use strict'
+
+        import React from 'react'
+
+        const FilterLink = ({ action, activeFilter, children, onClick }) => {
+          const span = { tag: 'span' }
+          const a = { tag: 'a', href: '#', onClick }
+
+          const component = action === activeFilter ? span : a
+
+          return (
+            <component.tag
+              href={component.href}
+              onClick={component.onClick}
+              style={{ marginRight: 10 }}
+            >
+              {children}
+            </component.tag>
+          )
+        }
+
+        export default FilterLink
+
+
+
+class #47 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Show filtered 'Todos'
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/29-todo-list
+
+src/components/todos-list/index.js:
+
+first:
+        coconst mapStateToProps = (state) => ({
+          todos: state.todos,
+          activeFilter: state.visibilityFilter
+        })
+
+Then it could be:
+        const TodosList = ({ todos, activeFilter, handleToggleTodo }) => (
+          <ul>
+            {todos.filter().map((todo) => (
+              <li></li>
+            ))}
+          </ul>
+        )
+
+But better writting an extra function to handle it: getVisibleTodos(todos, activeFilter)
+
+        const TodosList = ({ todos, activeFilter, handleToggleTodo }) => (
+          <ul>
+            {getVisibleTodos(todos, activeFilter).map((todo) => (
+              <li></li>
+            ))}
+          </ul>
+        )
+
+        const getVisibleTodos = (todos, activeFilter) => {
+          switch (activeFilter) {
+            case filterActions.SHOW_ALL:
+              return todos
+
+            case filterActions.SHOW_COMPLETED:
+              return todos.filter((todo) => todo.completed)
+
+            case filterActions.SHOW_ACTIVE:
+              return todos.filter((todo) => !todo.completed)
+          }
+        }
+
+But 'switch' doesn't have the best performance. So let's refact it.
+
+        const getVisibleTodos = (todos, activeFilter) => {
+
+          const filterItems = {
+            [filterActions.SHOW_ALL]: todos,
+            [filterActions.SHOW_COMPLETED]: todos.filter((todo) => todo.completed),
+            [filterActions.SHOW_ACTIVE]: todos.filter((todo) => !todo.completed)
+          }
+
+          return filterItems[activeFilter]
+        }
+
+The code above uses 'bracket notation' from ES6, naming properties with dynamic values. It allows us to get the variable's value. Meaning the same as:
+
+        {
+          'visibilityFilter:SHOW_ACTIVE': todos,
+          'visibilityFilter:SHOW_ALL': todos.filter((todo) => todo.completed),
+          'visibilityFilter:SHOW_COMPLETED': todos.filter((todo) => !todo.completed)
+        }
+
+remember those variables were declared at:
+src/redux-flow/reducers/visibility-filter/actions.js:
+
+        export const SET_VISIBILITY_FILTER = 'visibilityFilter:SET_VISIBILITY_FILTER'
+
+        export const SHOW_ALL = 'visibilityFilter:SHOW_ALL'
+        export const SHOW_COMPLETED = 'visibilityFilter:SHOW_COMPLETED'
+        export const SHOW_ACTIVE = 'visibilityFilter:SHOW_ACTIVE'
+
+Fromt there and whiches' import here is: * as filterActions
+
+        So [filterActions.SHOW_ALL] and so on.
+
+Other sources:
+https://www.samanthaming.com/tidbits/37-dynamic-property-name-with-es6/
+
+
+Want a code even prettier than that? Wait for it:
+
+        const getVisibleTodos = (todos, activeFilter) => {
+          return {
+            [filterActions.SHOW_ALL]: todos,
+            [filterActions.SHOW_COMPLETED]: todos.filter((todo) => todo.completed),
+            [filterActions.SHOW_ACTIVE]: todos.filter((todo) => !todo.completed)
+          }[activeFilter]
+        }
+
+
+class #48 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+createReducer()
+Reducer's creation by Daciuk's standard:
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/30-todo-list
+
+Basically, how does a REDUCER works?
+
+      1. It is a function
+      2. It receives 2 parameters: a state and an action
+      3. It checks what kind of action is being passed
+      4. It returns a state (based on it's action plus it's previous/current state)
+      5. If action doesn't match the expected ones, it just returns the previous/current state.
+
+All reducers have this same signature.
+
+Those redundances could be removed or reduced. Also, the use of switch makes our code too 'verbose'.
+
+src/redux-flow/reducers/todos/index.js:
+
+So insted of:
+
+        const todos = (state = initialState, action) => {
+          switch (action.type) {
+            case ADD_TODO:
+              return state.concat({
+                id: action.payload.id,
+                text: action.payload.text,
+                completed: false
+              })
+
+            case TOGGLE_TODO:
+              return state.map((todo) => {
+                if (todo.id !== action.payload.id) {
+                  return todo
+                }
+
+                return {
+                  ...todo,
+                  completed: !todo.completed
+                }
+              })
+          }
+          return state
+        }
+
+  We will use:
+
+        const todos = createReducer(initialState, {
+          [ADD_TODO]: (state, action) => state.concat({
+              id: action.payload.id,
+              text: action.payload.text,
+              completed: false
+            }),
+
+          [TOGGLE_TODO]: (state, action) => state.map((todo) => {
+            if (todo.id !== action.payload.id) {
+              return todo
+            }
+
+            return {
+              ...todo,
+              completed: !todo.completed
+            }
+          })
+        })
+
+class #49 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+So finishing code from previous class, we need the 'createReducer()':
+
+        const createReducer = (initialState, handleActions) => {
+          return (state = initialState, action) => {
+            if (handleActions.hasOwnProperty(action.type)) {
+              return handleActions[action.type](state, action)
+            }
+            return state
+          }
+        }
+
+refactoring it:
+
+        const createReducer = (initialState, handleActions) =>
+          (state = initialState, action) => {
+            return handleActions.hasOwnProperty(action.type)
+              ? handleActions[action.type](state, action)
+              : state
+          }
+
+more refactoring:
+
+        const createReducer = (initialState, handleActions) =>
+          (state = initialState, action) =>
+            handleActions.hasOwnProperty(action.type)
+              ? handleActions[action.type](state, action)
+              : state
+
+
+The save this function isolated:
+
+        src/redux-flow/reducers/create-reducers.js
+
+
+Now let's update the other reducers!
+
+src/redux-flow/reducers/visibility-filter:
+
+Insted of:
+        const visibilityFilter = (state = initialState, action) => {
+          switch (action.type) {
+            case SET_VISIBILITY_FILTER:
+              return action.payload.filter
+          }
+          return state
+        }
+
+Get this:
+        const visibilityFilter = createReducer(initialState, {
+          [SET_VISIBILITY_FILTER]: (state, action) => action.payload.filter
+        })
+
+
