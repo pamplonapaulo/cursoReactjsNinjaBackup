@@ -808,6 +808,9 @@ And since property and it's value have the same name, we can also use:
 
 const mapDispatchToProps = (dispatch) => { updateAddress }
 
+More help to understand this short sintax:
+https://github.com/da2k/curso-reactjs-ninja/issues/491
+
 
 class #61 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 The application's initialState
@@ -953,27 +956,217 @@ Redux works only with sync functions.
 
 But with middlewares, we can intercept the code and include an request, allowing async actions.
 
+Let's write a second middleware:
+
+        const thunk = ({ dispatch, getState }) => (next) => (action) => {
+          return next(action)
+        }
+
+And let's use it with applyMiddleware(). Yup, we can pass as many parameters as we want.
+
+        const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+Watch this sequence working:
+
+          const logger = ({ dispatch, getState }) => (next) => (action) => {
+            console.log('LOGGER::will dispatch: ', action)
+            const nextAction = next(action)
+            console.log('LOGGER::next action: ', nextAction)
+            return nextAction
+          }
+
+          const thunk = ({ dispatch, getState }) => (next) => (action) => {
+            console.log('THUNK:: will dispatch:', action)
+            const nextAction = next(action)
+            console.log('THUNK::next action: ', nextAction)
+            return nextAction
+          }
+
+          const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+Console:
+
+      LOGGER::will dispatch:  {type: "todos:ADD_TODO", payload: {…}}
+
+      THUNK::will dispatch: {type: "todos:ADD_TODO", payload: {…}}
+
+      state: {address: {…}, todos: Array(1), visibilityFilter: "visibilityFilter:SHOW_ALL"}
+
+      THUNK::next action:  {type: "todos:ADD_TODO", payload: {…}}
+
+      LOGGER::next action:  {type: "todos:ADD_TODO", payload: {…}}
 
 
+Must review this class a few times.
+
+src/index.js:
+
+            'use strict'
+
+            import React from 'react'
+            import { render } from 'react-dom'
+            import { AppContainer } from 'react-hot-loader'
+            import { createStore, applyMiddleware } from 'redux'
+            import { Provider } from 'react-redux'
+            import App from './app'
+            import reducer from 'reducers'
+
+            const logger = ({ dispatch, getState }) => (next) => (action) => {
+              console.log('LOGGER::will dispatch: ', action)
+              const nextAction = next(action)
+              console.log('LOGGER::next action: ', nextAction)
+              return nextAction
+            }
+
+            const thunk = ({ dispatch, getState }) => (next) => (action) => {
+              if (typeof action === 'function') {
+                return action(dispatch, getState)
+              }
+              return next(action)
+            }
+
+            const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+            store.dispatch(lazyAction())
+
+            function lazyAction () {
+              return (dispatch) => {
+                setTimeout(() => {
+                  dispatch({
+                    type: 'todos:ADD_TODO',
+                    payload: {
+                      text: 'Lazy Action',
+                      id: '1234'
+                    }
+                  })
+                }, 2000)
+              }
+            }
+
+            const renderState = () => {
+              console.log('state:', store.getState())
+            }
+
+            store.subscribe(renderState)
+
+            const renderApp = (NextApp) => {
+              render(
+                <AppContainer>
+                  <Provider store={store}>
+                    <NextApp />
+                  </Provider>
+                </AppContainer>,
+                document.querySelector('[data-js="app"]')
+              )
+            }
+
+            renderApp(App)
+
+            if (module.hot) {
+              module.hot.accept('./app', () => {
+                const NextApp = require('./app').default
+                renderApp(NextApp)
+              })
+
+              module.hot.accept('reducers', () => {
+                const nextReducers = require('reducers').default
+                store.replaceReducer(nextReducers)
+              })
+            }
 
 
-
-
-
-
-
-
-
-
-
-
+Redux Thunk:
+https://github.com/reduxjs/redux-thunk
 
 
 class #65 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Async Redux - store settings
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/45-todo-list-get-cep
+
+new folder:
+
+      src/redux-flow/configure-store
+
+            index.js:
+
+
+from src/index.js, we gonna move logger + thunk + store to this new index file at configure-store.
+
+The middlewares themselves will be outside the function:
+
+            'use strict'
+
+            import { createStore, applyMiddleware } from 'redux'
+            import reducer from 'reducers'
+
+            export default () => {
+              const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+              if (module.hot) {
+                module.hot.accept('reducers', () => {
+                  const nextReducers = require('reducers').default
+                  store.replaceReducer(nextReducers)
+                })
+              }
+
+              return store
+            }
+
+            const logger = ({ dispatch, getState }) => (next) => (action) => {
+              console.log('LOGGER::will dispatch: ', action)
+              const nextAction = next(action)
+              console.log('LOGGER::next action: ', nextAction)
+              return nextAction
+            }
+
+            const thunk = ({ dispatch, getState }) => (next) => (action) => {
+              if (typeof action === 'function') {
+                return action(dispatch, getState)
+              }
+              return next(action)
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #66 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #67 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #68 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #69 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #70 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
