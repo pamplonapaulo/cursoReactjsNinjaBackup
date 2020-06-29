@@ -900,29 +900,75 @@ middlewares in redux
 
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/43-todo-list-get-cep
 
+Middlewares: in Redux is a way to have a code in between something 
 
+Between an action dispatch and an state update, based on the data you sent via middleware.
 
+        Import:
+        import { createStore, applyMiddleware } from 'redux'
 
+        Call:
+        const store = createStore(reducer, applyMiddleware(middleware))
 
+        A function that returns another function. (Higher-order function)
+        Signature:
+        const middleware = ({ dispatch, getState }) => {
+          return (next) => {
+            return (action) => {
+              return next(action)
+            }
+          }
+        }
 
+        Or:
+        const middleware = ({ dispatch, getState }) => (next) => (action) => {
+          return next(action)
+        }
 
+        Or even that:
+        const middleware = ({ dispatch, getState }) => (next) => (action) => next(action)
 
+Before see the real use of middleware, this kind of helps to get the idea:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        const middleware = ({ dispatch, getState }) => (next) => (action) => {
+          console.log('LOGGER::will dispatch: ', action)
+          const nextAction = next(action)
+          console.log('LOGGER::next action: ', nextAction)
+          return next(action)
+        }
 
 class #64 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+The real power of middlewares
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/44-todo-list-get-cep
+
+OBS 1:
+createStore() in real may receive 3 parameters:
+
+      const store = createStore(reducer, initialState, applyMiddleware(logger))
+
+      But the initialState paramenter may be ignored/skiped. That's why the previous example worked (it didn't have the initialState and was fine).
+
+OBS 2:
+Redux works only with sync functions.
+
+But with middlewares, we can intercept the code and include an request, allowing async actions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #65 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #66 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #67 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
