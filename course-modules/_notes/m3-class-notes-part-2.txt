@@ -1,0 +1,1615 @@
+"React.js Ninja" by Fernando Daciuk
+
+* Module 3 * Part 2
+
+
+class #50 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Sync requests in Redux
+CEP (Post code) Search
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/31-todo-list-get-cep
+
+src/components/search-cep/index.js:
+
+'use strict'
+
+import React from 'react'
+
+const SearchCep = () => (
+  <div>
+    <form>
+      <input type='text' name='cep'/>
+      <button type='submit'>Search address</button>
+    </form>
+
+    <table>
+      <thead>
+        <td>Post Code</td>
+        <td>Address</td>
+        <td>Neighborhood</td>
+        <td>City</td>
+        <td>State</td>
+      </thead>
+    </table>
+
+    <tbody>
+      <tr>
+        <td>2240-000</td>
+        <td>Rua das Laranjeiras</td>
+        <td>Laranjeiras</td>
+        <td>Rio de Janeiro</td>
+        <td>RJ</td>
+      </tr>
+    </tbody>
+  </div>
+)
+
+export default SearchCep
+
+class #51 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+styles: milligram.io + webpack ajust CSS Loader
+
+  https://milligram.io/
+
+Why? Standard styles for some tags. So we can avoid classes.
+
+    yarn add milligram
+
+src/app.js:
+
+    import 'milligram'
+
+But we get an error when compiling the dev env. Our webpack doesn't include node_module/dist/milligram.css in it's path. let's include it:
+
+webpack/common.js:
+
+        const paths = {
+          root: join(__dirname, '..'),
+          src: join(__dirname, '..', 'src'),
+          dist: join(__dirname, '..', 'dist'),
+          modules: join(__dirname, '..', 'node_modules')
+        }
+
+        and include 'paths.modules'
+
+          cssLoader: {
+            test: /\.css$/,
+            include: [paths.src, join(paths.modules, 'milligram')],
+            use: ['style-loader', 'css-loader']
+          },
+
+Now just one more detail:
+
+      const App = () => (
+        <div style={{ display: 'flex', justifyContent: 'space-around', padding: 30 }}>
+
+
+
+class #52 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/33-todo-list-get-cep
+
+CEP APIs:
+
+1. http://apps.widenet.com.br/busca-cep/api-de-consulta
+2. https://viacep.com.br/
+
+Daciuk's own AJAX lib:
+
+    yarn add @fdaciuk/ajax
+
+    import ajax from '@fdaciuk/ajax'
+
+
+async + componentDidMount
+
+    OBS: Daciuk's ajax's library don't really use promises, but has a familiar interface.
+
+    async componentDidMount () {
+      const response = await ajax().get('https://ws.apicep.com/cep.json', { code: '22240-000'})
+      console.log(response)
+    }
+
+    It awaits ajax's response.
+
+
+class #53 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/34-todo-list-get-cep
+Get response data and populate the table.
+
+  Let's change the state, so we trigger render.
+
+So the very basic way would be...
+
+src/components/search-cep/search-cep.js: The Cointainer Component
+
+        'use strict'
+
+        import React, { PureComponent } from 'react'
+        import SearchCep from './search-cep'
+        import ajax from '@fdaciuk/ajax'
+
+        class SearchCepContainer extends PureComponent {
+          constructor () {
+            super()
+            this.state = {
+              address: '',
+              city: '',
+              code: '',
+              district: '',
+              state: '',
+              status: 1
+            }
+          }
+
+          async componentDidMount () {
+            const response = await ajax().get(
+              'https://ws.apicep.com/cep.json',
+              { code: '22240-000' }
+            )
+            this.setState(response)
+            console.log(response)
+          }
+
+          render () {
+            return (
+              <SearchCep {...this.state} />
+            )
+          }
+        }
+
+        export default SearchCepContainer
+
+
+src/components/search-cep/index.js: The Presentational Component
+
+        'use strict'
+
+        import React from 'react'
+
+        const SearchCep = ({
+          address,
+          city,
+          code,
+          district,
+          state,
+          status
+        }) => (
+          <div>
+            <form>
+              <input type='text' name='cep' />
+              <button type='submit'>Search address</button>
+            </form>
+
+            <table>
+              <thead>
+                <tr>
+                  <td>Post Code</td>
+                  <td>Address</td>
+                  <td>Neighborhood</td>
+                  <td>City</td>
+                  <td>State</td>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>{code}</td>
+                  <td>{address}</td>
+                  <td>{district}</td>
+                  <td>{city}</td>
+                  <td>{state}</td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+        )
+
+        export default SearchCep
+
+
+That was the very old fashion. Let's improve this code.
+
+Insted of this:
+
+        class SearchCepContainer extends PureComponent {
+          constructor () {
+            super()
+            this.state = {
+              address: '',
+              city: '',
+              code: '',
+              district: '',
+              state: '',
+              status: 1
+            }
+          }
+
+
+Now this feature below is already good to use like that, by the time of our module 2 professor told us to not to use, but things change. We don't need anymore the constructor(). Earlier, that could have issues with private methods.
+
+        class SearchCepContainer extends PureComponent {
+          state = {
+            address: '',
+            city: '',
+            code: '',
+            district: '',
+            state: '',
+            status: 1
+          }
+
+Also there is a new weird sintaxe with '#', which means a private properties: #state
+In the past, the sintax used to be: 'private state'.
+
+Now typing 'this#state' means reaching a private state of the class, declared by #state = {}
+
+So now no more constructor () and manually bind(this) methods. We now can use arrow functions (which have lexical scope)
+
+Recap:
+before:
+          class MyClass extends PureComponent {
+            constructor () {
+              super()
+              this.handleSubmit = this.handleSubmit.bind(this)
+            }
+
+            handleSubmit () {
+              console.log('submit')
+            }
+          }
+Nowadays:
+          class MyClass extends PureComponent {
+            handleSubmit = () => {
+              console.log('submit')
+            }
+          }
+
+class #54 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/35-todo-list-get-cep
+
+src/components/search-cep/index.js:
+          'use strict'
+
+          import React, { PureComponent } from 'react'
+          import SearchCep from './search-cep'
+          import ajax from '@fdaciuk/ajax'
+
+          class SearchCepContainer extends PureComponent {
+            state = {
+              address: '',
+              city: '',
+              code: '',
+              district: '',
+              state: '',
+              status: 1
+            }
+
+            handlesubmit = async (e) => {
+              e.preventDefault()
+              const cep = e.target.cep.value
+              const response = await ajax().get(
+                'https://ws.apicep.com/cep.json',
+                { code: cep }
+              )
+              this.setState(response)
+            }
+
+            render () {
+              return (
+                <SearchCep {...this.state}
+                  handleSubmit={this.handlesubmit}
+                />
+              )
+            }
+          }
+
+          export default SearchCepContainer
+
+
+src/components/search-cep/search-cep.js:
+          'use strict'
+
+          import React from 'react'
+
+          const SearchCep = ({
+            address,
+            city,
+            code,
+            district,
+            state,
+            status,
+            handleSubmit
+          }) => (
+            <div>
+              <form onSubmit={handleSubmit}>
+                <input type='text' name='cep' />
+                <button type='submit'>Search address</button>
+              </form>
+
+              <table>
+                <thead>
+                  <tr>
+                    <td>Post Code</td>
+                    <td>Address</td>
+                    <td>Neighborhood</td>
+                    <td>City</td>
+                    <td>State</td>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td>{code}</td>
+                    <td>{address}</td>
+                    <td>{district}</td>
+                    <td>{city}</td>
+                    <td>{state}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
+          )
+
+          export default SearchCep
+
+
+OBS:
+        In this situation, async comes just before the function itself, not before the method itself:
+
+              handlesubmit = async (e) => {
+
+              }
+
+class #55 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Handling wrong CEP input: displaying a message
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/36-todo-list-get-cep
+
+1) Loading results / Is Fetching
+
+  SearchCepContainer:
+
+            state = {
+              isFetching: false
+            }
+
+            handlesubmit = async (e) => {
+              e.preventDefault()
+              this.setState({ isFetching: true }) <--
+              const code = e.target.cep.value
+              const response = await ajax().get(
+                'https://ws.apicep.com/cep.json',
+                { code }
+              )
+              this.setState({ isFetching: false }) <--
+              console.log(response)
+              this.setState(response)
+            }
+
+            OBS: If we run this.setState 2 times one after another, React won't do it, it will run just once. So this force us to separe them.
+
+SearchCep:
+
+    <form onSubmit={handleSubmit}>
+      <input type='text' name='cep' />
+      <button type='submit' disabled={isFetching}>
+        {isFetching ? 'Loading...' : 'Search address'}
+      </button>
+    </form>
+
+    Also, if status equals 1, shows table. If not, shows message:
+
+        {status === 400 && <div>Post Code not found</div>}
+
+        {status === 200 &&  (
+          <table>
+            <thead>
+              <tr>
+                <td>Post Code</td>
+                <td>Address</td>
+                <td>Neighborhood</td>
+                <td>City</td>
+                <td>State</td>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td>{code}</td>
+                <td>{address}</td>
+                <td>{district}</td>
+                <td>{city}</td>
+                <td>{state}</td>
+              </tr>
+            </tbody>
+          </table>
+        )}
+
+class #56 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+With Reducer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/37-todo-list-get-cep
+
+src/components/search-cep/index.js
+src/components/search-cep/search-cep.js
+
+redux-flow/reducers/address/index.js:
+        'use strict'
+
+        import createReducer from '../create-reducer'
+        import { UPDATE_ADDRESS } from './actions'
+
+        const initialState = {
+          address: '',
+          city: '',
+          code: '',
+          district: '',
+          state: '',
+          status: 1
+        }
+
+        const address = createReducer(initialState, {
+          [UPDATE_ADDRESS]: (state, action) => action.payload
+        })
+
+        export default address
+
+
+
+redux-flow/reducers/address/address.test.js:
+        'use strict'
+
+        import { expect } from 'chai'
+        import deepFreeze from 'deep-freeze'
+        import address from './index'
+        import { UPDATE_ADDRESS } from './actions'
+
+        it('address should be a function', () => {
+          expect(address).to.be.a('function')
+        })
+
+        it('should action UPDATE_ADDRESS update address', () => {
+          const before = deepFreeze({
+            address: '',
+            city: '',
+            code: '',
+            district: '',
+            state: '',
+            status: 1
+          })
+
+          const action = deepFreeze({
+            type: [UPDATE_ADDRESS],
+            payload: {
+              address: 'Rua das Laranjeiras - até 146',
+              city: 'Rio de Janeiro',
+              code: '22240-000',
+              district: 'Laranjeiras',
+              state: 'RJ',
+              status: 1
+            }
+          })
+
+          const after = {
+            address: 'Rua das Laranjeiras - até 146',
+            city: 'Rio de Janeiro',
+            code: '22240-000',
+            district: 'Laranjeiras',
+            state: 'RJ',
+            status: 1
+          }
+
+          expect(address(before, action)).to.be.deep.equal(after)
+        })
+
+
+redux-flow/reducers/address/actions.js:
+        'use strict'
+
+        export const UPDATE_ADDRESS = 'address:UPDATE_ADDRESS'
+
+class #57 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Unit tests
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/38-todo-list-get-cep
+
+
+
+
+
+First of all, professor actually removed some of the previous tests in our code. Those removed were these ones here:
+
+        address.test.js / visibility-filter.test.js / todos.test.js:
+
+        it('address should be a function', () => {
+          expect(address).to.be.a('function')
+        })
+
+        In each test file, this test checks if the reducer is a function, but create-reducer is a function, that's what is actually being covered by this test.
+
+The same redundance in coverage we find in another test inside 2 of these files: 'action is unknown'
+
+        visibility-filter.test.js / todos.test.js:
+
+        it('Should return the latest state when action is unknown', () => {
+          const before = deepFreeze([{ id: 0, text: 'Hey', completed: false }])
+          const action = deepFreeze({ type: 'ANYTHING'})
+          const after = [{ id: 0, text: 'Hey', completed: false }]
+          expect(todos(before, action)).to.be.deep.equal(after)
+        })
+
+        it('Should return latest state when action is unknown', () => {
+          const before = SHOW_COMPLETED
+          const action = deepFreeze({
+            type: 'UNKNOWN',
+            payload: { filter: SHOW_ALL}
+          })
+          const after = SHOW_COMPLETED
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+and here as well: 'state is undefined'
+
+        visibility-filter.test.js / todos.test.js:
+
+        it('Should return initialState when latest state is undefined', () => {
+          const before = undefined
+          const action = deepFreeze({})
+          const after = initialState
+          expect(visibilityFilter(before, action)).to.be.equal(after)
+        })
+
+        it('Should return initialState when state before is undefined', () => {
+          const before = undefined
+          const action = deepFreeze({})
+          const after = initialState
+          expect(todos(before, action)).to.be.deep.equal(after)
+        })
+
+Now finally we lost some coverage! Look at the coverage on the test:
+
+----------------------------|----------|----------|----------|----------|-------------------|
+File                        |  % Stmts | % Branch |  % Funcs |  % Lines | Uncovered Line #s |
+----------------------------|----------|----------|----------|----------|-------------------|
+All files                   |      100 |       60 |      100 |      100 |                   |
+ reducers                   |      100 |    33.33 |      100 |      100 |                   |
+  create-reducer.js         |      100 |    33.33 |      100 |      100 |               4,5 |
+ reducers/address           |      100 |      100 |      100 |      100 |                   |
+  actions.js                |      100 |      100 |      100 |      100 |                   |
+  index.js                  |      100 |      100 |      100 |      100 |                   |
+ reducers/todos             |      100 |      100 |      100 |      100 |                   |
+  actions.js                |      100 |      100 |      100 |      100 |                   |
+  index.js                  |      100 |      100 |      100 |      100 |                   |
+ reducers/visibility-filter |      100 |      100 |      100 |      100 |                   |
+  actions.js                |      100 |      100 |      100 |      100 |                   |
+  index.js                  |      100 |      100 |      100 |      100 |                   |
+----------------------------|----------|----------|----------|----------|-------------------|
+
+What is Daciuk actually doing? We are about to write the tests directly to the 'create-reducer' function, which is the real source of all that trash we just removed. Got it?
+
+But before we move on...
+
+A breif look into the 'coverage' folder:
+
+        coverage/lcov-report: index.html
+
+        It shows our coverage. If you click the red-not-coverage flagged part... Boom! You get exactly what part of the code is not coverage. In this specific case, here is what is being showed and means we still have to cover:
+
+                const createReducer = (initialState, handleActions) =>
+                  (state = initialState, action) =>
+                    handleActions.hasOwnProperty(action.type)
+                      ? handleActions[action.type](state, action)
+                      : state
+                
+                export default createReducer
+
+
+        OBS:
+        1. Yellow highlighted 'initialState' and 'state'
+        2. If you mouse hover those highlights, it says:
+                'branch not covered'
+
+class #58 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+create-reducer.test
+
+Still on:
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/38-todo-list-get-cep
+
+src/redux-flow/reducers/create-reducer.test.js:
+
+          'use strict'
+
+          import { expect } from 'chai'
+          import deepFreeze from 'deep-freeze'
+          import createReducer from './create-reducer'
+
+          const initialState = 0
+          const reducer = createReducer(0, {
+            'INCREMENT': (state, action) => state + 1,
+            'DECREMENT': (state, action) => state - 1
+          })
+
+          it('createReducer should be a function', () => {
+            expect(createReducer).to.be.a('function')
+          })
+
+          it('createReducer(initialState, {}) should return a function', () => {
+            expect(createReducer([], {})).to.be.a('function')
+          })
+
+          it('should create a reducer', () => {
+            const before = 0
+            const action = { type: 'INCREMENT' }
+            const after = 1
+
+            expect(reducer(before, action)).to.be.equal(after)
+          })
+
+          it('reducer should return latest state if action is unknown', () => {
+            const before = 3
+            const action = deepFreeze({ type: 'UNKNOWN' })
+            const after = 3
+            expect(reducer(before, action)).to.be.equal(after)
+          })
+
+          it('reducer should return initialState when latest state is undefined', () => {
+            const before = undefined
+            const action = deepFreeze({})
+            const after = initialState
+            expect(reducer(before, action)).to.be.equal(after)
+          })
+
+
+
+OBS: We are not using 'deep.equal' cuz we are passing primitive values, not arrays or objects.
+
+Also we include this in the test:
+
+          it('initialState should not be undefined', () => {
+            try {
+              createReducer()
+            } catch (e) {
+              expect(e.message).to.be.equal('initialState should not be undefined')
+            }
+          })
+
+But to get this working, we should include a condition in the create-reducer.js:
+
+            if (typeof initialState === 'undefined') {
+              throw new Error('initialState should not be undefined')
+            }
+
+Also, in case the second argument is missing, test should have:
+
+            it('handleActions should not be different from object', () => {
+              try {
+                createReducer([])
+              } catch (e) {
+                expect(e.message).to.be.equal('createReducer expects the second argument as an object representing reducer')
+              }
+            })
+
+Then the create-reducer.js must have this too:
+
+            if (Object.prototype.toString.call(handleActions) !== '[object Object]') {    
+              throw new Error('createReducer expects the second argument as an object representing reducer')
+            }
+
+That said, the create-reducer.js by the end would look like this:
+
+          const createReducer = (initialState, handleActions) => {
+            if (typeof initialState === 'undefined') {
+              throw new Error('initialState should not be undefined')
+            }
+
+            if (Object.prototype.toString.call(handleActions) !== '[object Object]') {    
+              throw new Error('createReducer expects the second argument as an object representing reducer')
+            }
+
+            return (state = initialState, action) =>
+              handleActions.hasOwnProperty(action.type)
+                ? handleActions[action.type](state, action)
+                : state
+          }
+
+class #59 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Putting together the 2 apps: combining address with the todos list
+
+src/redux-flow/reducers/index.js: this file centers/combines all reducers
+
+      import { combineReducers } from 'redux'
+      import address from './address'
+      import todos from './todos'
+      import visibilityFilter from './visibility-filter'
+
+      export default combineReducers({
+        address,
+        todos,
+        visibilityFilter
+      })
+
+src/redux-flow/reducers/address/action-creators.js:
+
+      import { UPDATE_ADDRESS } from './actions'
+
+      export const updateAdress = (data) => ({
+        type: UPDATE_ADDRESS,
+        payload: data
+      })
+
+src/components/search-cep/index.js:
+
+      Include imports:
+
+        import { connect } from 'react-redux'
+        import { updateAddress } from 'reducers/address/action-creators'
+
+
+      Pass response from CEP api:
+
+        this.props.dispatch(updateAddress(response)) 
+
+      Pass it to child component: this.props.address
+
+        <SearchCep
+          {...this.state}
+          {...this.props.address}
+          handleSubmit={this.handlesubmit}
+        />
+
+      Export everything with connect, using mapStateToProps:
+
+        const mapStateToProps = (state) => ({
+          address: state.address
+        })
+
+        export default connect(mapStateToProps)(SearchCepContainer)
+
+      
+
+class #60 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Dispatch being passed as props
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/40-todo-list-get-cep
+
+src/components/search-cep/index.js:
+
+        this.props.dispatch(response)
+
+        const mapDispatchToProps = (dispatch) => ({
+          updateAddress: (data) => dispatch(updateAddress(data))
+        })
+
+        export default connect(mapStateToProps, mapDispatchToProps)(SearchCepContainer)
+
+Now component itself doesn't have dependencies with Redux.
+
+This mapDispatchToProps function could be written in a shorter way, because the property has the same signature as it's correlative action-creator:
+
+address/action-creators.js:
+
+  export const updateAddress = (data) => ({
+    type: UPDATE_ADDRESS,
+    payload: data
+  })
+
+mapDispatchToProps:
+
+  const mapDispatchToProps = (dispatch) => ({
+    updateAddress: (data) => dispatch(updateAddress(data))
+  })
+
+Could be just like that:
+
+const mapDispatchToProps = (dispatch) => ({
+  updateAddress: updateAddress
+})
+
+And since property and it's value have the same name, we can also use:
+
+const mapDispatchToProps = (dispatch) => { updateAddress }
+
+More help to understand this short sintax:
+https://github.com/da2k/curso-reactjs-ninja/issues/491
+
+
+class #61 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+The application's initialState
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/41-todo-list-get-cep
+
+src/index.js:
+
+        const store = createStore(reducer)
+        const renderState = () => {
+          console.log('state:', store.getState())
+        }
+
+So given a situation where a user just logged in our application.
+
+How to get his initial data?
+
+createStore's second parameter!
+
+        import { createStore } from 'redux'
+
+        const initialState = {
+          todos: [{
+            text: 'auto',
+            id: '123',
+            completed: true
+          }],
+
+        address: {
+            address: 'Rua Jorge Barbieri',
+            city: 'São Paulo',
+            state: 'SP',
+            code: '55555-000',
+            district: 'Perdizes',
+            status: 200
+          }
+        }
+
+        const store = createStore(reducer, initialState)
+
+We don't have to pass all keys, buy the ones we pass must have the same signature that expected by our components.
+
+class #62 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+replaceReducar & reducer's hot reload
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/42-todo-list-get-cep
+
+It keeps the previous state when you update any reducer.
+
+It's a way to implement hot reloaders beyong the components, including the reducers.
+
+src/index.js:
+
+        if (module.hot) {
+          module.hot.accept('./app', () => {
+            const NextApp = require('./app').default
+            renderApp(NextApp)
+          })
+
+          // here:
+
+          module.hot.accept('reducers', () => {
+            const nextReducers = require('reducers').default
+            store.replaceReducer(nextReducers)
+          })
+        }
+
+          // and notive that 'reducers' it's being required just like we imported in the top of this file:
+
+          import reducer from 'reducers'
+
+        How to check this working?
+        src/redux-flow/reducers/todos/index.js:
+
+          [ADD_TODO]: (state, action) => state.concat({
+            id: action.payload.id,
+            text: action.payload.text,
+            completed: false
+          }),
+
+          Replace the 'text' property above by:
+
+            text: action.payload.text + ' FLAG TEST',
+
+          Then without restart the page, if the user inserts another item in the todos list, then it comes with the extra string ' FLAG TEST' we just included in the code.
+
+          
+class #63 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+middlewares in redux
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/43-todo-list-get-cep
+
+Middlewares: in Redux is a way to have a code in between something 
+
+Between an action dispatch and an state update, based on the data you sent via middleware.
+
+        Import:
+        import { createStore, applyMiddleware } from 'redux'
+
+        Call:
+        const store = createStore(reducer, applyMiddleware(middleware))
+
+        A function that returns another function. (Higher-order function)
+        Signature:
+        const middleware = ({ dispatch, getState }) => {
+          return (next) => {
+            return (action) => {
+              return next(action)
+            }
+          }
+        }
+
+        Or:
+        const middleware = ({ dispatch, getState }) => (next) => (action) => {
+          return next(action)
+        }
+
+        Or even that:
+        const middleware = ({ dispatch, getState }) => (next) => (action) => next(action)
+
+Before see the real use of middleware, this kind of helps to get the idea:
+
+        const middleware = ({ dispatch, getState }) => (next) => (action) => {
+          console.log('LOGGER::will dispatch: ', action)
+          const nextAction = next(action)
+          console.log('LOGGER::next action: ', nextAction)
+          return next(action)
+        }
+
+class #64 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+The real power of middlewares
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/44-todo-list-get-cep
+
+OBS 1:
+createStore() in real may receive 3 parameters:
+
+      const store = createStore(reducer, initialState, applyMiddleware(logger))
+
+      But the initialState paramenter may be ignored/skiped. That's why the previous example worked (it didn't have the initialState and was fine).
+
+OBS 2:
+Redux works only with sync functions.
+
+But with middlewares, we can intercept the code and include an request, allowing async actions.
+
+Let's write a second middleware:
+
+        const thunk = ({ dispatch, getState }) => (next) => (action) => {
+          return next(action)
+        }
+
+And let's use it with applyMiddleware(). Yup, we can pass as many parameters as we want.
+
+        const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+Watch this sequence working:
+
+          const logger = ({ dispatch, getState }) => (next) => (action) => {
+            console.log('LOGGER::will dispatch: ', action)
+            const nextAction = next(action)
+            console.log('LOGGER::next action: ', nextAction)
+            return nextAction
+          }
+
+          const thunk = ({ dispatch, getState }) => (next) => (action) => {
+            console.log('THUNK:: will dispatch:', action)
+            const nextAction = next(action)
+            console.log('THUNK::next action: ', nextAction)
+            return nextAction
+          }
+
+          const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+Console:
+
+      LOGGER::will dispatch:  {type: "todos:ADD_TODO", payload: {…}}
+
+      THUNK::will dispatch: {type: "todos:ADD_TODO", payload: {…}}
+
+      state: {address: {…}, todos: Array(1), visibilityFilter: "visibilityFilter:SHOW_ALL"}
+
+      THUNK::next action:  {type: "todos:ADD_TODO", payload: {…}}
+
+      LOGGER::next action:  {type: "todos:ADD_TODO", payload: {…}}
+
+
+Must review this class a few times.
+
+src/index.js:
+
+            'use strict'
+
+            import React from 'react'
+            import { render } from 'react-dom'
+            import { AppContainer } from 'react-hot-loader'
+            import { createStore, applyMiddleware } from 'redux'
+            import { Provider } from 'react-redux'
+            import App from './app'
+            import reducer from 'reducers'
+
+            const logger = ({ dispatch, getState }) => (next) => (action) => {
+              console.log('LOGGER::will dispatch: ', action)
+              const nextAction = next(action)
+              console.log('LOGGER::next action: ', nextAction)
+              return nextAction
+            }
+
+            const thunk = ({ dispatch, getState }) => (next) => (action) => {
+              if (typeof action === 'function') {
+                return action(dispatch, getState)
+              }
+              return next(action)
+            }
+
+            const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+            store.dispatch(lazyAction())
+
+            function lazyAction () {
+              return (dispatch) => {
+                setTimeout(() => {
+                  dispatch({
+                    type: 'todos:ADD_TODO',
+                    payload: {
+                      text: 'Lazy Action',
+                      id: '1234'
+                    }
+                  })
+                }, 2000)
+              }
+            }
+
+            const renderState = () => {
+              console.log('state:', store.getState())
+            }
+
+            store.subscribe(renderState)
+
+            const renderApp = (NextApp) => {
+              render(
+                <AppContainer>
+                  <Provider store={store}>
+                    <NextApp />
+                  </Provider>
+                </AppContainer>,
+                document.querySelector('[data-js="app"]')
+              )
+            }
+
+            renderApp(App)
+
+            if (module.hot) {
+              module.hot.accept('./app', () => {
+                const NextApp = require('./app').default
+                renderApp(NextApp)
+              })
+
+              module.hot.accept('reducers', () => {
+                const nextReducers = require('reducers').default
+                store.replaceReducer(nextReducers)
+              })
+            }
+
+
+Redux Thunk:
+https://github.com/reduxjs/redux-thunk
+
+
+class #65 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Async Redux - store settings
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/45-todo-list-get-cep
+
+new folder:
+
+      src/redux-flow/configure-store
+
+            index.js:
+
+
+from src/index.js, we gonna move logger + thunk + store to this new index file at configure-store.
+
+The middlewares themselves will be outside the function:
+
+            'use strict'
+
+            import { createStore, applyMiddleware } from 'redux'
+            import reducer from 'reducers'
+
+            export default () => {
+              const store = createStore(reducer, applyMiddleware(logger, thunk))
+
+              if (module.hot) {
+                module.hot.accept('reducers', () => {
+                  const nextReducers = require('reducers').default
+                  store.replaceReducer(nextReducers)
+                })
+              }
+
+              return store
+            }
+
+            const logger = ({ dispatch, getState }) => (next) => (action) => {
+              console.log('LOGGER::will dispatch: ', action)
+              const nextAction = next(action)
+              console.log('state:', getState()) <-- was in the old renderState = () => {}
+              console.log('LOGGER::next action: ', nextAction)
+              return nextAction
+            }
+
+            const thunk = ({ dispatch, getState }) => (next) => (action) => {
+              if (typeof action === 'function') {
+                return action(dispatch, getState)
+              }
+              return next(action)
+            }
+
+Also we are getting rid of this example at src/index.js:
+
+const renderState = () => {
+  console.log('state:', store.getState())
+}
+
+store.subscribe(renderState)
+
+store.dispatch(lazyAction())
+function lazyAction () {
+  return (dispatch) => {
+    setTimeout(() => {
+      dispatch({
+        type: 'todos:ADD_TODO',
+        payload: {
+          text: 'Lazy Action',
+          id: '1234'
+        }
+      })
+    }, 2000)
+  }
+}
+
+
+A few improvments:
+
+src/redux-flow/configure-store/index.js: renamed reducer to 'rootReducer' and included initialState:
+
+        import rootReducer from 'reducers'
+
+        export default ({ initialState }) => {
+          const store = createStore(rootReducer, initialState, applyMiddleware(logger, thunk))
+
+Logs more organized:
+
+        const logger = ({ dispatch, getState }) => (next) => (action) => {
+          console.group(`LOGGER->${action.type}`)
+          console.log('will dispatch:', action)
+          console.log('state:', getState())
+          const nextAction = next(action)
+          console.log('next state:', getState())
+          console.groupEnd(`LOGGER->${action.type}`)
+          return nextAction
+        }
+
+Redux Thunk Lib install:
+
+Delete this:
+
+        const thunk = ({ dispatch, getState }) => (next) => (action) => {
+          if (typeof action === 'function') {
+            return action(dispatch, getState)
+          }
+          return next(action)
+        }
+
+Terminal:
+
+        yarn add redux-thunk
+
+Import:
+
+        import thunk from 'redux-thunk'
+
+
+Testing an async function:
+
+src/index.js:
+
+        store.dispatch((dispatch, getState) => {
+          console.log('async dispatch!', dispatch, getState)
+        })
+
+
+We may also pass an initialState here as a parameter of configureStore():
+
+      const store = configureStore({
+        initialState: {}
+      })
+
+If we don't, no problem. It will be handled as undefined:
+
+      export default ({ initialState } = {}) => {}
+
+
+class #66 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+CEP Search totally integrated with Redux
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/46-todo-list-get-cep
+
+Making async cep searchs applied via Redux, so we get rid of the stateful components from our application
+
+src/components/search-cep/index.js:
+
+      We will remove this:
+          state = { isFetching: false }
+      It will be handled via Redux.
+
+files at the end of this class:
+
+src/components/search-cep/index.js:
+
+          'use strict'
+
+          import React from 'react'
+          import { connect } from 'react-redux'
+          import SearchCep from './search-cep'
+          import { fetchAddress } from 'reducers/address/action-creators'
+
+          const SearchCepContainer = ({ address, handleSubmit }) => (
+            <SearchCep
+              {...address}
+              handleSubmit={handleSubmit}
+            />
+          )
+
+          const mapStateToProps = (state) => ({
+            address: state.address
+          })
+
+          const mapDispatchToProps = (dispatch) => ({
+            handleSubmit: (e) => {
+              e.preventDefault()
+              dispatch(fetchAddress(e.target.cep.value))
+            }
+          })
+
+          export default connect(mapStateToProps, mapDispatchToProps)(SearchCepContainer)
+
+
+src/index.js:
+
+          'use strict'
+
+          import React from 'react'
+          import { render } from 'react-dom'
+          import { AppContainer } from 'react-hot-loader'
+          import { Provider } from 'react-redux'
+          import App from './app'
+          import configureStore from './redux-flow/configure-store'
+
+          const store = configureStore()
+
+          store.dispatch((dispatch, getState) => {
+            console.log('async dispatch!', dispatch, getState)
+          })
+
+          const renderApp = (NextApp) => {
+            render(
+              <AppContainer>
+                <Provider store={store}>
+                  <NextApp />
+                </Provider>
+              </AppContainer>,
+              document.querySelector('[data-js="app"]')
+            )
+          }
+
+          renderApp(App)
+
+          if (module.hot) {
+            module.hot.accept('./app', () => {
+              const NextApp = require('./app').default
+              renderApp(NextApp)
+            })
+          }
+
+src/redux-flow/reducers/address/index.js:
+
+          'use strict'
+
+          import createReducer from '../create-reducer'
+          import { UPDATE_ADDRESS } from './actions'
+
+          const initialState = {
+            address: '',
+            city: '',
+            code: '',
+            district: '',
+            state: '',
+            status: 1
+          }
+
+          const address = createReducer(initialState, {
+            [UPDATE_ADDRESS]: (state, action) => action.payload
+          })
+
+          export default address
+
+Still have to fix the 'isFetching', on next class.
+
+
+class #67 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+isFetching
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/47-todo-list-get-cep
+
+src/redux-flow/reducers/address/index.js:
+
+          'use strict'
+
+          import createReducer from '../create-reducer'
+          import { FETCHING, SUCCESS } from './actions'
+
+          const initialState = {
+            address: '',
+            city: '',
+            code: '',
+            district: '',
+            state: '',
+            status: 1
+          }
+
+          const address = createReducer(initialState, {
+            [FETCHING]: (state, action) => ({
+              ...state,
+              isFetching: true
+            }),
+
+            [SUCCESS]: (state, action) => ({
+              ...action.payload,
+              isFetching: false
+            })
+          })
+
+          export default address
+
+src/redux-flow/reducers/address/actions.js:
+
+      'use strict'
+
+      export const FETCHING = 'address:FETCHING'
+      export const SUCCESS = 'address:UPDATE_ADDRESS'
+
+OBS: Important to keep using the reducer's name as a prefix , in this case 'address:', in case we have other actions with the same name, so we at least have all actions named by each reducer.
+
+src/redux-flow/reducers/address/action-creators.js:
+
+          'use strict'
+
+          import ajax from '@fdaciuk/ajax'
+          import { FETCHING, SUCCESS } from './actions'
+
+          export const fetchAddress = (cep) => async (dispatch, getState) => {
+            dispatch({ type: FETCHING })
+            
+            const response = await ajax().get(
+              'https://ws.apicep.com/cep.json',
+              { code: cep }
+            )
+            dispatch({
+              type: SUCCESS,
+              payload: response
+            })
+          }
+
+src/redux-flow/reducers/address/address.test.js:
+
+          'use strict'
+
+          import { expect } from 'chai'
+          import deepFreeze from 'deep-freeze'
+          import address from './index'
+          import { FETCHING, SUCCESS } from './actions'
+
+          it('should action SUCCESS update address', () => {
+            const before = deepFreeze({
+              address: '',
+              city: '',
+              code: '',
+              district: '',
+              state: '',
+              status: 1,
+              isFetching: true
+            })
+
+            const action = deepFreeze({
+              type: [SUCCESS],
+              payload: {
+                address: 'Rua das Laranjeiras - até 146',
+                city: 'Rio de Janeiro',
+                code: '22240-000',
+                district: 'Laranjeiras',
+                state: 'RJ',
+                status: 1
+              }
+            })
+
+            const after = {
+              address: 'Rua das Laranjeiras - até 146',
+              city: 'Rio de Janeiro',
+              code: '22240-000',
+              district: 'Laranjeiras',
+              state: 'RJ',
+              status: 1,
+              isFetching: false
+            }
+
+            expect(address(before, action)).to.be.deep.equal(after)
+          })
+
+OBS: Another normal pattern would be having the actions directly inside the index.js reducer file. Daciuk prefers to separete them but it's ok if you want to have actions declared inside the reducer idnex.js itself. 
+
+
+Now, since CepContainer only calls SearchCep and passes down props, Daciuk realized that we could join two files inside folder src/components/search-cep:
+
+      index.js (const SearchCepContainer)
+      search-cep.js (const SearchCep, is stateless also dont' depend on Redux)
+
+After fixing this join, the final search-cep/index.js will be:
+
+          'use strict'
+
+          import React from 'react'
+          import { connect } from 'react-redux'
+          import { fetchAddress } from 'reducers/address/action-creators'
+
+          export const SearchCep = ({
+            address,
+            city,
+            code,
+            district,
+            state,
+            status,
+            isFetching,
+            handleSubmit
+          }) => (
+            <div>
+              <form onSubmit={handleSubmit}>
+                <input type='text' name='cep' />
+                <button type='submit' disabled={isFetching}>
+                  {isFetching ? 'Loading...' : 'Search address'}
+                </button>
+              </form>
+
+              {console.log('status: ' + status)}
+
+              {status === 400 && <div>Post Code not found</div>}
+
+              {status === 200 && (
+                <table>
+                  <thead>
+                    <tr>
+                      <td>Post Code</td>
+                      <td>Address</td>
+                      <td>Neighborhood</td>
+                      <td>City</td>
+                      <td>State</td>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td>{code}</td>
+                      <td>{address}</td>
+                      <td>{district}</td>
+                      <td>{city}</td>
+                      <td>{state}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
+
+            </div>
+          )
+
+          const mapStateToProps = (state) => state.address
+
+          const mapDispatchToProps = (dispatch) => ({
+            handleSubmit: (e) => {
+              e.preventDefault()
+              dispatch(fetchAddress(e.target.cep.value))
+            }
+          })
+
+          export default connect(mapStateToProps, mapDispatchToProps)(SearchCep)
+
+
+And those changes include this:
+
+        export const SearchCep = ({.......})
+
+        This is a named export that will allow us to test this component itself using StoryBook.
+
+class #68 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+More than one 'Store Enhancer' in Redux
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/48-todo-list-get-cep
+
+- createStore() gets 3 parameters
+- applyMiddleware() gets as many as you want
+
+src/redux-flow/configure-store/index.js:
+
+      import { compose } from 'redux'
+      const enhancer = compose(applyMiddleware(logger), applyMiddleware(thunk))
+      const store = createStore(rootReducer, initialState, enhancer)
+
+Google Chrome Redux Dev Tools
+https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en
+
+http://extension.remotedev.io/#usage
+
+For a basic Redux store simply add:
+
+    const store = createStore(
+      reducer, /* preloadedState, */
+    +  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    );
+
+src/redux-flow/configure-store/index.js:
+
+    const logger = () => window.__REDUX_DEVTOOLS_EXTENSION__
+      ? window.__REDUX_DEVTOOLS_EXTENSION__()
+      : (x) => x
+
+Check if the window obj has this function. If so, run it. If not, returns just a func that returns an argument ((x) => x).
+
+So we delete the old logger:
+
+        const logger = ({ dispatch, getState }) => (next) => (action) => {
+          console.group(`LOGGER->${action.type}`)
+          console.log('will dispatch:', action)
+          console.log('state:', getState())
+          const nextAction = next(action)
+          console.log('next state:', getState())
+          console.groupEnd(`LOGGER->${action.type}`)
+          return nextAction
+        }
+
+So we fix enhancer const:
+
+        const enhancer = compose(applyMiddleware(thunk), logger())
+
+
+class #69 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Compose
+What is a composition?
+
+          This:
+
+          const upper = (x) => x.toUpperCase()
+          const underscorify = (x) => x.split('').join('_')
+
+          console.log(upper('paulo'))
+          // PAULO
+
+          console.log(underscorify('pamplona'))
+          // p_a_m_p_l_o_n_a
+
+          const upperAndUnderscorify = (x) => upper(underscorify(x))
+
+          console.log(upperAndUnderscorify('pamplona'))
+          // P_A_M_P_L_O_N_A
+
+What 'compose' does behind the scenes?
+
+          This:
+
+          const compose = (...funcs) => (x) =>
+            funcs.reduceRight((v, f) => f(v), x)
+
+          const upperAndUnderscorify = compose(upper, underscorify)
+
+          console.log(upperAndUnderscorify('pamplona'))
+          // P_A_M_P_L_O_N_A
+
+
+Another exemple:
+
+          const upper = (x) => x.toUpperCase()
+          const underscorify = (x) => x.split('').join('_')
+          const switchValueForX = (value) => (x) =>
+            x.replace(new RegExp(value, 'g'), 'x')
+
+          const compose = (...funcs) => (x) =>
+            funcs.reduceRight((v, f) => f(v), x)
+
+          const upperAndUnderscorify = compose(upper, underscorify, switchValueForX('a'))
+
+          console.log(upperAndUnderscorify('pamplona'))
+
+          // P_X_M_P_L_O_N_X
+
+OBS: All your functions must handle just one parameter, otherwise our sintax wondln't not so readable.
+
+OBS: The returnes value have to make sense to the next function. In this example above, strings.
+
+
