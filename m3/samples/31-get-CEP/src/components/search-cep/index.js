@@ -9,7 +9,7 @@ import { updateAddress } from 'reducers/address/action-creators'
 class SearchCepContainer extends PureComponent {
   state = { isFetching: false }
 
-  handlesubmit = async (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault()
     this.setState({ isFetching: true })
 
@@ -21,7 +21,7 @@ class SearchCepContainer extends PureComponent {
 
     this.setState({ isFetching: false })
     console.log(response)
-    this.props.dispatch(response)
+    this.props.updateAddress(response)
   }
 
   render () {
@@ -30,7 +30,7 @@ class SearchCepContainer extends PureComponent {
       <SearchCep
         {...this.state}
         {...this.props.address}
-        handleSubmit={this.handlesubmit}
+        handleSubmit={this.handleSubmit}
       />
     )
   }
@@ -40,6 +40,6 @@ const mapStateToProps = (state) => ({
   address: state.address
 })
 
-const mapDispatchToProps = (dispatch) => { updateAddress }
+const mapDispatchToProps = { updateAddress }
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchCepContainer)
