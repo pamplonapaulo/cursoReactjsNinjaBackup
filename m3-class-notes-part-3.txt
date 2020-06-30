@@ -85,119 +85,168 @@ But this way:
 
         export default App
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class #73 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Videos listing
 
 
+Tips about Flex Box (CSS):
 
+const Video = styled.section`
+  flex: 1 1 300px;
+`
+    first parameter:  flex-grow
+    second parameter: flex-shrink
+    third parameter:  flex-basis
 
+ViewPort Meta Tag
 
+Edit: src/html/template.html
 
+  <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no' />
 
+Free Icons:
+https://iconmonstr.com/
 
+Styled Components Nested:
 
-
-
-
-
-
-
-
-
-
-
-
+      const PlayStyled = styled(Play)`
+        & path {
+          background: #000
+        }
+        fill: #999;
+        width: 50px;
+        height: 50px;
+        background: #999;
+      `
 
 class #74 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/04
 
+Spliting the code, from app to src/components/videos-list/index.js
 
+insted of this:
 
+      const Video = styled.section`
+        flex: 1 1 300px;
+        margin: 0 5px 5px;
+      `
 
+This makes more sense:
 
+      const Video = styled.section`
+      `
 
+      const Container = styled.div`
+        display: flex;
+        flex-wrap: wrap
 
+        & ${Video} {
+          flex: 1 1 300px;
+          margin: 0 5px 5px;  
+        }
+      `
+Video must be declared before called bellow.
 
-
-
-
-
-
-
-
-
-
-
-
+When styling a component, we never gonna set style for it's external zone, such as margin, flex, etc.
 
 
 class #75 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Single de Video
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/05
 
 
+src/components/video-single.js:
 
+          'use strict'
 
+          import React from 'react'
+          import styled from 'styled-components'
 
+          const VideoSingle = () => (
+            <Container>
+              <Iframe width='560' height='480' src='https://www.youtube-nocookie.com/embed/Dj2Lqg7FUak' frameborder='0' allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' allowfullscreen />
+              <Title>Título do filme</Title>
+            </Container>
+          )
 
+          const Container = styled.div`
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          `
 
+          const Iframe = styled.iframe`
+            background: #000;
+            border: 0;
+            border-bottom: 1px solid #999;
+            margin-bottom: 10px;
+            width: 100%;
+          `
 
+          const Title = styled.h2`
+            padding: 10px;
+          `
 
-
-
-
-
-
-
-
-
-
-
+          export default VideoSingle
 
 
 class #76 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Firebase Database
+https://firebase.google.com/
 
 
+My Firebase project: Meditation-TV (Id: meditation-tv)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+https://console.firebase.google.com/project/meditation-tv/database/meditation-tv/data
 
 
 class #77 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Get data from Firebase
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/06
 
 
+Include 'firebase' as global variable by editing out package.json:
 
+        "standard": {
+            "globals": [
+              "it",
+              "expect",
+              "firebase"
+            ]
+          },
+
+
+From our Firebase's project on the website's console (https://console.firebase.google.com/project/meditation-tv/settings), copy the code given by Firebase:
+
+          <!-- The core Firebase JS SDK is always required and must be listed first -->
+          <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+
+          <!-- TODO: Add SDKs for Firebase products that you want to use
+              https://firebase.google.com/docs/web/setup#available-libraries -->
+          <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-analytics.js"></script>
+
+          <script>
+            // Your web app's Firebase configuration
+            var firebaseConfig = {
+              apiKey: "XXXXXXXXXXXXXXXX",
+              authDomain: "meditation-tv.firebaseapp.com",
+              databaseURL: "https://meditation-tv.firebaseio.com",
+              projectId: "meditation-tv",
+              storageBucket: "meditation-tv.appspot.com",
+              messagingSenderId: "XXXXXXXXXXXXXXXX",
+              appId: "XXXXXXXXXXXXXXXX",
+              measurementId: "XXXXXXXXXXXXXXXX"
+            };
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            firebase.analytics();
+          </script>
+
+Go to src/html/template.html:
+
+        Paste it before the closing body tag. Then to avoid not necessary data in global scope, remove 'var firebaseConfig' and take it's object directly as parameter of 'firebase.initializeApp()'.
 
 
 

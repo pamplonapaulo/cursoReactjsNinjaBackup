@@ -2,6 +2,8 @@
 
 import React from 'react'
 import styled, { injectGlobal } from 'styled-components'
+import VideosList from 'components/videos-list'
+import VideoSingle from 'components/video-single'
 
 import 'normalize.css'
 import 'milligram'
@@ -13,7 +15,8 @@ const App = () => (
     </Header>
 
     <Main>
-      Conteúdo
+      <VideoSingle />
+      <VideosList />
     </Main>
 
     <Footer>
@@ -27,7 +30,8 @@ injectGlobal`
     height: 100%;
   }
 `
-const headerHight = '60px'
+
+const headerHeight = '60px'
 const footerHeight = '30px'
 
 const Container = styled.div`
@@ -35,16 +39,16 @@ const Container = styled.div`
 `
 
 const Header = styled.header`
-  height: ${headerHight};
+  height: ${headerHeight};
   background: #333;
 `
 
 const Main = styled.main`
-  min-height: calc(100% - ${headerHight} - ${footerHeight});
+  min-height: calc(100% - ${headerHeight} - ${footerHeight});
 `
 
 const Footer = styled.footer`
-  height: ${footerHeight};
+   height: ${footerHeight};
   background: #333;
 `
 

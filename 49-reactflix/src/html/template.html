@@ -3,8 +3,37 @@
 <head>
   <meta charset="utf-8">
   <title><%= htmlWebpackPlugin.options.title %></title>
+  <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no' />
 </head>
 <body>
   <div data-js="app"></div>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+      https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-analytics.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    
+    // Initialize Firebase
+
+    console.log(firebase)
+
+    firebase.initializeApp({
+      apiKey: "AIzaSyBnflJQBcb6pKBJIivxTd6SSOEYJxb7ah0",
+      authDomain: "meditation-tv.firebaseapp.com",
+      databaseURL: "https://meditation-tv.firebaseio.com",
+      projectId: "meditation-tv",
+      storageBucket: "meditation-tv.appspot.com",
+      messagingSenderId: "360968358020",
+      appId: "1:360968358020:web:85ef8b8546b5e1d72e5ad1",
+      measurementId: "G-7ST300CLZ5"
+    });
+    firebase.analytics();
+    
+  </script>
 </body>
 </html>
