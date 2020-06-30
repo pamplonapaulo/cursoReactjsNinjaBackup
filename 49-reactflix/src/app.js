@@ -1,25 +1,51 @@
 'use strict'
 
 import React from 'react'
-import Form from 'components/form'
-import TodosList from 'components/todos-list'
-import Filter from 'components/filter'
-import SearchCep from 'components/search-cep'
+import styled, { injectGlobal } from 'styled-components'
 
+import 'normalize.css'
 import 'milligram'
 
 const App = () => (
-  <div style={{ display: 'flex', justifyContent: 'space-around', padding: 30 }}>
-    <div>
-      <Form />
-      <TodosList />
-      <Filter />
-    </div>
-    <div>
-      <SearchCep />
-    </div>
+  <Container>
+    <Header>
+      <h1>ReactFlix</h1>
+    </Header>
 
-  </div>
+    <Main>
+      Conteúdo
+    </Main>
+
+    <Footer>
+      &copy; 2020
+    </Footer>
+  </Container>
 )
+
+injectGlobal`
+  html, body, div[data-js="app"] {
+    height: 100%;
+  }
+`
+const headerHight = '60px'
+const footerHeight = '30px'
+
+const Container = styled.div`
+  height: 100%;
+`
+
+const Header = styled.header`
+  height: ${headerHight};
+  background: #333;
+`
+
+const Main = styled.main`
+  min-height: calc(100% - ${headerHight} - ${footerHeight});
+`
+
+const Footer = styled.footer`
+  height: ${footerHeight};
+  background: #333;
+`
 
 export default App
