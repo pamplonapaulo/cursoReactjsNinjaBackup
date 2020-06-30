@@ -16,26 +16,75 @@ Setup
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix
 
 
+Professor spend the class setting up a new folder for the project.
 
+He kept 'milligram', but included also:
+ styled-components@^2.4.0
+ normalize.css@^7.0.0
 
+ Since normalize.css is new for us too, this one must be included in webpack to get appropriate loader:
 
+        cssLoader: {
+            test: /\.css$/,
+            include: [
+              paths.src,
+              join(paths.modules, 'normalize,css'),
+              join(paths.modules, 'milligram')
+            ],
+            use: ['style-loader', 'css-loader']
+          },
 
+He removed old folders such as:
+  'reducers/address'
+  'reducers/todos'
+  'reducers/visibility-filter'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+He also fixed some alias at webpack/common.js, but our file were already good for those changes.
 
 class #72 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Styled Components
+
+  import styled from 'styled-components'
+  const Header = styled.header
+
+
+Template Literals (strings multilinhas) para criar estilos CSS para este component.
+
+It works kinda like a function:
+
+      styled.header = function (...params) { 
+      }
+
+But this way:
+
+        injectGlobal`
+          html, body, div[data-js="app"] {
+            height: 100%;
+          }
+        `
+        const headerHight = '60px'
+        const footerHeight = '30px'
+
+        const Container = styled.div`
+          height: 100%;
+        `
+
+        const Header = styled.header`
+          height: ${headerHight};
+          background: #333;
+        `
+
+        const Main = styled.main`
+          min-height: calc(100% - ${headerHight} - ${footerHeight});
+        `
+
+        const Footer = styled.footer`
+          height: ${footerHeight};
+          background: #333;
+        `
+
+        export default App
+
 
 
 
