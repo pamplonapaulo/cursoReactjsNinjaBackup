@@ -248,136 +248,273 @@ Go to src/html/template.html:
 
         Paste it before the closing body tag. Then to avoid not necessary data in global scope, remove 'var firebaseConfig' and take it's object directly as parameter of 'firebase.initializeApp()'.
 
+In my case, it worked only aftyer include this CDN:
+
+        <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script>
+
+Actually, it works if I remove the "-app" from the URL:
+
+        <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase.js"></script>
 
 
+DB's references:
+
+        const videos = db.ref('videos')
+
+        videos.on('value', (snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        }, (error) => {
+          console.log('error:', error)
+        })
 
 
+Access Permissions:
 
+>> RULES
 
+https://console.firebase.google.com/project/meditation-tv/database/meditation-tv/rules
 
+      {
+        "rules": {
+          ".read": true,
+          ".write": false
+        }
+      }
 
+OBS: If false, access will be denied.
 
+Methods ONCE X ON:
 
+1. ON keeps watching any update on the server. (no need to refresh the user's page)
 
+        videos.on('value', (snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        }, (error) => {
+          console.log('error:', error)
+        })
 
+2. ONCE gets just once.
 
+        videos.once('value').then((snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        })
 
-
-
+OBS: Attention above, sintaxe is a bit different.
 
 class #78 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding data into firebase from it's API
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/06
 
+set method
 
+        videos.set({
 
+        })
 
+But if we just do it that way, we will overrride everything there.
 
+So we first create a new reference, then we set a new value.
 
+Permissions:
 
+Insted of:
 
+      {
+        "rules": {
+          ".read": true,
+          ".write": "auth != null"
+        }
+      }
 
+We for now will let anyone overrride (which is wrong):
 
+      {
+        "rules": {
+          ".read": true,
+          ".write": true
+        }
+      }
 
+To include extra data without override the existent one, we PUSH it:
 
+          const videos = db.ref('videos')
+          const videoJS = videos.push()
 
-
-
-
-
-
-
+          videoJS.set({
+            id: 'Dj2Lqg7FUak',
+            title: 'Rise of Dhamma'
+          })
 
 
 class #79 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Editing Data
 
+      child()
 
+                const anyVideo = videos.child('1')
+                anyVideo.set({
+                  id: '1',
+                  title: 'Edição com Set'
+                })
 
+      The danger thing:
 
+                const anyVideo = videos.child('1')
+                anyVideo.set({
+                  title: 'Overriding even with child'
+                })
 
+      OBS:
+      Using 'child()' doesn't protect your data.
+      The set() method still overriding everything.
+      So we are going to use update() method.
 
+      update()
+                const anyVideo = videos.child('1')
+                anyVideo.update({
+                  title: 'Update title without destroying anything else'
+                })
 
+      OBS:
+      1)  update() keeps everything and updates only the property being passed on the object.
+          If the property doesn't exist, this method will create it.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+      2)  It's ok to combine also push() and update().
+          The result will be a new item just like push() and set().
 
 
 class #80 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Remove data
 
+  const anyVideo = videos.child('1')
+  anyVideo.update({
+    id: null,
+    title: null
+  })
 
+  If you turn all properties from an item into null, Firebase DB wil remove the item itself.
 
+  Also we can concat parent and child using forward slash: /
 
+        db.ref('videos/1').update({
+          id: null,
+          title: null
+        })
 
+How to remove an entire reference or an entire child?
 
+        const videos = db.ref('videos')
+        videos.remove()
 
-
-
-
-
-
-
-
-
-
-
-
-
+        db.ref('categories/documentary').remove()
 
 
 class #81 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Remove Global Firebase
+
+  The firebase variable is available globally in our application. So far it could also be reached just by Chrome console from dev tools.
+
+  So let's install it from YARN.
+
+  Terminal:
+
+    yarn add firebase
+
+  New folder & file:
+  
+    src/config/firebase.js
+
+    Now move the previous script from our template.html to this new file:
+
+            'use strict'
+
+            import * as firebase from 'firebase/app'
+            import 'firebase/database'
+
+            firebase.initializeApp({
+              apiKey: 'AIzaSyBnflJQBcb6pKBJIivxTd6SSOEYJxb7ah0',
+              authDomain: 'meditation-tv.firebaseapp.com',
+              databaseURL: 'https://meditation-tv.firebaseio.com',
+              projectId: 'meditation-tv',
+              storageBucket: 'meditation-tv.appspot.com',
+              messagingSenderId: '360968358020',
+              appId: '1:360968358020:web:85ef8b8546b5e1d72e5ad1',
+              measurementId: 'G-7ST300CLZ5'
+            })
+
+            const db = firebase.database()
+
+            export { db }
+
+  
+  Now just a small ajust:
+
+        src/index.js:
+
+            import { db } from './config/firebase'
+
+            const videos = db.ref('videos')
+
+            videos.on('value', (snapshot) => {
+              console.log('snapshot:', snapshot.val())
+            }, (error) => {
+              console.log('error:', error)
+            })
 
 
+OBS:
+That doesn't mean your database is 100% safe.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+For security, check all this section:
+https://firebase.google.com/docs/database/security?authuser=0
 
 class #82 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Add Videos Form
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/07
 
+src/components/register-video.js:
 
+          'use strict'
 
+          import React from 'react'
+          import styled from 'styled-components'
 
+          const RegisterVideo = () => (
+            <Form>
+              <h2>Include videos</h2>
 
+              <label htmlFor='id'>Video's ID</label>
+              <input type='text' id='id' name='id' />
 
+              <label htmlFor='title'>Video's Title</label>
+              <input type='text' id='title' name='title' />
 
+              <button type='submit'>Submit</button>
+            </Form>
+          )
 
+          const Form = styled.form`
+            padding: 10px;
+          `
 
-
-
-
-
-
-
-
-
-
-
+          export default RegisterVideo
 
 
 class #83 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Action Add Video
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/08
+
+Starting with the reducers:
+
+    src/redux-flow/reducers/videos
+
+    files:
+        action-creators.js
+        actions.js
+        index.js
+        videos-test.js
+
+      
 
 
 

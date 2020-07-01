@@ -59,6 +59,7 @@
   "dependencies": {
     "@fdaciuk/ajax": "^3.0.4",
     "babel-runtime": "^6.26.0",
+    "firebase": "^7.15.5",
     "milligram": "^1.4.1",
     "normalize.css": "^7.0.0",
     "preact": "^8.2.5",

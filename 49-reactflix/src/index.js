@@ -9,12 +9,6 @@ import configureStore from './redux-flow/configure-store'
 
 const store = configureStore()
 
-const db = firebase.database()
-
-store.dispatch((dispatch, getState) => {
-  console.log('async dispatch!', dispatch, getState)
-})
-
 const renderApp = (NextApp) => {
   render(
     <AppContainer>
