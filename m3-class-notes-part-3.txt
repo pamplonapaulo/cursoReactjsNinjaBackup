@@ -248,268 +248,588 @@ Go to src/html/template.html:
 
         Paste it before the closing body tag. Then to avoid not necessary data in global scope, remove 'var firebaseConfig' and take it's object directly as parameter of 'firebase.initializeApp()'.
 
+In my case, it worked only aftyer include this CDN:
+
+        <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script>
+
+Actually, it works if I remove the "-app" from the URL:
+
+        <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase.js"></script>
 
 
+DB's references:
+
+        const videos = db.ref('videos')
+
+        videos.on('value', (snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        }, (error) => {
+          console.log('error:', error)
+        })
 
 
+Access Permissions:
 
+>> RULES
 
+https://console.firebase.google.com/project/meditation-tv/database/meditation-tv/rules
 
+      {
+        "rules": {
+          ".read": true,
+          ".write": false
+        }
+      }
 
+OBS: If false, access will be denied.
 
+Methods ONCE X ON:
 
+1. ON keeps watching any update on the server. (no need to refresh the user's page)
 
+        videos.on('value', (snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        }, (error) => {
+          console.log('error:', error)
+        })
 
+2. ONCE gets just once.
 
+        videos.once('value').then((snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        })
 
-
-
+OBS: Attention above, sintaxe is a bit different.
 
 class #78 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding data into firebase from it's API
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/06
 
+set method
 
+        videos.set({
 
+        })
 
+But if we just do it that way, we will overrride everything there.
 
+So we first create a new reference, then we set a new value.
 
+Permissions:
 
+Insted of:
 
+      {
+        "rules": {
+          ".read": true,
+          ".write": "auth != null"
+        }
+      }
 
+We for now will let anyone overrride (which is wrong):
 
+      {
+        "rules": {
+          ".read": true,
+          ".write": true
+        }
+      }
 
+To include extra data without override the existent one, we PUSH it:
 
+          const videos = db.ref('videos')
+          const videoJS = videos.push()
 
-
-
-
-
-
-
+          videoJS.set({
+            id: 'Dj2Lqg7FUak',
+            title: 'Rise of Dhamma'
+          })
 
 
 class #79 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Editing Data
 
+      child()
 
+                const anyVideo = videos.child('1')
+                anyVideo.set({
+                  id: '1',
+                  title: 'Edição com Set'
+                })
 
+      The danger thing:
 
+                const anyVideo = videos.child('1')
+                anyVideo.set({
+                  title: 'Overriding even with child'
+                })
 
+      OBS:
+      Using 'child()' doesn't protect your data.
+      The set() method still overriding everything.
+      So we are going to use update() method.
 
+      update()
+                const anyVideo = videos.child('1')
+                anyVideo.update({
+                  title: 'Update title without destroying anything else'
+                })
 
+      OBS:
+      1)  update() keeps everything and updates only the property being passed on the object.
+          If the property doesn't exist, this method will create it.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+      2)  It's ok to combine also push() and update().
+          The result will be a new item just like push() and set().
 
 
 class #80 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Remove data
 
+  const anyVideo = videos.child('1')
+  anyVideo.update({
+    id: null,
+    title: null
+  })
 
+  If you turn all properties from an item into null, Firebase DB wil remove the item itself.
 
+  Also we can concat parent and child using forward slash: /
 
+        db.ref('videos/1').update({
+          id: null,
+          title: null
+        })
 
+How to remove an entire reference or an entire child?
 
+        const videos = db.ref('videos')
+        videos.remove()
 
-
-
-
-
-
-
-
-
-
-
-
-
+        db.ref('categories/documentary').remove()
 
 
 class #81 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Remove Global Firebase
+
+  The firebase variable is available globally in our application. So far it could also be reached just by Chrome console from dev tools.
+
+  So let's install it from YARN.
+
+  Terminal:
+
+    yarn add firebase
+
+  New folder & file:
+  
+    src/config/firebase.js
+
+    Now move the previous script from our template.html to this new file:
+
+            'use strict'
+
+            import * as firebase from 'firebase/app'
+            import 'firebase/database'
+
+            firebase.initializeApp({
+              apiKey: 'AIzaSyBnflJQBcb6pKBJIivxTd6SSOEYJxb7ah0',
+              authDomain: 'meditation-tv.firebaseapp.com',
+              databaseURL: 'https://meditation-tv.firebaseio.com',
+              projectId: 'meditation-tv',
+              storageBucket: 'meditation-tv.appspot.com',
+              messagingSenderId: '360968358020',
+              appId: '1:360968358020:web:85ef8b8546b5e1d72e5ad1',
+              measurementId: 'G-7ST300CLZ5'
+            })
+
+            const db = firebase.database()
+
+            export { db }
+
+  
+  Now just a small ajust:
+
+        src/index.js:
+
+            import { db } from './config/firebase'
+
+            const videos = db.ref('videos')
+
+            videos.on('value', (snapshot) => {
+              console.log('snapshot:', snapshot.val())
+            }, (error) => {
+              console.log('error:', error)
+            })
 
 
+OBS:
+That doesn't mean your database is 100% safe.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+For security, check all this section:
+https://firebase.google.com/docs/database/security?authuser=0
 
 class #82 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Add Videos Form
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/07
 
+src/components/register-video.js:
 
+          'use strict'
 
+          import React from 'react'
+          import styled from 'styled-components'
 
+          const RegisterVideo = () => (
+            <Form>
+              <h2>Include videos</h2>
 
+              <label htmlFor='id'>Video's ID</label>
+              <input type='text' id='id' name='id' />
 
+              <label htmlFor='title'>Video's Title</label>
+              <input type='text' id='title' name='title' />
 
+              <button type='submit'>Submit</button>
+            </Form>
+          )
 
+          const Form = styled.form`
+            padding: 10px;
+          `
 
-
-
-
-
-
-
-
-
-
-
+          export default RegisterVideo
 
 
 class #83 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Action Add Video
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/08
+
+Starting with the videos' reducer:
+    src/redux-flow/reducers/videos
+
+having these files:
+    action-creators.js
+    actions.js
+    index.js
+    videos-test.js
 
 
+        src/redux-flow/reducers/videos/actions.js
 
+              'use strict'
 
+              export const ADD_VIDEO = 'videos:ADD_VIDEO'
 
+        src/redux-flow/reducers/videos/index.js
 
+              'use strict'
 
+              import createReducer from '../create-reducer'
+              import { ADD_VIDEO } from './actions'
 
+              const initialState = {}
 
+              const videos = createReducer(initialState, {
+                [ADD_VIDEO]: (state, action) => ({
+                  ...state,
+                  [action.payload.id]: {
+                    id: action.payload.id,
+                    title: action.payload.title
+                  }
+                })
+              })
 
+              export default videos
 
+        src/components/register-video.js:
 
+              'use strict'
 
+              import React from 'react'
+              import styled from 'styled-components'
+              import { connect } from 'react-redux'
 
+              const RegisterVideo = ({onSubmit}) => (
+                <Form onSubmit={onSubmit}>
+                  <h2>Include videos</h2>
 
+                  <label htmlFor='id'>Video's ID</label>
+                  <input type='text' id='id' name='id' />
 
+                  <label htmlFor='title'>Video's Title</label>
+                  <input type='text' id='title' name='title' />
 
+                  <button type='submit'>Submit</button>
+                </Form>
+              )
 
+              const Form = styled.form`
+                padding: 10px;
+              `
 
+              const mapDispatchToProps = (dispatch) => ({
+                onSubmit: (e) => {
+                  e.preventDefault()
+                  dispatch({
+                    type: 'videos:ADD_VIDEO',
+                    payload: {
+                      id: '12345',
+                      title: 'Test Aula'
+                    }
+                  })
+                }
+              })
+
+              export default connect(null, mapDispatchToProps)(RegisterVideo)
 
 
 class #84 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Adding videos dynamicaly
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/08
+
+src/redux-flow/reducers/videos/actions.js:
+
+          'use strict'
+
+          import { ADD_VIDEO } from './actions'
+
+          export const addVideo = ({ id, title }) => ({
+            type: ADD_VIDEO,
+            payload: { id, title }
+          })
+
+src/components/register-video.js: (update)
+
+          import { addVideo } from 'reducers/videos/action-creators'
+
+          const mapDispatchToProps = (dispatch) => ({
+            onSubmit: (e) => {
+              e.preventDefault()
+              dispatch(addVideo({
+                id: '12345',
+                title: 'Test Aula'
+              }))
+            }
+          })
+
+OBS: Above, replaced the dispatch { type: 'videos:ADD_VIDEO', payload: { id: '12345', title: 'Test Aula' }}
 
 
+How to get data from the Form?
 
+A basic way could be using REF:
 
+      <input type='text' id='id' name='id' ref={(node) => (variable = node)} />
 
+But our register-video.js is a stateless component, so that won't apply. We are going to use event's date that is trigged by submitting the form.
 
+it could be gotten by id property or name property + elements:
 
+name + elements
 
+    <input name='idName' />
+    <input name='titleName' />
+    const id = e.target.elements.idName.value
+    const title = e.target.elements.titleName.value
 
+id:
+    <input type='text' id='id' name='id' />
+    <input type='text' id='title' name='title' />
+    const id = e.target.id.value
+    const title = e.target.title.value
 
+    dispatch(addVideo({
+      id: id,
+      title: title
+    }))
 
+also get it by Id but using destructuring:
 
+    const { id, title } = e.target
 
+    dispatch(addVideo({
+      id: id.value,
+      title: title.value
+    }))
 
+better: deep destructuring
 
+    const {
+      id: { value: id },
+      title: { value: title }
+    } = e.target
 
-
-
+    dispatch(addVideo({ id, title }))
 
 
 
 class #85 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Saving from component to Firebase DB
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/09
 
 
+webpack/common.js: include extra alias now for config
 
+          resolve: {
+            alias: {
+              config: join(paths.src, 'config')
+            }
+          }
 
+src/components/register-video.js:
 
+          replace this:
+              import { addVideo } from 'reducers/videos/action-creators'
 
+          by this:
+              import { registerVideo } from 'reducers/videos/action-creators'
 
+src/redux-flow/reducers/videos/action-creators.js:
 
+          'use strict'
 
+          import { ADD_VIDEO } from './actions'
+          import { db } from 'config/firebase'
 
+          export const registerVideo = ({ id, title }) => async (dispatch) => {
+            await db.ref('videos').child(id).update({ id, title })
+            dispatch(addVideo({ id, title }))
+          }
 
-
-
-
-
-
-
-
-
+          export const addVideo = ({ id, title }) => ({
+            type: ADD_VIDEO,
+            payload: { id, title }
+          })
 
 
 class #86 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Cleaning up the Form after submit
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/10
 
 
+synthetic event:
 
+    e.target.reset()
 
+        But we can't access those properties with async.
 
+    e.persist
 
+        So for this synthetic event, we force it to persist. So React won't make it null.
 
+    src/components/register-video.js:
 
+            const mapDispatchToProps = (dispatch) => ({
+              onSubmit: async (e) => {
+                e.preventDefault()
+                e.persist()
 
+                const {
+                  id: { value: id },
+                  title: { value: title }
+                } = e.target
 
+                await dispatch(registerVideo({ id, title }))
+                e.target.reset()
+              }
+            })
 
+Nice!
 
+Now we want to bring focus on the first input field after this cleaning up.
 
+      e.target.id.focus()
 
+But in case we want to set focus on the first field, no matter if title or id.
 
+      e.target[0].focus()
 
+  or
 
+      e.target.elements[0].focus()
 
-
-
-
+      
 class #87 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Close/Open Video Register Form
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/11
 
+src/app.js:
 
+          'use strict'
 
+          import React from 'react'
+          import styled from 'styled-components'
+          import { connect } from 'react-redux'
+          import { registerVideo } from 'reducers/videos/action-creators'
 
+          const RegisterVideo = ({onSubmit}) => (
+            <Form onSubmit={onSubmit}>
+              <h2>Include videos</h2>
 
+              <label htmlFor='id'>Video's ID</label>
+              <input type='text' id='id' name='id' />
 
+              <label htmlFor='title'>Video's Title</label>
+              <input type='text' id='title' name='title' />
 
+              <ButtonClose type='ButtonClose'>&times;</ButtonClose>
 
+              <button type='submit'>Submit</button>
+            </Form>
+          )
 
+          const Form = styled.form`
+            padding: 10px;
+            position: relative;
+          `
 
+          const ButtonClose = styled.button`
+            border-radius: 50%;
+            font-size: 20px;
+            height: 30px;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 30px;
+          `
 
+          const mapDispatchToProps = (dispatch) => ({
+            onSubmit: async (e) => {
+              e.preventDefault()
+              e.persist()
 
+              const {
+                id: { value: id },
+                title: { value: title }
+              } = e.target
 
+              await dispatch(registerVideo({ id, title }))
+              e.target.reset()
+              e.target[0].focus()
+            }
+          })
 
-
-
-
-
+          export default connect(null, mapDispatchToProps)(RegisterVideo)
 
 
 class #88 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Extract Header & Footer from App.js
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/12
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+It's a good standard to have inside app.js just calls for i'ts children components. So let's reorganize this. It helps to manage our application.
 
 
 class #89 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+UI's Reducer 
+Using Redux do open and close the form area.
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/13
+
+
 
 
 
@@ -533,7 +853,28 @@ class #89 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
 
 class #90 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #91 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #92 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
 class #93 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
 class #94 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
