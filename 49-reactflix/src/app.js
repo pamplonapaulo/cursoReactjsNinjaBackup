@@ -1,6 +1,6 @@
 'use strict'
 
-import React from 'react'
+import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import styled, { injectGlobal } from 'styled-components'
 import Header from 'components/header'
@@ -9,23 +9,34 @@ import VideosList from 'components/videos-list'
 import VideoSingle from 'components/video-single'
 import RegisterVideo from 'components/register-video'
 import { headerHeight, footerHeight } from 'utils/constants'
+import { fetchVideos } from 'reducers/videos/action-creators'
 
 import 'normalize.css'
 import 'milligram'
 
-const App = ({ isRegisterVideoFormOpened }) => (
-  <Container>
-    <Header />
+class App extends PureComponent {
+  componentDidMount () {
+    this.props.fetchVideos()
+  }
 
-    <Main>
-      {isRegisterVideoFormOpened && <RegisterVideo />}
-      <VideoSingle />
-      <VideosList />
-    </Main>
+  render () {
+    const { isRegisterVideoFormOpened, videoSingleId, videos } = this.props
 
-    <Footer />
-  </Container>
-)
+    return (
+      <Container>
+        <Header />
+
+        <Main>
+          {isRegisterVideoFormOpened && <RegisterVideo />}
+          {videoSingleId && <VideoSingle id={videoSingleId} title={videos[videoSingleId].title} />}
+          <VideosList />
+        </Main>
+
+        <Footer />
+      </Container>
+    )
+  }
+}
 
 injectGlobal`
   html, body, div[data-js="app"] {
@@ -42,7 +53,13 @@ const Main = styled.main`
 `
 
 const mapStateToProps = (state) => ({
-  isRegisterVideoFormOpened: state.ui.isRegisterVideoFormOpened
+  isRegisterVideoFormOpened: state.ui.isRegisterVideoFormOpened,
+  videoSingleId: state.videoSingle,
+  videos: state.videos
 })
 
-export default connect(mapStateToProps)(App)
+const mapDispatchToProps = {
+  fetchVideos
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)

@@ -831,50 +831,374 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class #90 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Get data from Firebase with Redux
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/14
+
+      Our src/app.js is loaded just once.
+
+      So far, src/app.js is a stateless component.  
+
+      Firebase method needs to get called just once.
+
+      We have to use componentDidMount() so we call Firebase's method only after the mounting.
+
+      So App must be a class, not a stateless component.
+
+That said, here is the stateful component:
+
+      class App extends PureComponent {
+        render() {
+          const { isRegisterVideoFormOpened } = this.props
+
+          return (
+            <Container>
+              <Header />
+          
+              <Main>
+                {isRegisterVideoFormOpened && <RegisterVideo />}
+                <VideoSingle />
+                <VideosList />
+              </Main>
+          
+              <Footer />
+            </Container>  
+          )
+        }
+      }
+
+How to list all videos from Firebase?
+
+  - Always before any ajax request, first let the component get totally mounted.
+
+  componentDidMount () {
+      this.props.fetchVideos()
+    }
+
+  const mapDispatchToProps = (dispatch) => ({
+    fetchVideos: () => dispatch(fetchVideos())
+  })
+
+  export default connect(mapStateToProps, mapDispatchToProps)(App)
 
 
+redux-flow/reducers/videos/action-creators.js:
 
+      export const fetchVideos = () => (dispatch) => {
+        db.ref('videos').on('value', (snapshot) => {
+          console.log('snapshot:', snapshot.val())
+        })
+      }
+
+src/app.js:
+
+      import { fetchVideos } from 'reducers/videos/action-creators'
+
+console.log:
+
+  -MB5LLaFV0cUhrbHrZUM: {id: "GqEWTlaweaM", title: "Vipassana morning chanting"}
+  -MB5LQ_Adq1EcwPc5b70: {id: "Dj2Lqg7FUak", title: "Rise of Dhamma"}
+  IVQCvKNLT5Q: {id: "IVQCvKNLT5Q", title: "O que é meditação Vipassana?"}
+  P9sRWtA89CI: {id: "P9sRWtA89CI", title: "Changing from Inside"}
+  WkxSyv5R1sg: {id: "WkxSyv5R1sg", title: "Doing Time Doing Vipassana"}
+  aZNlgYbOhms: {id: "aZNlgYbOhms", title: "Meditação Vipassana - Presídio no Brasil"}
+  wncnaJyB9Rw: {id: "wncnaJyB9Rw", title: "Miracle Healing Frequency"}
+
+redux-flow/reducers/videos/action-creators.js:
+
+  snpashot.forEach()
+
+        export const fetchVideos = () => (dispatch) => {
+          db.ref('videos').on('value', (snapshot) => {
+
+            snapshot.forEach((child) => {
+              dispatch(addVideo(child.val()))
+            })
+
+          })
+        }
+
+  Before that videos weren't being add to the state:
+
+        videos: { }
+
+  Now:
+        videos: {
+          {id: "GqEWTlaweaM", title: "Vipassana morning chanting"}
+          {id: "Dj2Lqg7FUak", title: "Rise of Dhamma"}
+          {id: "IVQCvKNLT5Q", title: "O que é meditação Vipassana?"}
+          {id: "P9sRWtA89CI", title: "Changing from Inside"}
+          {id: "WkxSyv5R1sg", title: "Doing Time Doing Vipassana"}
+          {id: "aZNlgYbOhms", title: "Meditação Vipassana - Presídio no Brasil"}
+          {id: "wncnaJyB9Rw", title: "Miracle Healing Frequency"}
+        }
+
+Update VideosList Component
+src/component/videos-list/index.js:
+
+      import { connect } from 'react-redux'
+
+      const VideosList = ({ videos }) => (
+        <Container>
+          {Object.keys(videos).map((id) => (
+            <Video key={id}>
+              <VideoThumb>
+                <PlayStyled />
+              </VideoThumb>
+              <VideoTitle>{videos[id].title}</VideoTitle>
+            </Video>
+          ))}
+        </Container>
+      )
+  
+      const mapStateToProps = (state) => ({
+        videos: state.videos
+      })
+
+      export default connect(mapStateToProps)(VideosList)
+
+
+src/app.js:
+Reminder of short notation for object's method:
+
+Insted of:
+
+        const mapDispatchToProps = (dispatch) => ({
+          fetchVideos: () => dispatch(fetchVideos())
+        })
+
+We don't need directly call dispatch in this case, insted of passing as a function it can be passed just as object:
+
+        const mapDispatchToProps = {
+          fetchVideos: fetchVideos
+        }
+
+That was possible only cuz we didn't pass any paramenter, otherwise the code would have to be more verbose.
+
+And the sweet ES6 let us write just:
+
+        const mapDispatchToProps = {
+          fetchVideos
+        }
 
 
 class #91 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/15
+Add link to videos
+
+videos-list.js:
+
+      Add the <a> tag. Then rename it as VideoLink:
+
+              const VideoLink = styled.a`
+                color: inherit;
+              `
+
+              <VideoLink href='#' onClick={(e) => {
+                e.preventDefault()
+                
+              }}>
 
 
+Eacho video has it's own Id.
+This comp is a pure component, it shouldn't depend on redux.
+So we it must export a function to dispatch redux's action: mapDispatchToProps
 
+    <VideoLink href='#' onClick={handleClick(id)}>
+
+    const VideosList = ({ videos, handleClick }) => ()
+
+mapDispatchToProps:
+
+    const mapDispatchToProps = (dispatch) => ({
+      handleClick: (id) => (e) => {
+        e.preventDefault()
+        console.log(id)
+      }
+    })
+
+    There is a CLOSURE above, inside the second internal function.
+
+    The handleClick function gets 'id' as parameter. The internal function becomes a closure, it has access to the value from it's external function, handleClick. The handleClick function keeps the 'id' for each time that it's internal function, the closure, will need it.
 
 
 class #92 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Pass 'id' to component 'video-single'
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/16
+
+src/redux-flow/reducers/video-single/index.js:
+
+          'use strict'
+
+          import createReducer from '../create-reducer'
+          import { SELECT_VIDEO_SINGLE } from './actions'
+
+          const initialSatate = ''
+
+          const videoSingle = createReducer(initialState, {
+            [SELECT_VIDEO_SINGLE]: (state, action) => action.payload.id
+          })
+
+          export default videoSingle
+
+src/redux-flow/reducers/video-single/actions.js:
+
+          'use strict'
+
+          export const SELECT_VIDEO_SINGLE = 'videoSingle:SELECT_VIDEO_SINGLE'
+
+src/redux-flow/reducers/video-single/action-creators.js:
+
+          'use strict'
+
+          import { SELECT_VIDEO_SINGLE } from './actions'
+
+          export const selectVideoSingle = (id) => ({
+            type: SELECT_VIDEO_SINGLE,
+            payload: { id }
+          })
 
 
+src/components/videos-list.js: mapping this new video-single reducer
 
+          import { selectVideoSingle } from 'reducers/video-single/action-creators'
+
+          const mapDispatchToProps = (dispatch) => ({
+            handleClick: (id) => (e) => {
+              e.preventDefault()
+              dispatch(selectVideoSingle(id))
+            }
+          })
+
+          export default connect(mapStateToProps, mapDispatchToProps)(VideosList)
+
+Got it. So far the id is being passed to the reducer/state. Now let's make it's way to video-single component itself.
+
+src/app.js:
+
+          render () {
+            const { isRegisterVideoFormOpened, videoSingleId, videos } = this.props
+
+          <Main>
+            {isRegisterVideoFormOpened && <RegisterVideo />}
+            {videoSingleId && <VideoSingle id={videoSingleId} title={videos[videoSingleId].title} />}
+            <VideosList />
+          </Main>
+
+          const mapStateToProps = (state) => ({
+            isRegisterVideoFormOpened: state.ui.isRegisterVideoFormOpened,
+            videoSingleId: state.videoSingle,
+            videos: state.videos
+          })
+
+
+src/components/video-single.js:
+
+      const VideoSingle = ({ id, title }) => (
+
+      pass the 'id' via template-literals:
+
+        src={`https://www.youtube-nocookie.com/embed/${id}`}
+
+          <Iframe width='560' height='480' src={`https://www.youtube-nocookie.com/embed/${id}`} frameborder='0' allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' allowfullscreen />
+
+          <Title>{title}</Title>
 
 
 class #93 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Ordering Firebase's content
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/49-reactflix/17
 
+By default Firebase orders from contet's main key.
+We want to have another criterea, by alphabetic order of the titles.
 
+src/redux-flow/reducers/videos/action-creators.js
 
+      fetchVideos
 
+  Firebase methods:
 
+    on.('value') -> brings all data inside the ref on call
+
+          export const fetchVideos = () => (dispatch) => {
+            db.ref('videos').on('value', (snapshot) => {
+              snapshot.forEach((child) => {
+                dispatch(addVideo(child.val()))
+              })
+            })
+          }
+
+    on.('child_added') -> brings one child per time, plus the id from the previous child
+
+          export const fetchVideos = () => (dispatch) => {
+            db.ref('videos').on('child_added', (child, prevKey) => {
+              console.log(child.val(), prevKey)
+            })
+          }
+
+    orderByChild('child_added', (child, prevKey) => {})
+
+          export const fetchVideos = () => (dispatch) => {
+            db.ref('videos').orderByChild('title').on('child_added', (child) => {
+              console.log(child.val())
+            })
+          }
+
+    See also:
+
+      'child_added'
+      'child_changed'
+
+    Our app so far won't reorder everything if the DB gets an extra video in it's content. In this situation it would be added in the end.
+
+    Usually you may use all these methods.
+
+    oderByChild() doesn't work with on('value'), because on('value') brings everythign at once.
+
+    Order By Child will work only if you are getting a child per time, like from child_added, child_added, or child_changed.
+
+    Also, the order we want can be done manually with javascript:
+
+    Using MAP
+
+              export const fetchVideos = () => (dispatch) => {
+                db.ref('videos').on('value', (snapshot) => {
+                  const videos = snapshot.val()
+                  const ordered = Object.keys(videos)
+                    .sort((a, b) => videos[a].title < videos[b].title ? -1 : 1)
+                    .map((id) => ({
+                      id,
+                      title: videos[id].title
+                    }))
+
+                    ordered.ForEach((video) => dispatch(addVideo(video)))
+                })
+              }
+
+    Or using FOREACH
+
+              export const fetchVideos = () => (dispatch) => {
+                db.ref('videos').on('value', (snapshot) => {
+                  const videos = snapshot.val()
+                  Object.keys(videos)
+                    .sort((a, b) => videos[a].title < videos[b].title ? -1 : 1)
+                    .forEach((id) => dispatch(addVideo({
+                      id,
+                      title: videos[id].title
+                    })))
+                })
+              }
+
+    Warning: doing this with many videos would make it slow. Firebase has documentation for pagination and other ways to accomplish that.
 
 class #94 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+End of Module 3
+
+Suggestions for improvements!
+
+  - Jest Tests
+  - Erros treatments: on('value') second function is trigged in case of errors. Code it.
+  - 'x' close single video button
+  - register video only if user is logged on
+  - videos' categories, other REF on Firebase
+  - yarn build:analyzer
