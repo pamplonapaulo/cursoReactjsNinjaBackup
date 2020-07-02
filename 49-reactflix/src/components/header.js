@@ -31,7 +31,7 @@ const RegisterButton = styled.button`
 `
 
 const mapDispatchToProps = (dispatch) => ({
-  onOpenRegisterVideo: () => dispatch(openRegisterVideo)
+  onOpenRegisterVideo: () => dispatch(openRegisterVideo())
 })
 
 export default connect(null, mapDispatchToProps)(MainHeader)
