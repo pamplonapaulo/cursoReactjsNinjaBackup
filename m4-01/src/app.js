@@ -1,40 +1,49 @@
 'use strict'
 
 import React from 'react'
-import { BrowserRouter, Link, Route } from 'react-router-dom'
+import { BrowserRouter, NavLink, Route, Switch } from 'react-router-dom'
 
 import 'normalize.css'
 import 'milligram'
+import './css/style.css'
+
+const Link = (props) => (
+  <NavLink activeStyle={{ color: 'red' }} {...props} />
+)
 
 const App = () => (
   <BrowserRouter>
     <div>
-      <Route path='/' exact component={Home} />
-      <Route path='/about' component={About} />
-      <Route path='/blog' component={Blog} />
-
       <ul>
-        <li>
-          <Link to='/' children='Home' />
-        </li>
-        <li>
-          <Link to='/about' children='About' />
-        </li>
-        <li>
-          <Link to='/blog' children='Blog' />
-        </li>
+        <li><Link to='/' exact>Home</Link></li>
+        <li><Link to='/about'>About</Link></li>
+        <li><Link to='/contact'>Contact</Link></li>
+        <li><Link to='/blog'>Blog</Link></li>
       </ul>
 
+      <Switch>
+        <Route path='/' exact component={Home} />
+        <Route path='/(about|contact)' component={Page} />
+        <Route path='/blog' component={Blog} />
+        <Route component={Error404} />
+      </Switch>
     </div>
   </BrowserRouter>
+)
+
+const Error404 = () => (
+  <h1>Page not found</h1>
 )
 
 const Home = () => (
   <h1>Home</h1>
 )
 
-const About = () => (
-  <h1>About</h1>
+const Page = ({ match }) => (
+  <div>
+    {console.log({match})}
+    <h1>{match.url}</h1>
+  </div>
 )
 
 const Blog = () => (
@@ -42,13 +51,22 @@ const Blog = () => (
   <div>
     <h1>Blog</h1>
     <ul>
-      <li><Link to='/blog/Jesus'>Post about Jesus's life</Link></li>
-      <li><Link to='/blog/Sidarta'>Post about Sidarta's life</Link></li>
+      <li><Link to='/blog/post-1'>Post 1</Link></li>
+      <li><Link to='/blog/post-2'>Post 2</Link></li>
+      <li><Link to='/blog/post-3'>Post 3</Link></li>
+      <li><Link to='/blog/post-4'>Post 4</Link></li>
     </ul>
 
-    <Route path='/blog/:post' component={Post} />
-    <Route exact path='/blog' component={NoPost} />
+    <Switch>
+      <Route exact path='/blog' component={NoPost} />
+      <Route path='/blog/:post(post-[1234])' component={Post} />
+      <Route component={Post404} />
+    </Switch>
   </div>
+)
+
+const Post404 = () => (
+  <h1>This post doesn't exist</h1>
 )
 
 const Post = ({ match }) => (

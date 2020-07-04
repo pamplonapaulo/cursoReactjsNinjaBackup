@@ -375,35 +375,247 @@ class #012 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 React Router: Switch component
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router
 
-Switch renders a single route per time.
+<Switch /> renders a single route per time.
 
+    import { Switch } from 'react-router-dom'
 
+    <Switch>
+      <Route path='/' exact component={Home} />
+      <Route path='/about' component={About} />
+      <Route path='/blog' component={Blog} />
+      <Route component={Error404} />
+    </Switch>
 
+const Error404 = () => (
+  <h1>Page not found</h1>
+)
 
+Route without path would get loaded if not wrapped by <Switch/>
 
+Important to have the error404 at the end, so it gets loaded only if anyone else matches the path.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Without the Switch, this code would load the error404 for all of them.
 
 
 class #013 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Dynamic / Specific Routes
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/02
+
+
+
+
+<Route path='/about' component={Page} />
+<Route path='/contact' component={Page} />
+
+const Page = ({ match }) => (
+  <div>
+    {console.log({match})}
+    <h1>{Page}</h1>
+  </div>
+)
+
+But the magic is, insted of:
+
+      <Switch>
+        <Route path='/' exact component={Home} />
+        <Route path='/about' component={Page} />
+        <Route path='/contact' component={Page} />
+        <Route path='/blog' component={Blog} />
+        <Route component={Error404} />
+      </Switch>
+
+How about that: path='/(about|contact)'
+
+      <Switch>
+        <Route path='/' exact component={Home} />
+        <Route path='/(about|contact)' component={Page} />
+        <Route path='/blog' component={Blog} />
+        <Route component={Error404} />
+      </Switch>
+
+
+Also. With that current code:
+
+      const Blog = () => (
+
+        <div>
+          <h1>Blog</h1>
+          <ul>
+            <li><Link to='/blog/Jesus'>Post about Jesus's life</Link></li>
+            <li><Link to='/blog/Sidarta'>Post about Sidarta's life</Link></li>
+          </ul>
+
+          <Route path='/blog/:post' component={Post} />
+          <Route exact path='/blog' component={NoPost} />
+        </div>
+      )
+
+      A URL request with extra characteres would also get loaded:
+
+      http://localhost:3000/blog/JesusDead
+
+      Renders: Post:
+      
+          JesusDead
+
+      Shit, we've better fix that!
+
+          const Blog = () => (
+
+            <div>
+              <h1>Blog</h1>
+              <ul>
+                <li><Link to='/blog/Jesus'>Post about Jesus's life</Link></li>
+                <li><Link to='/blog/Sidarta'>Post about Sidarta's life</Link></li>
+              </ul>
+
+              <Route path='/blog/:post(Jesus|Sidarta)' component={Post} />
+              <Route exact path='/blog' component={NoPost} />
+            </div>
+          )
+
+      So with this approach, any extra type in the URL request won't render anything. 
+
+      To achieve something a little better, let's include Switch like we saw earlier:
+
+                const Blog = () => (
+
+                  <div>
+                    <h1>Blog</h1>
+                    <ul>
+                      <li><Link to='/blog/Jesus'>Post about Jesus's life</Link></li>
+                      <li><Link to='/blog/Sidarta'>Post about Sidarta's life</Link></li>
+                    </ul>
+
+                    <Switch>
+                      <Route exact path='/blog' component={NoPost} />
+                      <Route path='/blog/:post(Jesus|Sidarta)' component={Post} />
+                      <Route component={Post404} />
+                    </Switch>
+                  </div>
+                )
+
+                const Post404 = () => (
+                  <h1>This post doesn't exist</h1>
+                )
+
+      Super important to remember this is RegEx being passed in the path.
+      
+      Check this one and try it out at the browser:
+
+                const Blog = () => (
+                  <div>
+                    <h1>Blog</h1>
+                    <ul>
+                      <li><Link to='/blog/post-1'>Post 1</Link></li>
+                      <li><Link to='/blog/post-2'>Post 2</Link></li>
+                      <li><Link to='/blog/post-3'>Post 3</Link></li>
+                      <li><Link to='/blog/post-4'>Post 4</Link></li>
+                    </ul>
+
+                    <Switch>
+                      <Route exact path='/blog' component={NoPost} />
+                      <Route path='/blog/:post(post-[1234])' component={Post} />
+                      <Route component={Post404} />
+                    </Switch>
+                  </div>
+                )
+
+      As you see, we could use RegEx in deep.
+
+
 class #014 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+NavLink
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/03
+
+import { NavLink } from 'react-router-dom'
+
+Works pretty much just like <Link>, with one difference:
+
+  - it adds a class 'active' in the clicked NavLink
+  - it turns a property 'aria-current' into true if the NavLink was clicked, or false if it's not active.
+
+NavLink checks if the 'to=' property matches the current route.
+If the current route at the URL contains the route in 'to'. That means a route like home, '/', would be contained inside every other route. How to prevent this? Using the same prop we use in the Route: exact
+
+    <li><NavLink to='/' exact children='Home' /></li>
+
+OBS: Differently from prof's app, my App actually shows 'aria-current=page' for those selected NavLinks.
+
+Insted of having 'active' class, if you will, we could have another value for that class. Just pass this property:
+
+    activeClassName='active-link'
+
+    With that, it will start to use this custom name for the active NavLink in this single item where you passed it. If you want that name in all options, pass it in all of them.
+
+    <ul>
+      <li><NavLink activeClassName='active-link' to='/blog/post-1'>Post 1</NavLink></li>
+      <li><NavLink activeClassName='active-link' to='/blog/post-2'>Post 2</NavLink></li>
+      <li><NavLink activeClassName='active-link' to='/blog/post-3'>Post 3</NavLink></li>
+      <li><NavLink activeClassName='active-link' to='/blog/post-4'>Post 4</NavLink></li>
+    </ul>
+
+Inline Style for Active NavLink:
+
+  activeStyle={{ color: 'red' }}
+
+  <ul>
+    <li><NavLink activeStyle={{ color: 'red' }} to='/' exact children='Home' /></li>
+    <li><NavLink activeStyle={{ color: 'red' }} to='/about' children='About' /></li>
+    <li><NavLink activeStyle={{ color: 'red' }} to='/contact' children='Contact' /></li>
+    <li><NavLink activeStyle={{ color: 'red' }} to='/blog' children='Blog' /></li>
+  </ul>
+
+
+  Also, in the real world we wouldn't write like this. We would have an component for that:
+
+          const Link = (props) => (
+            <NavLink activeStyle={{ color: 'red' }} {...props} />
+          )
+
+
+          <ul>
+            <li><Link to='/' exact>Home</Link></li>
+            <li><Link to='/about'>About</Link></li>
+            <li><Link to='/contact'>Contact</Link></li>
+            <li><Link to='/blog'>Blog</Link></li>
+          </ul>
+
 class #015 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #016 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #017 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #018 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
