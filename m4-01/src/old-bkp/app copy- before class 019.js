@@ -8,8 +8,25 @@ import 'milligram'
 import './css/style.css'
 
 const Link = (props) => (
-  <NavLink activeStyle={{ color: 'red' }} {...props} />
+  <Route path={props.to} exact={props.exact}>
+    {({ match, history }) => (
+      <a
+        href={props.to}
+        style={match ? { color: 'red' } : null}
+        onClick={(e) => {
+          e.preventDefault()
+          history.push(props.to)
+        }}
+      >
+        {props.children}
+      </a>
+    )}
+  </Route>
 )
+
+// const Link = (props) => (
+//   <NavLink activeStyle={{ color: 'red' }} {...props} />
+// )
 
 const App = () => (
   <BrowserRouter>
@@ -35,24 +52,24 @@ const Error404 = () => (
   <h1>Page not found</h1>
 )
 
-const Home = ({ match, location }) => (
+const Home = ({ match }) => (
   <div>
-    {console.log('HOME location:', location)}
+    {console.log('HOME match:', match)}
     <h1>Home</h1>
   </div>
 )
 
-const Page = ({ match, location }) => (
+const Page = ({ match }) => (
   <div>
-    {console.log('PAGE location:', location)}
+    {console.log('PAGE match:', match)}
     <h1>{match.url}</h1>
   </div>
 )
 
-const Blog = ({ match, location }) => (
+const Blog = ({ match }) => (
 
   <div>
-    {console.log('BLOG location:', location)}
+    {console.log('BLOG match:', match)}
     <h1>Blog</h1>
     <ul>
       <li><Link to='/blog/post-1'>Post 1</Link></li>
@@ -69,16 +86,16 @@ const Blog = ({ match, location }) => (
   </div>
 )
 
-const Post404 = ({ match, location }) => (
+const Post404 = ({ match }) => (
   <div>
-    {console.log('POST 404 location:', location)}
+    {console.log('POST 404 match:', match)}
     <h1>This post doesn't exist</h1>
   </div>
 )
 
-const Post = ({ match, location }) => (
+const Post = ({ match }) => (
   <div>
-    {console.log('POST location:', location)}
+    {console.log('POST match:', match)}
     <h2>Post: {match.params.post}</h2>
   </div>
 )
