@@ -583,43 +583,267 @@ Inline Style for Active NavLink:
           </ul>
 
 class #015 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Prop Render
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/04
 
+Route: path + component
 
+If Route doesn't come with path, component will always get rendered, unless if inside a Switch.
 
+So far, we have been using component= to render.
 
+Why do we need prop Render?
 
+1. If you have an prop in scope that must be passed down.
 
+Ex:
 
+        const NoPost = ({ numberOfPosts }) => (
+          <div>
+            <p>Select one of the {numberOfPosts} post</p>
+          </div>
+        )
 
+        For that, we can't just have a Route like this:
+        <Route exact path='/blog' component={NoPost} />
 
+        So how can we do? This way:
+        <Route exact path='/blog' render={() => <NoPost numberOfPosts={2} />} />
 
+        Prop component= could achieve something close, but with different things going on behind the scene and different results.
 
+              <Route exact path='/blog' component={() => <NoPost numberOfPosts={2} />} />
 
+        That line above "works", but we don't want it. Why?
 
+        Prop render= holds the data in cache and uses when it needs. React Router calls this function when necessary, after have read it and saved in cache.
 
+        Prop component= expect a React component. The function passed in the component would be created every single time when the component is called. So the whole component would have mountings and unmountings not desired. So prop render= optimizes the whole thing.
 
+        So prop render= is great every time we need to pass data to the component, when we can't pass by reference.
 
+         Also, this prop render renders basic JSX, doesn't have to be an etire component. It could be just this:
 
+          <Route exact path='/blog' render={() => <p>Select a post</p>} />
 
+        Also, those props from component= prop, that we saw before, such as 'match', 'location', and 'history'; they are also available when we use render= prop. Like that:
 
+              <Route exact path='/blog' render={(props) => <NoPost numberOfPosts={2} {...props} />} />
 
-
-
-
-
-
-
-
-
-
-
-
-
+              const NoPost = ({ numberOfPosts, match, history, location }) => (
+                <div>
+                  <p>Select one of the {numberOfPosts} post</p>
+                </div>
+              )
 
 class #016 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Children prop
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/05
+
+
+Children as a funtion inside Route component will always get rendered, even without match with path.
+
+Children also receives all props that other components get: match, location, history...
+
+BUT! Those properties are available only when there is a match on the path.
+
+  <Route path='/about'>
+    {({ match }) => (
+      <pre>
+        {console.log('About Page', match)}
+        This is About page.
+      </pre>
+    )}
+  </Route>
+
+In this code above, match prop is null unless path has a match.
+However, the text 'This is About page.' renders all the time, no matter the path.
+
+So based on the match, our code may take different decisions.
+
+      <Route path='/about'>
+        {({ match }) => (
+          <pre>
+            Is this ABOUT's page? {`${!!match}`}
+          </pre>
+        )}
+      </Route>
+
+
+Another example:
+
+      const Link = (props) => (
+        <Route path={props.to} exact={props.exact}>
+          {({ match, history }) => (
+            <a
+              href={props.to}
+              style={match ? { color: 'red' } : null}
+              onClick={(e) => {
+                e.preventDefault()
+                history.push(props.to)
+              }}
+            >
+              {props.children}
+            </a>
+          )}
+        </Route>
+      )
+
+      OBS: This is kind of how NavLink works behind the scenes.
+
 class #017 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Pattern "Render Props"
+
+Earlier, we saw the pattern Container Components (Parent) & Presentational Components (Children).
+
+So what is Pattern Render Props?
+
+It's how the Route component works, the way we started to talk about those last few classes.
+
+Route -> prop Children, used as a function
+
+  <Route path={props.to} exact={props.exact}>
+
+                    {({ match, history }) => (
+                      <a
+                        href={props.to}
+                        style={match ? { color: 'red' } : null}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          history.push(props.to)
+                        }}
+                      >
+                        {props.children}
+                      </a>
+                    )}
+
+  </Route>
+
+  It was known as "children as a function'. Nowadays, it got named as "Render Props".
+
+  It's ok to mix those patterns, you don't have to chose just one.
+
 class #018 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route props: match
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/06
+
+3 ways to render a component:
+
+  
+  - using component
+  <Route component={} />
+  
+  - using render
+  <Route render={} />
+  
+  - using children
+  <Route>{() => (<a>{props.children}</a>)}</Route>
+
+Important to mention that we cannot use all at once. Pick one!
+
+
+match.params:
+
+  <Route path='/(about|contact)' component={Page} />  
+
+        http://localhost:3000/about
+          console.log(match.params):
+            params: {0: "about"}
+
+  <Route path='/(about|contact)/(1|2)?' component={Page} />
+
+        http://localhost:3000/about
+          console.log(match.params):
+            params: {0: "about", 1: undefined}
+  
+        http://localhost:3000/about/1
+          console.log(match.params):
+            params: {0: "about", 1: "1"}
+
+        http://localhost:3000/about/2
+          console.log(match.params):
+            params: {0: "about", 1: "2"}
+
+
+  As shown abovem, using a question mark '?' at the end of your params, you set those as optionals.
+
+    path='/(about|contact)/(1|2)?'
+
+        Above, (about|contact) is not an option
+        But (1|2) is an option
+
+    path='/(about|contact)?/(1|2)?'
+
+        Both params are options.
+
+    path='/(about|contact)/:id?'
+
+        http://localhost:3000/about/2
+        params: {0: "about", id: "2"}
+
+        http://localhost:3000/about/
+        params: {0: "about", id: undefined}
+
+    path='/(about|contact)/:id'
+
+        http://localhost:3000/about/
+        Page not found
+
+    Sub routes: Blog
+
+    When a component doesn't have a path, such as:
+
+          <Route component={Post404} />
+    
+    properties (or the 'match' object if you will) passed throw it actually are the same reference from it's parent, which in 'Post404' case, is 'Blog':
+
+          <Route path='/blog' component={Blog} />
+
+
 class #019 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: location (pathname & key)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/07
+
+  {
+    hash: ""
+    key: "ozfnyj"
+    pathname: "/about"
+    search: ""
+    state: undefined
+  }
+
+  --> location's data (above) is based on the current route. 
+
+  --> match's data (last class) is based on the current match (route and component).
+
+    hash:
+    key:
+    pathname:
+    search:
+    state:
+
+    pathname: which route got the match
+
+      If URL is like: http://localhost:3000/blog/post-1
+
+        Both Blog component and Post component show the same pathname:
+        
+              pathname: "/blog/post-1"
+
+
+    key: identifies each route of navigation, like an Id
+
+      Also, if URL is like: http://localhost:3000/blog/post-1
+
+        Both Blog component and Post component show the same key (which is ramdom and changes every time):
+          
+              key: "ai4qty"
+
+        Key prop is available only when navigation itself starts. Before that, location's object won't show it to you. So home pages mostly won't have a key. It helps to know if user is in the first page of history.
+
+        Every navigation will keep the key. Keys have different value when another routes get trigged. visiting those routes again will show you the previous value of that related key.
+
+
 class #020 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #021 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
