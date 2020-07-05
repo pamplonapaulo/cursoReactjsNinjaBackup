@@ -133,7 +133,7 @@ webpack/dev.congif.js:
           output: {
             path: paths.dist,
             filename: '[name]-[chunkhash].js',
-            publicPath: '/'
+ -->        publicPath: '/'
           },
 
 class #006 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -845,17 +845,327 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-re
 
 
 class #020 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: location (hash)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/08
+
+
+Identifies if URL contains any hash (#)
+
+Helps scroll navigation in the same page, jumping to another part of the page.
+
+      <li><a href='#site-info'>Site information</a></li>
+
+      <div id='site-info' style={{ margin: '1000px 0' }}>
+        <h2>Site information</h2>
+      </div>
+
+{hash: "#site-info"}
 
 class #021 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: location (search)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/09
+
+home -> { search: ""}
+
+It apsses data via query string, in URLs
+
+How to use?
+
+Just include your data after a question mark
+
+http://localhost:3000/about?data=my-data
+
+  {
+    pathname: "/about",
+    search: "?data=my-data",
+    hash: "",
+    state: undefined
+  }
+
+http://localhost:3000/about?name=paulo&age=41
+
+  { search: "?name=paulo&age=41" }
+
+
+http://localhost:3000/?name=paulo&age=41&city=London&field=frontend
+
+      const Home = ({ match, location }) => (
+        <div>
+          {console.log('HOME location:', location)}
+          {console.log(
+            'Location Search:',
+            location.search
+              .replace('?', '')
+              .split('&')
+          )}
+          <h1>Home</h1>
+        </div>
+      )
+
+      console:
+
+        ["name=paulo", "age=41", "city=London", "field=frontend"]
+
+      From array to object:
+
+        {console.log(
+          'Location Search:',
+          location.search
+            .replace('?', '')
+            .split('&')
+            .reduce((acc, item) => {
+              const [key, value] = item.split('=')
+              acc[key] = value
+              return acc
+            }, {})
+        )}
+
+        console:
+          {
+            name: "paulo",
+            age: "41",
+            city: "London",
+            field: "frontend"
+          }
+
+How about duplicated keys?
+
+http://localhost:3000/?name=paulo&age=41&city=London&field=frontend&arr=0&arr=1
+
+To avoid overriding an existent key, let's change the reduce's content in the code above:
+
+        .reduce((acc, item) => {
+          const [key, value] = item.split('=')
+          if (acc[key]) {
+            acc[key] = [acc[key]].concat(value)
+          } else {
+            acc[key] = value
+          }
+          return acc
+        }, {})
+
+        It returns:
+
+          {
+            age: "41"
+            arr: ["0", "1"]
+            city: "London"
+            field: "frontend"
+            name: "paulo"
+          }
+
+Some complex manipulation might get too tricky, so there is a lib to help us on that.
+
+https://www.npmjs.com/package/query-string
+
+
 class #022 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: location (state)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/10
+
+  {
+    pathname: "/about",
+    search: "?data=my-data",
+    hash: "",
+    state: undefined
+  }
+
+So far, all our pages show state undefined.
+
+Reminder: location's object is created based on the current route.
+
+The property 'to=' can handle all location properties:
+
+    pathname
+    search
+    hash
+    state
+
+      <li><Link to={{
+        pathname: '/',
+        hash: '#site-info',
+        state: { id: 'home' },
+        search: '?name=daciuk'
+      }} exact>Home</Link></li>
+
+
+All of them could also be passed via URL, except the state!
+
+http://localhost:3000/?name=paulo&age=41&city=London&field=frontend&arr=0&arr=1#site-info
+
+Browser keeps the 'state' in it's memory. Since the URl itself doesn't bring states, it work only when user clicks the Link or NavLink
+
 class #023 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: history.length
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/11
+
+
+      const Home = ({ match, location, history }) => (
+        <div>
+          {console.log('HOME location:', location)}
+          {console.log('HOME history:', history)}
+          <h1>Home</h1>
+        </div>
+      )
+
+  prop location X history.location
+
+  They are the same thing. But history is mutable, it gets updates evey new navigation. But reference is the same. If you have to check a route change, check by prop location. That way you make sure you are checking the most updated data.
+
+  history.length:
+
+    how many pages you have in your navigation history. but it doesn't count repeated pages, counts for each new page on the navigation.
+
+
 class #024 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: history.push
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/12
+
+
+Pushes new data to history. Just like <Link> or <NavLink> do.
+
+    const Link = (props) => (
+      <Route path={props.to} exact={props.exact}>
+        {({ match, history }) => (
+          <a href={props.to} onClick={(e) => {
+              e.preventDefault()
+              history.push(props.to)
+            }}
+          >{props.children}</a>
+        )}
+      </Route>
+    )
+
+also:
+
+  <li><Link to={{ pathname: '/', state: { link: 'home' } }} exact>Home</Link></li>
+
+also second optional argument: state
+
+  history.push(props.to, { link: 'Link' })
+
+Most used when a navigation must get done but for some reason we can't use Link or NavLink.
+
 class #025 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: history.replace
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/13
+
+
+Despite pushing extra data to history, it replaces the current page with the data you are passing.
+
+It's very useful when we want to make sure the user won't navigate back, the navigation by our components will be working without include extra pages in the history, but always overriding the same previous page, the existent history.
+
+
 class #026 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: history.action
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/14
+
+Actions: it's the action of what is happening in the navidation
+
+  "POP" (First page load or nav by browser's button 'back' and 'forward')
+  "PUSH" (Adds a new data in the history)
+  "REPLACE" (Replaces the current route in history)
+
+So we can know how user is doing the navigation.
+
 class #027 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Route Props: history.goBack()
+Route Props: history.goForward()
+Route Props: history.go()
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/15
+
+
+OBS:
+  - It considers the order in the history.
+  - The action is "POP"
+
+          <ul>
+            <li>
+              <Route>
+                {({ history }) => (
+                  <button onClick={(e) => history.goBack()}>{'<-'} Voltar</button>
+                )}
+              </Route>
+            </li>
+
+            <li>
+              <Route>
+                {({ history }) => (
+                  <button onClick={(e) => history.goForward()}>Próxima página {'->'}</button>
+                )}
+              </Route>
+            </li>
+
+          </ul>
+
+history.go()
+
+history.go(-1), same as history.goBack()
+history.go(1), same as history.goForward()
+
+But it could be:
+history.go(-2), same as history.goBack() * 2
+
+And so on.
+
 class #028 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+<Redirect />
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/16
+
+import { Redirect } from 'react-router-dom'
+
+OBS:
+  - The action is "REPLACE"
+
+When is useful?
+
+  1 - We need to create a restrict area in the application (user logged);
+
+  <li><Link to='/voltar-para-home'>Voltar para home</Link></li>
+  
+  <Route path='/voltar-para-home' render={() => <Redirect to='/' />} />
+
+  Force in history:
+  
+    push={true} (or just push)
+
+    It uses action PUSH, not REPLACE. That means it will include in history.
+
+    <Redirect true to='/' />
+
+    Obs: But not so often you may want to use push here.
+
+
+When is useful?
+
+  2 - Using inside directly in <Switch>. Good when we change URLs in our application.
+
+      <Switch>
+        <Route path='/' exact component={Home} />
+        <Redirect from='/voltar-para-home' to='/' />
+        <Route path='/(about|contact)/(1|2)?' component={Page} />
+        <Route path='/blog' component={Blog} />
+        <Route component={Error404} />
+      </Switch>
+
+
 class #029 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #020 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Component <Prompt />
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/03-hello-react-router/17
+
+It blocks user's navigation, the PopUp window with a prompt (like in javascript).
+
+<Route path='/cadastro' component={Register} />
+
+const Register = () => (
+  <Prompt when={true} message='Navegação bloqueada!' />
+)
+
+More used while user are filling a form and try to navigate out of the form without finish the form, asking if user really want to cancel the process.
+
+if when={false}, user can keep his/her action without get blocked.
+
+class #030 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #031 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #032 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -866,7 +1176,7 @@ class #036 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #037 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #038 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #039 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #030 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #040 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #041 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #042 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -1,7 +1,7 @@
 'use strict'
 
 import React from 'react'
-import { BrowserRouter, NavLink, Route, Switch } from 'react-router-dom'
+import { BrowserRouter, NavLink, Route, Switch, Redirect } from 'react-router-dom'
 
 import 'normalize.css'
 import 'milligram'
@@ -15,18 +15,44 @@ const App = () => (
   <BrowserRouter>
     <div>
       <ul>
+        <li>
+          <Route>
+            {({ history }) => (
+              <button onClick={(e) => history.goBack()}>{'<-'} Voltar</button>
+            )}
+          </Route>
+        </li>
+
+        <li>
+          <Route>
+            {({ history }) => (
+              <button onClick={(e) => history.goForward()}>Próxima página {'->'}</button>
+            )}
+          </Route>
+        </li>
+      </ul>
+
+      <ul>
         <li><Link to='/' exact>Home</Link></li>
         <li><Link to='/about'>About</Link></li>
         <li><Link to='/contact'>Contact</Link></li>
         <li><Link to='/blog'>Blog</Link></li>
+        <li><a href='#site-info'>Site information</a></li>
+        <li><Link to='/voltar-para-home'>Voltar para home</Link></li>
       </ul>
 
       <Switch>
         <Route path='/' exact component={Home} />
+        <Redirect from='/voltar-para-home' to='/' />
+        {/* <Route path='/voltar-para-home' render={() => <Redirect to='/' />} />*/}
         <Route path='/(about|contact)/(1|2)?' component={Page} />
         <Route path='/blog' component={Blog} />
         <Route component={Error404} />
       </Switch>
+
+      <div id='site-info' style={{ margin: '1000px 0' }}>
+        <h2>Site information</h2>
+      </div>
     </div>
   </BrowserRouter>
 )
@@ -35,24 +61,25 @@ const Error404 = () => (
   <h1>Page not found</h1>
 )
 
-const Home = ({ match, location }) => (
+const Home = ({ match, location, history }) => (
   <div>
     {console.log('HOME location:', location)}
+    {console.log('HOME history:', history)}
     <h1>Home</h1>
   </div>
 )
 
-const Page = ({ match, location }) => (
+const Page = ({ match, location, history }) => (
   <div>
-    {console.log('PAGE location:', location)}
+    {console.log('PAGE history:', history)}
     <h1>{match.url}</h1>
   </div>
 )
 
-const Blog = ({ match, location }) => (
+const Blog = ({ match, location, history }) => (
 
   <div>
-    {console.log('BLOG location:', location)}
+    {console.log('BLOG history:', history)}
     <h1>Blog</h1>
     <ul>
       <li><Link to='/blog/post-1'>Post 1</Link></li>
@@ -69,16 +96,16 @@ const Blog = ({ match, location }) => (
   </div>
 )
 
-const Post404 = ({ match, location }) => (
+const Post404 = ({ match, location, history }) => (
   <div>
-    {console.log('POST 404 location:', location)}
+    {console.log('POST 404 history:', history)}
     <h1>This post doesn't exist</h1>
   </div>
 )
 
-const Post = ({ match, location }) => (
+const Post = ({ match, location, history }) => (
   <div>
-    {console.log('POST location:', location)}
+    {console.log('POST history:', history)}
     <h2>Post: {match.params.post}</h2>
   </div>
 )
