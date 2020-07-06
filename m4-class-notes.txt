@@ -1640,7 +1640,8 @@ React's team still working on <Suspense> (by the time of this class).
 
 
 class #038 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-Error Boundaries
+Error Boundaries - 1
+
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/002/sistema-pedidos
 
 Errors may break the entire application, we should know how to prevent this. We should have a kind of 'try / catch' to avoid the complete break of the application. To achieve that, we gonna use a static method:
@@ -1751,171 +1752,359 @@ src/app.js:
 
       We are allowing the rest of the app to show different contents in case hasError is true or false.
 
-
+      If everything well set, you will keep seeing the error in the dev environment, but in prod it won't show it.
 
 class #039 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Error Boundaries - 2
+Error Log messages
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/003/sistema-pedidos
+
+method getDerivedStateFromError have to be PURE, nothing else inside it:
+
+    static getDerivedStateFromError () {
+      return { hasError: true }
+    }
+
+supposed you use logentries service (you can save error logs there).
+
+how to send this message?
+
+      componentDidCatch (error, info) {
+        console.log('error:', error)
+        console.log('info:', info.componentStack)
+      }
+
+      (use componentDidCatch after getDerivedStateFromError)
+
+
+Then you get:
+
+console.log('error:', error):
+
+error: TypeError: this.state.products.map is not a function
+    at App.render (App.js:30)
+    at finishClassComponent (react-dom.development.js:17160)
+    at updateClassComponent (react-dom.development.js:17110)
+    at beginWork (react-dom.development.js:18620)
+    at HTMLUnknownElement.callCallback (react-dom.development.js:188)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:237)
+    at invokeGuardedCallback (react-dom.development.js:292)
+    at beginWork$1 (react-dom.development.js:23203)
+    at performUnitOfWork (react-dom.development.js:22154)
+    at workLoopSync (react-dom.development.js:22130)
+    at performSyncWorkOnRoot (react-dom.development.js:21756)
+    at react-dom.development.js:11089
+    at unstable_runWithPriority (scheduler.development.js:653)
+    at runWithPriority$1 (react-dom.development.js:11039)
+    at flushSyncCallbackQueueImpl (react-dom.development.js:11084)
+    at flushSyncCallbackQueue (react-dom.development.js:11072)
+    at discreteUpdates$1 (react-dom.development.js:21893)
+    at discreteUpdates (react-dom.development.js:806)
+    at dispatchDiscreteEvent (react-dom.development.js:4168)
 
 
 
+  console.log('info:', info.componentStack):
+
+  info: 
+      in App (at src/index.js:12)
+      in ErrorBoundary (at src/index.js:10)
 
 
+So with those error data and the componentDidCatch, you can send it to anywhere you want to store this log errors.
 
+It's also ok to show a more detailed error to the user, it's a option:
 
+  static getDerivedStateFromError () {
+    console.log('error getDerivedStateFromError:', error.message)
+    return { hasError: true }
+  }
 
+But the info.componentStack you will have to catch in the componentDidCatch.
 
+Other optional data:
 
-
-
-
-
-
-
-
-
-
-
+      error.name
 
 
 class #040 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Exact Dependencies
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/004/sistema-pedidos
 
+package.json:
 
+"dependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "3.4.1"
+  }
 
+A dependenci with ^ before it's number's version means updates will get accept any time they get released. This is a risk!
 
+semantic versioning: how to understand numbers in versions
 
+major-version(contain breaking changes) . minor-version(add features) . patch(fix bugs)
 
+So we want to remove this ^
 
+  "dependencies": {
+    "@testing-library/jest-dom": "4.2.4",
+    "@testing-library/react": "9.3.2",
+    "@testing-library/user-event": "7.1.2",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-scripts": "3.4.1"
+  },
 
+And while installing, installing the exact versions we want (listed in the package.json). Example:
 
+      npm install --save-exact react react-dom
 
+      or
 
-
-
-
-
-
-
-
-
-
-
+      yarn add --exact react react-dom react-scripts
 
 
 class #041 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Cleaning up CRA to start the Reactzzeria
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/005/sistema-pedidos
+
+App.js renamed to app.js (no capital)
+
+    That's Unix standard for files and folders
+
+src:
+
+  app.js
+  error.js
+  index.js
+  serviceWorker.js
+  setupTest.js (??????)
+
+src/index.js
+
+      import React from 'react';
+      import ReactDOM from 'react-dom';
+      import App from './app';
+      import * as serviceWorker from './serviceWorker';
+
+      import ErrorBoundary from './error'
+
+      ReactDOM.render(
+        <ErrorBoundary>
+          {(hasError) => (
+            <App hasError={hasError} />
+          )}
+        </ErrorBoundary>,
+        document.getElementById('root')
+      )
+
+      serviceWorker.unregister()
 
 
+src/app.js:
 
+      import React from 'react';
 
+      const App = () => (
+        <h1>App</h1>
+      )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      export default App;
 
 
 class #042 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Basic Settings:
+1) .editorconfig
+2) linter
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/006/sistema-pedidos
 
 
+1) .editorconfig
+
+https://editorconfig.org/
+
+.editorconfig:
+
+      root = true
+
+      [*]
+      charset = utf-8
+      end_of_line = lf
+      insert_final_newline = true
+      indent_style = space
+      indent_size = 2
+      trim_trailing_whitespace = true
+
+      [*.md]
+      trim_trailing_whitespace = false
+
+Install extension on VS Code in order to use .editorconfig.
 
 
+2) Linter:
 
+https://github.com/standard/eslint-config-standard-react
 
+https://eslint.org/
 
+CRA already uses it behind the scenes, but we are about to extend it.
 
+Terminal install:
 
+yarn add --dev --exact babel-eslint eslint-config-standard eslint-config-standard-react eslint-plugin-standard eslint-plugin-promise eslint-plugin-import eslint-plugin-node eslint-plugin-react
 
+now isnted of creating a file .eslintrc, because that we are actually using CRA we will just edit package.json.
 
+package.json:
 
+insted of:
 
+  "eslintConfig": {
+    "extends": "react-app"
+  }
 
+Replace it for:
 
-
-
-
-
-
-
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "standard",
+      "standard-react"
+    ]
+  }
 
 class #043 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Extending settings without eject
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/007/sistema-pedidos
+
+ReScripts
+https://github.com/harrysolovay/rescripts
+
+Allow you to change some CRA settings.
+
+Terminal install:
+yarn add --dev --exact @rescripts/cli
+
+yarn add --dev --exact @rescripts/rescript-env
+
+package.json:
+
+    "scripts": {
+      "dev": "rescripts start",
+      "build": "rescripts build",
+      "test": "rescripts test",
+      "eject": "rescripts eject"
+    },
+
+Then remove the last one, eject.
+
+Now add this: it extends the config from eslint
+
+    "rescripts": [
+      "env"
+    ],  
+
+class #044 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Fixing Lint errors
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/008/sistema-pedidos
+
+How to fix many style 'errors' at once?
 
 
+Standard
+
+Terminal:
+yarn add --dev --exact standard
+
+package.json:
+
+  "scripts": {
+    "lint:fix": "standard --fix"
+  }
+
+Lib to show errors in a better way:
+
+yarn add --dev --exact snazzy
+
+Then again package.json:
+
+  "scripts": {
+    "lint:fix": "standard --fix | snazzy"
+  }
 
 
+Then Daciuk saw his linter annoyed with this sintax in our error.js:
+
+  state = { hasError: false }
+
+By the time of the class, this sintax was not included in the language specification, so standard didn't recognize it. It was in the stage 3.
+
+Nowadays it's probably already on the stage 4, since my linter didn't see any problem at all. However, let's check the change Daciuk did to the script lint:fix. He included: --parser babel-eslint
+
+  "scripts": {
+    "lint:fix": "standard --fix --parser babel-eslint | snazzy"
+  }
+
+Babel-eslint comes with CRA, working behind the scenes. This parser command tarnslate the command to an older sintax. Well, just in case I applied it as well. Everything working fine.
+
+One more thing:
+
+  "standard": {
+    "parser": "babel-eslint",
+    "globals": [
+      "fetch"
+    ]
+  },
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class #044 * *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #045 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+App's archtecture
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/009/sistema-pedidos
 
 
+Installing other dependencies:
+
+    yarn add --exact react-router-dom react-dom react-scripts
 
 
+Ok. So Daciuk complains that we are working with too many index.js files, which might be annoying to control in the editor. How does he fix it? In each component's folder, we create extra files with the name of the component plus .js: main.js or login.js
 
+And one will import stuff from the other. By the end, index.js in those folders will be there but we will never edit it again, we will be editing the named ones.
 
+main/main.js:
 
+      import React from 'react'
 
+      const Main = () => (
+        <h1>Main</h1>
+      )
 
+      export default Main
 
+main/index.js:
 
+      import Main from './main'
+      export default Main
 
+Also, despite finishing with that code just above, those index.js files actually will be just this line:
 
+      export { default as MainPage }  from './main'
 
+Finally, the import of those components must be named, (wraped by { }) :
 
-
-
-
-
-
+      import { MainPage } from './pages/main'
+      import { Login } from './pages/login'
 
 
 class #046 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Inside Routes at MainPage
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/010/sistema-pedidos
 
 
 
