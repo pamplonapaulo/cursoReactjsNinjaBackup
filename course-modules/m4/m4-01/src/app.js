@@ -1,7 +1,7 @@
 'use strict'
 
 import React from 'react'
-import { BrowserRouter, NavLink, Route, Switch, Redirect } from 'react-router-dom'
+import { BrowserRouter, NavLink, Route, Switch, Redirect, withRouter } from 'react-router-dom'
 
 import 'normalize.css'
 import 'milligram'
@@ -11,25 +11,22 @@ const Link = (props) => (
   <NavLink activeStyle={{ color: 'red' }} {...props} />
 )
 
+const ButtonBack_ = ({ history }) => (
+  <button onClick={(e) => history.goBack()}>{'<-'} Voltar</button>
+)
+const ButtonBack = withRouter(ButtonBack_)
+
+const ButtonForward_ = ({ history }) => (
+  <button onClick={(e) => history.goForward()}>Próxima página {'->'}</button>
+)
+const ButtonForward = withRouter(ButtonForward_)
+
 const App = () => (
   <BrowserRouter>
     <div>
       <ul>
-        <li>
-          <Route>
-            {({ history }) => (
-              <button onClick={(e) => history.goBack()}>{'<-'} Voltar</button>
-            )}
-          </Route>
-        </li>
-
-        <li>
-          <Route>
-            {({ history }) => (
-              <button onClick={(e) => history.goForward()}>Próxima página {'->'}</button>
-            )}
-          </Route>
-        </li>
+        <li><ButtonBack /></li>
+        <li><ButtonForward /></li>
       </ul>
 
       <ul>
@@ -44,7 +41,7 @@ const App = () => (
       <Switch>
         <Route path='/' exact component={Home} />
         <Redirect from='/voltar-para-home' to='/' />
-        {/* <Route path='/voltar-para-home' render={() => <Redirect to='/' />} />*/}
+        {/* <Route path='/voltar-para-home' render={() => <Redirect to='/' />} /> */}
         <Route path='/(about|contact)/(1|2)?' component={Page} />
         <Route path='/blog' component={Blog} />
         <Route component={Error404} />
