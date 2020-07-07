@@ -2106,119 +2106,744 @@ class #046 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Inside Routes at MainPage
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/010/sistema-pedidos
 
+--> Does the order matter? YES.
 
+main.js:
+        const routes = [
+          { path: '/rota1', content: 'Rota 1' },
+          { path: '/rota2', content: 'Rota 2' }
+        ]
 
+        const Main = () => (
+          <>
+            <h1>Main</h1>
 
+            <Switch>
+              {routes.map(route => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  render={() => <h2>{route.content}</h2>}
+                />
+              ))}
+            </Switch>
+          </>
+        )
 
+app.js:
+        const App = () => (
+          <BrowserRouter>
+            <Switch>
+              <Route path='/' component={MainPage} />
+              <Route path='/login' component={Login} />
+            </Switch>
+          </BrowserRouter>
+        )
 
+URL: http://localhost:3000/login
 
+With no exact in path '/', URL above never render the path '/login'. Because it first matches the presence of '/' and Switch wants just to find one. Before a match with '/login', the URL would match the '/' itself and stop there.
 
+Since MainPage has sub routes, we can't have 'exact'. 
 
+  http://localhost:3000/rota1
+  http://localhost:3000/rota2
 
+Those URL above won't open if 'exact' is passed in path='/' .
 
+  <Route path='/' component={MainPage} exact />
 
+So having '/login' before '/' and removing the exact from route MainPage, we can access everything:
 
-
-
-
-
-
-
-
+    <Switch>
+      <Route path='/login' component={Login} />
+      <Route path='/' component={MainPage} />
+    </Switch>
 
 
 class #047 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+CRA with alias
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/011/sistema-pedidos
+
+import files with relative paths:
+
+    ... from './pages/main'
+    ... from './pages/login'
+
+On Module 2, we were skipping the './':
+
+    ... from 'pages/main'
+    ... from 'pages/login'
+
+If we try it here now, we get: "Failed to compile"
+
+How to have it again now with our CRA?
+
+Edit:         .env
+
+Add:          NODE_PATH=src/
+
+      
+      NODE_PATH=src/
+      It means: each import not resolved in node_modules, webpack will search it at src folder.
+
+NOT WORKING:
+"Setting NODE_PATH to resolve modules absolutely has been deprecated in favor of setting baseUrl in jsconfig.json (or tsconfig.json if you are using TypeScript) and will be removed in a future major release of create-react-app."
+
+https://github.com/da2k/curso-reactjs-ninja/issues/497
 
 
+How to fix it:
 
+Create the jsconfig.json file in the application root folder, then:
 
+{
+  "compilerOptions": {
+    "baseUrl": "src"
+  },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  "include": ["src"]
+}
 
 
 class #048 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+UI dependencies
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/012/sistema-pedidos
 
 
+https://material-ui.com/getting-started/installation/
+
+Terminal:
+yarn add --exact @material-ui/core
+
+public/index.html:
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
 
 
+SVG Icons install:
 
+yarn add --exact @material-ui/icons
 
+App.js:
 
+import { CssBaseline } from '@material-ui/core'
 
+OBS: CssBaseline already comes with an inbuilt normalize.css
 
+const App = () => (
+  <>
+    <CssBaseline />
+    <BrowserRouter>
+      <Switch>
+        <Route path='/login' component={Login} />
+        <Route path='/' component={MainPage} />
+      </Switch>
+    </BrowserRouter>
+  </>
+)
 
+Styled Components
 
-
-
-
-
-
-
-
-
-
+Terminal:
+yarn add --exact styled-components
 
 
 class #049 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Login Markup
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/013/sistema-pedidos
+
+SVG import:
+
+    import { ReactComponent } from './logo-react-zzaria.svg'
+    <ReactComponent src={logo} alt='Logo' />
+
+  But how to import more than one?
+
+    import { ReactComponent as Logo } from './logo-react-zzaria.svg'
+    <Logo src={logo} alt='Logo' />
 
 
+login.js:
 
+    import React from 'react'
+    import { Button } from '@material-ui/core'
+    import { ReactComponent as Logo } from './logo-react-zzaria.svg'
 
+    const Login = () => (
+      <>
+        <Logo src={logo} alt='Logo' />
+        <Button>Login with GitHub</Button>
+      </>
 
+    )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    export default Login
 
 
 class #050 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Material UI: GRID
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/014/sistema-pedidos
+
+import { Grid } from '@material-ui/core'
+
+
+https://material-ui.com/components/grid/
+
+It uses CSS’s Flexible Box module for high flexibility.
+There are two types of layout: containers and items.
+Item widths are set in percentages, so they’re always fluid and sized relative to their parent element.
+Items have padding to create the spacing between individual items.
+There are five grid breakpoints: xs, sm, md, lg, and xl.
+
+  <>
+    <Grid container>
+      <Grid item>
+        <Logo />
+      </Grid>
+
+      <Grid item>
+        <Button>Login with GitHub</Button>
+      </Grid>     
+    </Grid>
+  </>
+
+  Spacing:
+
+      <Grid container spacing={10}>
+
+      Sets the space between items
+
+      https://material-ui.com/components/grid/#spacing
+
+  Another example:
+
+  <>
+    <Grid container spacing={10}>
+      <Grid item xs={6} sm={3}>
+        <Logo />
+      </Grid>
+
+      <Grid item xs={6} sm={3}>
+        <Button>Login with GitHub</Button>
+      </Grid>     
+    </Grid>
+  </>
+
 
 class #051 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Grid Align 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/015/sistema-pedidos
+
+Interactive
+
+https://material-ui.com/components/grid/#interactive
+
+Direction => column
+
+<Grid container direction='column'>
+
+login.js:
+
+        import React from 'react'
+        import styled from 'styled-components'
+        import { Button, Grid } from '@material-ui/core'
+        import { ReactComponent as Logo } from './logo-react-zzaria.svg'
+
+        const Login = () => (
+          <Container>
+            <Grid container direction='column' alignItems='center' spacing={10}>
+              <Grid item>
+                <Logo />
+              </Grid>
+
+              <Grid item>
+                <Button>Login with GitHub</Button>
+              </Grid>
+            </Grid>
+          </Container>
+        )
+
+        const Container = styled.div`
+          padding: 5px;
+        `
+
+        export default Login
+
+
 class #052 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Button
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/016/sistema-pedidos
+
+
+https://material-ui.com/components/buttons/
+
+
+Logo Adjusment:
+
+    import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
+
+    const Logo = styled(MainLogo)`
+      width: 100%;
+    `
+
+In case we face issues to override any lib style, here is a huge tip:
+
+    const GitHubButton = styled(Button)`
+      && {
+        text-transform: none;
+      }
+    `
+Above, && means 2 classes.
+
+
 class #053 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Attributes: 'attrs'
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/017/sistema-pedidos
+
+Insted of:
+
+  <GitHubButton variant='contained' fullWidth>Login with GitHub</GitHubButton>
+
+Better:
+
+  <GitHubButton>Login with GitHub</GitHubButton>
+
+  const GitHubButton = styled(Button).attrs({
+    variant: 'contained',
+    fullWidth: true
+  })`
+    font-size: 20px;
+    padding: 15px;
+    text-transform: none;
+  `
+
+It cleans our code! The Markup gets cleaner.
+
+
 class #054 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Styling button (cont.)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/018/sistema-pedidos
+
+'Grid item' doesn't have display flex by default
+
+'Grid item' also can work as a container, just add it: 'container'.
+
+Once you add it, it gets the display flex. The we add justidy='ceneter', to center it.
+
+  <Grid item xs={12} container justify='center'>
+
+
 class #055 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Firebase Authentication
+
+
+develop > authentication > set up sign-in method
+
+
+"Authorized domains"
+
+FireBase also has a hosting section that we can use to upload our application. Bu default, some default domains are already on the "Authorized domains" area:
+
+      localhost
+      pamplona-pizzas.firebaseapp.com
+      pamplona-pizzas.web.app
+
+
+"Sign-in providers"
+
+      github
+
+      OBS: We have to create an "app" on github
+
+      https://firebase.google.com/docs/auth/web/github-auth?authuser=0
+
+      https://github.com/settings/applications/new
+
+          "Authorization callback URL"
+
+          This is the URL user gets redirectes when login is succesful.
+          It is given to you on Firebase, at the bottom of the box while enabling github auth. In this case:
+
+          https://pamplona-pizzas.firebaseapp.com/__/auth/handler
+
+          More documentation here:
+          https://developer.github.com/v3/oauth/
+
+
+
+
 class #056 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Setting Firebase on our app
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/019/sistema-pedidos
+
+
+Get the firebaseConfig object in Firebase website:
+https://console.firebase.google.com/project/pamplona-pizzas/overview
+
+This data is ok to get visible by someone whi inspects our front-end code. The vulnerable data is the one in the authotication, given by github.
+
+Instal Firebase via Yarn:
+
+yarn add firebase --exact
+
+edit login.js:
+
+      import firebase from 'firebase'
+
+      var config = {
+        apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
+        authDomain: 'pamplona-pizzas.firebaseapp.com',
+        databaseURL: 'https://pamplona-pizzas.firebaseio.com',
+        projectId: 'pamplona-pizzas',
+        storageBucket: 'pamplona-pizzas.appspot.com',
+        messagingSenderId: '165890800996',
+        appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+      }
+
+      firebase.initializeApp(config)
+
+By running the app again in the browser, we get this message:
+
+        It looks like you're using the development build of the Firebase JS SDK.
+        When deploying Firebase apps to production, it is advisable to only import
+        the individual SDK components you intend to use.
+
+        For the module builds, these are available in the following manner
+        (replace <PACKAGE> with the name of a component - i.e. auth, database, etc):
+
+        CommonJS Modules:
+        const firebase = require('firebase/app');
+        require('firebase/<PACKAGE>');
+
+        ES Modules:
+        import firebase from 'firebase/app';
+        import 'firebase/<PACKAGE>';
+
+        Typescript:
+        import * as firebase from 'firebase/app';
+        import 'firebase/<PACKAGE>';
+
+
+To fiz that, just:
+
+import firebase from 'firebase/app'
+
+
+
 class #057 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+User's Login
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/020/sistema-pedidos
+
+
+https://firebase.google.com/docs/auth/web/github-auth?authuser=0
+
+Specify additional OAuth 2.0 scopes that you want to request from the authentication provider. To add a scope, call addScope. For example:
+
+https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+
+To sign in by redirecting to the sign-in page, call signInWithRedirect:
+
+      firebase.auth().signInWithRedirect(provider);
+
+Then, you can also retrieve the GitHub provider's OAuth token by calling getRedirectResult when your page loads:
+
+      firebase.auth().getRedirectResult().then(function(result) {
+        if (result.credential) {
+          // This gives you a GitHub Access Token. You can use it to access the GitHub API.
+          var token = result.credential.accessToken;
+          // ...
+        }
+        // The signed-in user info.
+        var user = result.user;
+      }).catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // The email of the user's account used.
+        var email = error.email;
+        // The firebase.auth.AuthCredential type that was used.
+        var credential = error.credential;
+        // ...
+      });
+
+https://firebase.google.com/docs/reference/js/firebase.auth.Auth?authuser=0#getRedirectResult
+
+login.js:
+
+    import firebase from 'firebase/app'
+    import 'firebase/auth'
+
+    <GitHubButton onClick={() => {
+      const provider = new firebase.auth.GithubAuthProvider()
+      firebase.auth().signInWithRedirect(provider)
+    }}
+    >Login with GitHub
+    </GitHubButton>
+
 class #058 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Persist Data + User's data
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/021/sistema-pedidos
+
+Authentication State Persistence
+https://firebase.google.com/docs/auth/web/auth-state-persistence?authuser=0
+
+1 - local: persists in the browser until user log out.
+2 - session: persist just in the current tab and until it's closed.
+3 - none: no persistence, looses it if you refresh the page.
+
+local persistence is the default.
+
+Getting user's data.
+
+Data comes when component is loaded. How to know that?
+
+-> componentDidMount()
+
+ps: it means we need a { PureComponent } and a class.
+
+        componentDidMount () {
+          firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+              console.log('user is logged in:', user)
+            } else {
+              console.log('user is NOT logged in:', user)
+            }
+          })
+        }
+
+
 class #059 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Log out
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/022/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #060 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #061 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #062 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #063 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #064 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #065 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #066 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #067 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #068 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #069 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #070 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #071 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #072 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
