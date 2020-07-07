@@ -1,7 +1,73 @@
-import React from 'react'
+import React, { PureComponent } from 'react'
+import styled from 'styled-components'
+import firebase from 'firebase/app'
+import 'firebase/auth'
+import { Button, Grid } from '@material-ui/core'
+import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
-const Login = () => (
-  <h1>Login</h1>
-)
+var config = {
+  apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
+  authDomain: 'pamplona-pizzas.firebaseapp.com',
+  databaseURL: 'https://pamplona-pizzas.firebaseio.com',
+  projectId: 'pamplona-pizzas',
+  storageBucket: 'pamplona-pizzas.appspot.com',
+  messagingSenderId: '165890800996',
+  appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+}
+// Initialize Firebase
+firebase.initializeApp(config)
+
+class Login extends PureComponent {
+  componentDidMount () {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        console.log('user is logged in:', user)
+      } else {
+        console.log('user is NOT logged in:', user)
+      }
+    })
+  }
+
+  render () {
+    return (
+      <Container>
+        <Grid container justify='center' spacing={10}>
+          <Grid item>
+            <Logo />
+          </Grid>
+
+          <Grid item xs={12} container justify='center'>
+
+            <GitHubButton onClick={() => {
+              const provider = new firebase.auth.GithubAuthProvider()
+              firebase.auth().signInWithRedirect(provider)
+            }}
+            >Login with GitHub
+            </GitHubButton>
+
+          </Grid>
+        </Grid>
+      </Container>
+    )
+  }
+}
+
+const Container = styled.div`
+  padding: 5px;
+`
+
+const Logo = styled(MainLogo)`
+  width: 100%;
+`
+
+const GitHubButton = styled(Button).attrs({
+  variant: 'contained',
+  fullWidth: true
+})`
+  font-size: 25px;
+  max-width: 480px;
+  padding: 15px;
+  text-transform: none;
+`
 
 export default Login
