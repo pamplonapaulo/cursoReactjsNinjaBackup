@@ -2617,298 +2617,1052 @@ class #059 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Log out
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/022/sistema-pedidos
 
+login.js:
 
+import React, { PureComponent } from 'react'
+import styled from 'styled-components'
+import firebase from 'firebase/app'
+import 'firebase/auth'
+import { Button, Grid } from '@material-ui/core'
+import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
+var config = {
+  apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
+  authDomain: 'pamplona-pizzas.firebaseapp.com',
+  databaseURL: 'https://pamplona-pizzas.firebaseio.com',
+  projectId: 'pamplona-pizzas',
+  storageBucket: 'pamplona-pizzas.appspot.com',
+  messagingSenderId: '165890800996',
+  appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+}
+// Initialize Firebase
+firebase.initializeApp(config)
 
+class Login extends PureComponent {
+  state = {
+    isUserLoggedIn: false,
+    user: null
+  }
 
+  componentDidMount () {
+    firebase.auth().onAuthStateChanged((user) => {
+      console.log('user data:', user)
+      this.setState({
+        isUserLoggedIn: !!user,
+        user
+      })
+    })
+  }
 
+  handleLogin () {
+    const provider = new firebase.auth.GithubAuthProvider()
+    firebase.auth().signInWithRedirect(provider)
+  }
 
+  handleLogout = () => {
+    firebase.auth().signOut().then(() => {
+      console.log('logged out!')
+      this.setState({
+        isUserLoggedIn: false,
+        user: null
+      })
+    })
+  }
 
+  render () {
+    const { isUserLoggedIn, user } = this.state
 
+    return (
+      <Container>
+        <Grid container justify='center' spacing={10}>
+          <Grid item>
+            <Logo />
+          </Grid>
 
+          <Grid item xs={12} container justify='center'>
+            {isUserLoggedIn && (
+              <>
+                <pre>{user.displayName}</pre>
+                <Button variant='contained' onClick={this.handleLogout}>Sair</Button>
+              </>
+            )}
+            {!isUserLoggedIn && (
+              <GitHubButton onClick={this.handleLogin}>Login with GitHub</GitHubButton>
+            )}
+          </Grid>
+        </Grid>
+      </Container>
+    )
+  }
+}
 
+const Container = styled.div`
+  padding: 5px;
+`
 
+const Logo = styled(MainLogo)`
+  width: 100%;
+`
 
+const GitHubButton = styled(Button).attrs({
+  variant: 'contained',
+  fullWidth: true
+})`
+  font-size: 25px;
+  max-width: 480px;
+  padding: 15px;
+  text-transform: none;
+`
 
-
-
+export default Login
 
 
 class #060 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks
 
+New feature of React
+Using state in function components, not only in classes anymore.
 
+Created to make us avoid using of classes.
 
+But there are no breaking changes. Everything still valid and working. It's just a new option.
 
+It's possible to have both features in the same applications: classes with componentDidMount etc. And also have function components.
 
+There is no expectation that classes will get removed from React.
 
-
-
-
-
-
-
-
-
-
-
+We can't use HOOKS inside classes.
 
 
 
 class #061 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks - useState
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/01
 
+Classes:
 
+  - has an initial state = {}
+  - setState({}) method used to update it
 
+Functions:
 
+  - has an initial useState('my state\'s value')
 
+    const [counter, setCounter] = useState(0)
 
+OBS: Funtion's return still have to remain pure.
 
+import React, { useState } from 'react'
 
+const App = () => (
+  <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+    <CounterClass />
+    <CounterFunction />
+  </div>
+)
 
+class CounterClass extends React.PureComponent {
+  state = {
+    counter: 0
+  }
 
+  render () {
+    return (
+      <Counter
+        counter={this.state.counter}
+        increment={() => {
+          this.setState({
+            counter: this.state.counter + 1
+          })
+        }}
 
+        decrement={() => {
+          this.setState({
+            counter: this.state.counter - 1
+          })
+        }}
+      />
+    )
+  }
+}
 
+function CounterFunction () {
+  const [counter, setCounter] = useState(0)
 
+  return (
+    <Counter
+      counter={counter}
+      increment={() => {
+        setCounter(counter + 1)
+      }}
+
+      decrement={() => {
+        setCounter(counter - 1)
+      }}
+    />
+  )
+}
+
+const Counter = ({ counter, increment, decrement }) => (
+  <div style={{ textAlign: 'center' }}>
+    <h1>{counter}</h1>
+    <button onClick={decrement}>-</button>
+    <button onClick={increment}>+</button>
+  </div>
+)
+
+export default App
 
 
 
 
 class #062 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+prevState
+Hooks - update based on previous state
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/02
 
 
 
+if using an async action, we can't be sure that state's value is actually updated.
+
+so create a function that returns the object, which get's the prevState.
+
+      <Counter
+        counter={this.state.counter}
+        increment={() => {
+          this.setState((prevState) => ({
+            counter: prevState.counter + 1
+          }))
+        }}
+      />
 
 
 
+function CounterFunction () {
+  const [counter, setCounter] = useState(0)
 
+  return (
+    <Counter
+      counter={counter}
+      increment={() => {
+        setCounter(c => c + 1)
+      }}
 
+      decrement={() => {
+        setCounter(c => c - 1)
+      }}
+    />
+  )
+}
 
+OBS:
 
-
-
-
-
-
-
+The same way in a Class we can't pass this.setState out of the render(), in a function we can't pass 'setCounter()' out of return(), it would create an infinite loop, since the setCounter() triggers the render again.
 
 
 class #063 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks: complex states
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/03
 
 
 
+Insted of:
 
+    Class
 
+      state = {
+        counter: 0,
+        toggle: false
+      }
 
+Hooks:
 
-
-
-
-
-
-
-
+  const [counter, setCounter] = useState(0)
+  const [toggle, setToggle] = useState(false)
 
 
 
 
 class #064 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks:
+arrays & Objects at useState()
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/04
 
 
 
+function CounterFunction () {
+
+  const [state, setState] = useState({
+    counter: 0,
+    toggle: false
+  })
+
+  return (
+    <>
+      <Counter
+        counter={state.counter}
+        increment={() => {
+          setState(prevState => {
+            return {
+              ...prevState,
+              counter: prevState.counter + 1
+            }
+          })
+        }}
+
+        decrement={() => {
+          setState(prevState => {
+            return {
+              ...prevState,
+              counter: prevState.counter - 1
+            }
+          })
+        }}
+      />
+
+      {state.toggle && <h1>Visible!</h1>}
+      <button onClick={() => {
+        setState(prevState => {
+          return {
+            ...prevState,
+            toggle: !prevState.toggle
+          }
+        })
+      }}>Toggle</button>
+    </>
+  )
+}
 
 
+const [todos, setTodos] = useState([
+  { id: 0, text: 'hey', completed: false }
+])
 
+https://medium.com/javascript-in-plain-english/how-to-add-to-an-array-in-react-state-3d08ddb2e1dc
 
-
-
-
-
-
-
-
-
-
+setSearches(searches => searches.concat(query))
+setSearches([...searches, query])
 
 
 class #065 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks: useEffect
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/05
 
+Supposed, each change in the application we want to change page title in the browser.
 
+If a Class:
 
+  componentDidMount () {
+    document.title = `Counter: ${this.state.counter}`
+  }
 
+  componentDidUpdate () {
+    document.title = `Counter: ${this.state.counter}`
+  }
 
+If a function:
 
+  useEffect(() => {
+    document.title = `CounterFunction: ${counter}`
+  })
 
-
-
-
-
-
-
-
-
+useEffect runs either in the load or in the update. So we just need that.
 
 
 
 class #066 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks: useEffect conditional update
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/06
 
 
 
+  useEffect(() => {
+    console.log('useEffect')
+    document.title = `CounterFunction: ${counter}`
+  }, [counter])
+
+if 'counter' has change in it's value, then this useEffect get's trigged.
 
 
+In a Class, to prevent the update and achieve the same behavior, would be like:
 
-
-
-
-
-
-
-
+  componentDidUpdate (prevProps, prevState) {
+    if (prevState.counter !== this.state.counter) {
+      console.log('componentDidUpdate')
+      this.updateDocumentTitle ()
+    }
+  }
 
 
 
 
 
 class #067 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks: useEffect just once!
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/07
+
+pass the array empity:
 
 
 
+ONCE:
+
+  useEffect(() => {
+    console.log('useEffect')
+    document.title = `CounterFunction: ${counter}`
+  }, [])
 
 
+ALWAYS:
+
+  useEffect(() => {
+    console.log('useEffect')
+    document.title = `CounterFunction: ${counter}`
+  })
 
 
+CONDITIONAL: counter
+
+  useEffect(() => {
+    console.log('useEffect')
+    document.title = `CounterFunction: ${counter}`
+  }, [counter])
 
 
+CURIOSITY:
 
+  useEffect(() => {
+    console.log('useEffect')
+    document.title = `CounterFunction: ${counter}`
 
+    setInterval(() => {
+      this.setCounter(counter + 1)
+    }, 1000)
 
+  }, [])
+  
+  // Above, a closure created by useEffect - which ran just once - avoids the update of counter. 
 
+  // To get the setInterval totally working:
 
+    useEffect(() => {
+    console.log('useEffect')
+    document.title = `CounterFunction: ${counter}`
 
+    setInterval(() => {
+      this.setCounter((counter) => counter + 1)
+    }, 1000)
 
+  }, []) // But this useEffect itself still being ran just once.
+
+In a Class, that's equivalent to this:
+
+  componentDidUpdate (prevProps, prevState) {
+    this.updateDocumentTitle ()
+    setInterval(() => {
+      this.setState(prevState => {
+        return {
+          counter: prevState.counter + 1
+        }
+      })
+    }, 1000)   
+  }
 
 
 class #068 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Custom hooks
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/08
 
 
+- Every custom hook have to start with 'use'
 
+  Ex: useCounter
 
+  function useCounter () {
+    const [counter, setCounter] = useState(0)
 
+    useEffect(() => {
+      document.title = `CounterFunction: ${counter}`
+    }, [counter])
 
-
-
-
-
-
-
-
-
-
-
+    return [counter, setCOunter]
+  }
 
 
 class #069 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hook useEffect how to do 'componentWilUnmount'
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/05-hooks/09
 
 
 
+  useEffect(() => {
+    console.log('execuetd useEffect')
+    document.title = `CounterFunction: ${counter}`
+
+    const timer = setInterval(() => {
+      setCounter(c => c + 1)
+    }, 1000)
+
+    return () => {
+      console.log('cleaned useEffect')
+      clearInterval(timer)
+    }
+  }, [])
+
+  Every time we have an event listener that we have to clean manyally, such as a timer, we can return a function inside useEffect:
+
+          return () => {
+            console.log('cleaned useEffect')
+            clearInterval(timer)
+          }
 
 
+So in this block of code, that intern returned function won't run unless the component gets unmounted:
 
+  useEffect(() => {
+    console.log('execuetd useEffect')
+    document.title = `CounterFunction: ${counter}`
 
+    const timer = setInterval(() => {
+      setCounter(c => c + 1)
+    }, 1000)
 
-
-
-
-
-
-
-
-
-
+    return () => {
+      console.log('only when comp unmounted')
+      clearInterval(timer)
+    }
+  }, [])
 
 class #070 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hooks: genreal rules
 
+    - must always be written in the top of the function/component
 
+    - never put inside conditional blocks or loops (if you need do the opposite)
 
+    - never use it in Classes
 
+    - always satart with 'use' 
 
+https://reactjs.org/docs/hooks-intro.html
 
-
-
-
-
-
-
-
-
-
-
-
-
+More Hooks later in this course at the next update module.
 
 class #071 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Back to reactzzaria: repleace Classes per Hooks
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/023/sistema-pedidos
+
+login.js:
+
+import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+import firebase from 'firebase/app'
+import 'firebase/auth'
+import { Button, Grid } from '@material-ui/core'
+import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
+
+const config = {
+  apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
+  authDomain: 'pamplona-pizzas.firebaseapp.com',
+  databaseURL: 'https://pamplona-pizzas.firebaseio.com',
+  projectId: 'pamplona-pizzas',
+  storageBucket: 'pamplona-pizzas.appspot.com',
+  messagingSenderId: '165890800996',
+  appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+}
+// Initialize Firebase
+firebase.initializeApp(config)
+
+const handleLogin = () => {
+  const provider = new firebase.auth.GithubAuthProvider()
+  firebase.auth().signInWithRedirect(provider)
+}
+
+function Login () {
+  const [useInfo, setUserInfo] = useState({
+    isUserLoggedIn: false,
+    user: null
+  })
+
+  const { isUserLoggedIn, user } = useInfo
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      console.log('user data:', user)
+      setUserInfo({
+        isUserLoggedIn: !!user,
+        user
+      })
+    })
+  }, [])
+
+  const handleLogout = () => {
+    firebase.auth().signOut().then(() => {
+      console.log('logged out!')
+      setUserInfo({
+        isUserLoggedIn: false,
+        user: null
+      })
+    })
+  }
+
+  return (
+    <Container>
+      <Grid container justify='center' spacing={10}>
+        <Grid item>
+          <Logo />
+        </Grid>
+
+        <Grid item xs={12} container justify='center'>
+          {isUserLoggedIn && (
+            <>
+              <pre>{user.displayName}</pre>
+              <Button variant='contained' onClick={handleLogout}>Sair</Button>
+            </>
+          )}
+          {!isUserLoggedIn && (
+            <GitHubButton onClick={handleLogin}>Login with GitHub</GitHubButton>
+          )}
+        </Grid>
+      </Grid>
+    </Container>
+  )
+}
+
+const Container = styled.div`
+  padding: 5px;
+`
+
+const Logo = styled(MainLogo)`
+  width: 100%;
+`
+
+const GitHubButton = styled(Button).attrs({
+  variant: 'contained',
+  fullWidth: true
+})`
+  font-size: 25px;
+  max-width: 480px;
+  padding: 15px;
+  text-transform: none;
+`
+
+export default Login
+
+
+OBS:
+Despite getting easier to have states now in the components, we won't spread them over the application, but keep our pure components pure.
+
 class #072 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Hook useCallback
+CallBacks Optimization
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/024/sistema-pedidos
+
+login.js:
+
+So far, Login component kept inside it the handleLogout function
+
+  const handleLogout = () => {
+    firebase.auth().signOut().then(() => {
+      console.log('logged out!')
+      setUserInfo({
+        isUserLoggedIn: false,
+        user: null
+      })
+    })
+  }
+
+It's still there because our component holds the userInfo state, which is necessary inside this function. If out of the component, it wouldn't reach the state.
+
+But it's not good that our component keeps reading again the handleLogout every time that gets re-rendered. It actually needs for real just once.
+
+the useCallback hooks helps us on that:
+
+import { useCallback } from 'react'
+
+    const handleLogout = useCallback(() => {
+      firebase.auth().signOut().then(() => {
+        console.log('logged out!')
+        setUserInfo({
+          isUserLoggedIn: false,
+          user: null
+        })
+      })
+    }, [])
+
+So now, even being inside the component, this function won't be read again when components gets re-rendered. It saves it in the memory. It doesn't have to be created over and over.
+
+Every time we need a callback function, we should do this.
+
+It's second argument is an array with states that this function is dependent. And in this case, there is nothing. The function just needs the setUserInfo, which doesn't change, is just a function. So we pass an empity array.
+
+React creates a closure and saves this reference out of the component Login and when it gets rerendered it reuses the same reference already saved in memory.
+
+With this feature, we've better do the same with the other function handleLogin, it should be as close as possible to the component, so let's include it inside.
+
+  const handleLogin = useCallback(() => {
+    const provider = new firebase.auth.GithubAuthProvider()
+    firebase.auth().signInWithRedirect(provider)
+  }, [])
+
+
 class #073 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+import pages with lazy and suspense
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/025/sistema-pedidos
+
+app.js:
+
+static import:
+
+  import { MainPage } from 'pages/main'
+  import { Login } from 'pages/login'
+
+It puts them together in the final bundle of the application.
+
+We use Lazy and Suspense to separate them. User will never access them at once so doesn't make sense to load it at once. Right?
+
+  import React, { lazy, Suspense } from 'react'
+
+  const MainPage = lazy(() => import('pages/main'))
+  const Login = lazy(() => import('pages/login'))
+
+Warning:
+lazy: Expected the result of a dynamic import() call. Instead received: [object Module]
+
+lazy works only with 'export default', so we must fix this here bellow. Insted of:
+
+pages/login/index.js:
+
+      export { default as Login } from './login'
+
+      replace by:
+
+      export { default } from './login'
+
+pages/main/index.js:
+
+      export { default as MainPage } from './main'
+
+      replace by:
+
+      export { default } from './main'
+
+
+Boom! We got our separeted bundles! :)
+
+
+Styling our 'loading...' message with material-ui:
+
+https://material-ui.com/components/progress/#progress
+
+  import LinearProgress from '@material-ui/core/LinearProgress';
+
+  <Suspense fallback={<LinearProgress />}>
+
+
 class #074 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Firebase: settings isolation from Login component
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/026/sistema-pedidos
+
+new folder:
+
+    src/services
+
+    new file:
+
+        firebase.js
+
+    import firebase from 'firebase/app'
+    import 'firebase/auth'
+
+    const config = {
+      apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
+      authDomain: 'pamplona-pizzas.firebaseapp.com',
+      databaseURL: 'https://pamplona-pizzas.firebaseio.com',
+      projectId: 'pamplona-pizzas',
+      storageBucket: 'pamplona-pizzas.appspot.com',
+      messagingSenderId: '165890800996',
+      appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+    }
+    // Initialize Firebase
+    firebase.initializeApp(config)
+
+    export default firebase
+
+login.js:
+
+import firebase from 'services/firebase'
+
+
 class #075 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+How to persist user's data?
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/027/sistema-pedidos
+
+1. state -> prop
+
+  but depending on how deep down components are, it may be an issue.
+
+
+2. redux
+
+    good but has a big boilerplate.
+
+
+3. context
+
+    The new context api from React v16 is nice. Let's check this out.
+
+app.js:
+
+      import { createContext } from 'react'
+
+      export const ColorContext = createContext()
+
+      const App = () => (
+        <>
+          <ColorContext.Provider value='black'>
+            <CssBaseline />
+            <BrowserRouter>
+              <Suspense fallback={<LinearProgress />}>
+                <Switch>
+                  <Route path='/login' component={Login} />
+                  <Route path='/' component={MainPage} />
+                </Switch>
+              </Suspense>
+            </BrowserRouter>
+          </ColorContext.Provider>
+        </>
+      )
+
+
+useContext
+
+  It is allowing us to get rid of the use of Consumer. At login.js, insted of:
+
+  login.js:
+  
+      import { ColorContext } from 'app'
+
+      {!isUserLoggedIn && (
+        <ColorContext.Consumer>
+          {({ color, setColor }) => (
+            <>
+              <GitHubButton onClick={handleLogin}>Login with GitHub ({color})
+              </GitHubButton>
+              <button onClick={() => setColor('blue')}>Blue Color</button>
+            </>
+          )}
+        </ColorContext.Consumer>
+      )}
+
+  How about that:
+
+      import { useContext } from 'react'
+
+      import { ColorContext } from 'app'
+
+      const { color, setColor } = useContext(ColorContext)
+
+      {!isUserLoggedIn && (
+        <>
+          <GitHubButton onClick={handleLogin}>Login with GitHub ({color})
+          </GitHubButton>
+          <button onClick={() => setColor('blue')}>Blue Color</button>
+        </>
+      )}
+
+      Using Context Recap:
+
+          1. import { createContext }
+
+          2. create an object/const that will have 2 components: Provider + Consumer
+
+          3. Provider have to wrap the entire application
+
+          4. Provider have 'value' property
+
+          Consuming:
+
+          1. imports the created context (from your 'app' file)
+
+          2. import { useContext }
+
+          3. passes the created context as parameter of useContext(), which returns the values passed on 'Provider' in the other file
+
+
+
 class #076 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Passing User's data into Context
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/027/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #077 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #078 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #079 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #080 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #081 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #082 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #083 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #084 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #085 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #086 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #087 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #088 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #089 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #090 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #091 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #092 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #093 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #094 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #095 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #096 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #097 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #098 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #099 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #100 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #101 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #102 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #103 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #104 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #105 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #106 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #107 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #108 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #109 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #110 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #111 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #112 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #113 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #114 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #115 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #116 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #117 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #118 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #119 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #120 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #121 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #122 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #123 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #124 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #125 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #126 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #127 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #128 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #129 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 class #120 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
