@@ -1,55 +1,71 @@
-import React, { PureComponent } from 'react'
+import React, { useState, useContext, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
-import firebase from 'firebase/app'
-import 'firebase/auth'
 import { Button, Grid } from '@material-ui/core'
+import firebase from 'services/firebase'
 import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
-var config = {
-  apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
-  authDomain: 'pamplona-pizzas.firebaseapp.com',
-  databaseURL: 'https://pamplona-pizzas.firebaseio.com',
-  projectId: 'pamplona-pizzas',
-  storageBucket: 'pamplona-pizzas.appspot.com',
-  messagingSenderId: '165890800996',
-  appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
-}
-// Initialize Firebase
-firebase.initializeApp(config)
+import { ColorContext } from 'app'
 
-class Login extends PureComponent {
-  componentDidMount () {
+function Login () {
+  const [useInfo, setUserInfo] = useState({
+    isUserLoggedIn: false,
+    user: null
+  })
+
+  const { isUserLoggedIn, user } = useInfo
+
+  const { color, setColor } = useContext(ColorContext)
+
+  useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        console.log('user is logged in:', user)
-      } else {
-        console.log('user is NOT logged in:', user)
-      }
+      console.log('user data:', user)
+      setUserInfo({
+        isUserLoggedIn: !!user,
+        user
+      })
     })
-  }
+  }, [])
 
-  render () {
-    return (
-      <Container>
-        <Grid container justify='center' spacing={10}>
-          <Grid item>
-            <Logo />
-          </Grid>
+  const handleLogin = useCallback(() => {
+    const provider = new firebase.auth.GithubAuthProvider()
+    firebase.auth().signInWithRedirect(provider)
+  }, [])
 
-          <Grid item xs={12} container justify='center'>
+  const handleLogout = useCallback(() => {
+    firebase.auth().signOut().then(() => {
+      console.log('logged out!')
+      setUserInfo({
+        isUserLoggedIn: false,
+        user: null
+      })
+    })
+  }, [])
 
-            <GitHubButton onClick={() => {
-              const provider = new firebase.auth.GithubAuthProvider()
-              firebase.auth().signInWithRedirect(provider)
-            }}
-            >Login with GitHub
-            </GitHubButton>
-
-          </Grid>
+  return (
+    <Container>
+      <Grid container justify='center' spacing={10}>
+        <Grid item>
+          <Logo />
         </Grid>
-      </Container>
-    )
-  }
+
+        <Grid item xs={12} container justify='center'>
+          {isUserLoggedIn && (
+            <>
+              <pre>{user.displayName}</pre>
+              <Button variant='contained' onClick={handleLogout}>Sair</Button>
+            </>
+          )}
+          {!isUserLoggedIn && (
+            <>
+              <GitHubButton onClick={handleLogin}>Login with GitHub ({color})
+              </GitHubButton>
+              <button onClick={() => setColor('blue')}>Blue Color</button>
+            </>
+          )}
+        </Grid>
+      </Grid>
+    </Container>
+  )
 }
 
 const Container = styled.div`
