@@ -4442,8 +4442,9 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
       root.js:
 
-            import { hot } from 'react-hot-loader'
-            export default hot(module)(Root)
+            import { hot } from 'react-hot-loader' - (top)
+
+            export default hot(module)(Root) - (bottom)
 
       entire file root.js:
 
@@ -4468,45 +4469,183 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
             export default hot(module)(Root)
 
+Warnings:
+
+react-hot-loader.development.js:2375 React-Hot-Loader: react-🔥-dom patch is not detected. React 16.6+ features may not work.
+
+This is fine and should be removed on further versions.
 
 class #088 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Content
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/040/sistema-pedidos
 
+main.js:
 
+import {
+  AppBar,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar as MaterialToolbar,
+  Typography
+} from '@material-ui/core'
 
+const userName = userInfo.user.displayName.split(' ')[0]
 
+<Content>
+  <Grid container justify='center'>
+    <Grid item>
+      <Typography variant='h3'>
+        O que vai ser hoje, {userName}? =)
+      </Typography>
+    </Grid>
+  </Grid>
+</Content>
 
-
-
-
-
-
-
-
-
-
-
-
+const Content = styled.main`
+  padding: 80px 20px 20px;
+`
 
 class #089 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Themes Material-Ui + Mixins 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/041/sistema-pedidos
+
+root.js:
+
+  { createMuiTheme } from '@material-ui/core'
+
+  const theme = createMuiTheme({
+    typography: {
+      useNextVariant: true
+    }
+  })
+
+  console.log(theme)
+
+      breakpoints: {keys: Array(5), values: {…}, up: ƒ, down: ƒ, between: ƒ, …}
+      direction: "ltr"
+      mixins: {toolbar: {…}, gutters: ƒ}
+      overrides: {}
+      palette: {common: {…}, type: "light", primary: {…}, secondary: {…}, error: {…}, …}
+      props: {}
+      shadows: (25) [...]
+      shape: {borderRadius: 4}
+      spacing: ƒ spacing()
+      transitions: {easing: {…}, duration: {…}, create: ƒ, getAutoHeightDuration: ƒ}
+      typography: {htmlFontSize: 16, fontFamily: ""Roboto", "Helvetica", "Arial", sans-serif", fontSize: 14, pxToRem: ƒ, round: ƒ, …}
+      zIndex: {mobileStepper: 1000, speedDial: 1050, appBar: 1100, drawer: 1200, modal: 1300, …}
+      __proto__: Object
 
 
+function Root () {
+  return (
+    <MuiThemeProvider theme={theme}>
+      <AuthProvider>
+        <CssBaseline />
+
+        <BrowserRouter>
+          <Route component={App} />
+        </BrowserRouter>
+      </AuthProvider>
+    </MuiThemeProvider>
+  )
+}
+
+export default hot(module)(Root)
 
 
+-> How to access media queries break points from Material UI?
+
+console.log(theme)
+
+mixins:
+  toolbar:
+    @media (min-width:0px) and (orientation: landscape):
+      minHeight: 48
+
+    @media (min-width:600px):
+      minHeight: 64
+
+      minHeight: 56
+
+https://material-ui.com/customization/default-theme/#default-theme
+
+main.js:
+
+Spacer component:
+
+  <Spacer />
+
+  { withStyles } from '@material-ui/core' 
 
 
+using mixins:
+
+based on that principle:
+
+      const style = {
+        main: {
+          background: '#ccc',
+          height: 100
+        }
+      }
+
+we can edit material-ui's mixins this way:
+
+      const style = (theme) => {
+        return {
+          main: {
+            background: '#ccc',
+            height: 100
+          }
+        }
+      }
+
+If we edit this by hand, anytime the lib changes we might have to update. This way, we are using the own lib to compensate it's own breakpoint styles. If it' theme changes, our SpacerWrapper will follow it.
+
+A few refactorings:
+
+from this:
+
+  const style = (theme) => {
+    return {
+      main: theme.mixins.toolbar
+    }
+  }
+
+to this:
+
+  const style = (theme) => ({
+    main: theme.mixins.toolbar
+  })
 
 
+and from this:
+
+    import t from 'prop-types'
+
+    const SpacerWrapper = ({ classes }) => (
+      <div className={classes.main} />
+    )
+
+    SpacerWrapper.propTypes = {
+      classes: t.object
+    }
+
+    const Spacer = withStyles(style)(SpacerWrapper)
 
 
+to this:
 
-
-
-
-
+    const Spacer = withStyles(style)(({ classes }) => (
+      <div className={classes.main} />
+    ))
 
 
 class #090 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/042/sistema-pedidos
 
 
 
