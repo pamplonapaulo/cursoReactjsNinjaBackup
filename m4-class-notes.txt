@@ -3493,115 +3493,1336 @@ useContext
 
 
 
+
+
+backup:
+
+          import React, { useState, useContext, useEffect, useCallback } from 'react'
+          import styled from 'styled-components'
+          import { Button, Grid } from '@material-ui/core'
+          import firebase from 'services/firebase'
+          import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
+
+          import { ColorContext } from 'app'
+
+          function Login () {
+            const [useInfo, setUserInfo] = useState({
+              isUserLoggedIn: false,
+              user: null
+            })
+
+            const { isUserLoggedIn, user } = useInfo
+
+            const { color, setColor } = useContext(ColorContext)
+
+            useEffect(() => {
+              firebase.auth().onAuthStateChanged((user) => {
+                console.log('user data:', user)
+                setUserInfo({
+                  isUserLoggedIn: !!user,
+                  user
+                })
+              })
+            }, [])
+
+            const handleLogin = useCallback(() => {
+              const provider = new firebase.auth.GithubAuthProvider()
+              firebase.auth().signInWithRedirect(provider)
+            }, [])
+
+            const handleLogout = useCallback(() => {
+              firebase.auth().signOut().then(() => {
+                console.log('logged out!')
+                setUserInfo({
+                  isUserLoggedIn: false,
+                  user: null
+                })
+              })
+            }, [])
+
+            return (
+              <Container>
+                <Grid container justify='center' spacing={10}>
+                  <Grid item>
+                    <Logo />
+                  </Grid>
+
+                  <Grid item xs={12} container justify='center'>
+                    {isUserLoggedIn && (
+                      <>
+                        <pre>{user.displayName}</pre>
+                        <Button variant='contained' onClick={handleLogout}>Sair</Button>
+                      </>
+                    )}
+                    {!isUserLoggedIn && (
+                      <>
+                        <GitHubButton onClick={handleLogin}>Login with GitHub ({color})
+                        </GitHubButton>
+                        <button onClick={() => setColor('blue')}>Blue Color</button>
+                      </>
+                    )}
+                  </Grid>
+                </Grid>
+              </Container>
+            )
+          }
+
+          const Container = styled.div`
+            padding: 5px;
+          `
+
+          const Logo = styled(MainLogo)`
+            width: 100%;
+          `
+
+          const GitHubButton = styled(Button).attrs({
+            variant: 'contained',
+            fullWidth: true
+          })`
+            font-size: 25px;
+            max-width: 480px;
+            padding: 15px;
+            text-transform: none;
+          `
+
+          export default Login
+
+
+
+app.js:
+
+          import React, { createContext, lazy, useState, Suspense } from 'react'
+          import { BrowserRouter, Route, Switch } from 'react-router-dom'
+          import { CssBaseline, LinearProgress } from '@material-ui/core'
+
+          const MainPage = lazy(() => import('pages/main'))
+          const Login = lazy(() => import('pages/login'))
+
+          export const ColorContext = createContext()
+
+          function App () {
+            const [color, setColor] = useState('black')
+
+            return (
+              <>
+                <ColorContext.Provider value={{ color, setColor }}>
+                  <CssBaseline />
+                  <BrowserRouter>
+                    <Suspense fallback={<LinearProgress />}>
+                      <Switch>
+                        <Route path='/login' component={Login} />
+                        <Route path='/' component={MainPage} />
+                      </Switch>
+                    </Suspense>
+                  </BrowserRouter>
+                </ColorContext.Provider>
+              </>
+            )
+          }
+
+          export default App
+
+
 class #076 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Passing User's data into Context
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/027/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/028/sistema-pedidos
 
 
+mkdir src/contexts
+
+        auth.js:
+
+          import { createContext } from 'react'
+
+          export const AuthContext = createContext()
+
+          function Auth () {
+            return (
+              <AuthContext.Provider value={{}}>
+                {children}
+              </AuthContext.Provider>
+            )
+          }
+
+          export default Auth
 
 
+Then in app.js os where we will verify the authentication, but since routes must be considered, we are wrapping everything with the BroserRouter.
 
+The App verifies if tue user is logged in or out.  So App component have to be loaded inside the BrowserRouter. If the user is not logged in, we will redirect him to the login page. To understand those routes, App have to be inside BrowserRouter, not the opposite. How to make this change?
 
+    1. created new file: src/root.js
+    2. moved all code from app.js to root.js
+    3. src/index.js, changed the import app.js to import root.js
+    4. root.js render the BrowserRouter and inside it has the <App />.
+    5. app.js contains the Routes wrapped by the <Switch /> + <Suspense />
 
+Check for errors, everything still running nicely.
 
+Include the context:
 
+    1. Then imported AuthProvider at root.js:
 
+        import AuthProvider from 'contexts/auth'
 
+    2. In root.js wrapp everything inside <AuthProvider/>
 
-
-
+    3. State rules will be placed in app.js
 
 
 class #077 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+User's data at Context API, then Login
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/029/sistema-pedidos
+
+src/index.js:
+
+              import React from 'react'
+              import ReactDOM from 'react-dom'
+              import Root from './root'
+              import * as serviceWorker from './serviceWorker'
+
+              import ErrorBoundary from './error'
+
+              ReactDOM.render(
+                <ErrorBoundary>
+                  {(hasError) => (
+                    <Root hasError={hasError} />
+                  )}
+                </ErrorBoundary>,
+                document.getElementById('root')
+              )
+
+              serviceWorker.unregister()
+
+
+src/root.js:
+
+              import React from 'react'
+              import { BrowserRouter, Route } from 'react-router-dom'
+              import { CssBaseline } from '@material-ui/core'
+              import AuthProvider from 'contexts/auth'
+              import App from './app'
+
+              function Root () {
+                return (
+                  <AuthProvider>
+                    <CssBaseline />
+
+                    <BrowserRouter>
+                      <Route component={App} />
+                    </BrowserRouter>
+                  </AuthProvider>
+                )
+              }
+
+              export default Root
+
+
+src/app.js:
+
+              import React, { lazy, Suspense } from 'react'
+              import { Route, Switch } from 'react-router-dom'
+              import { LinearProgress } from '@material-ui/core'
+
+              const MainPage = lazy(() => import('pages/main'))
+              const Login = lazy(() => import('pages/login'))
+
+              function App () {
+                return (
+                  <>
+                    <Suspense fallback={<LinearProgress />}>
+                      <Switch>
+                        <Route path='/login' component={Login} />
+                        <Route path='/' component={MainPage} />
+                      </Switch>
+                    </Suspense>
+                  </>
+                )
+              }
+
+              export default App
+
+
+src/contexts/auth.js:
+
+              import React, { createContext, useCallback } from 'react'
+              import t from 'prop-types'
+              import firebase from 'services/firebase'
+
+              export const AuthContext = createContext()
+
+              function Auth ({ children }) {
+                const handleLogin = useCallback(() => {
+                  const provider = new firebase.auth.GithubAuthProvider()
+                  firebase.auth().signInWithRedirect(provider)
+                }, [])
+
+                return (
+                  <AuthContext.Provider value={{ handleLogin }}>
+                    {children}
+                  </AuthContext.Provider>
+                )
+              }
+
+              Auth.propTypes = {
+                children: t.node.isRequired
+              }
+
+              export default Auth
 
 
 
+src/pages/login/login.js:
 
+              import React, { useState, useEffect, useCallback, useContext } from 'react'
+              import styled from 'styled-components'
+              import { Button, Grid } from '@material-ui/core'
+              import firebase from 'services/firebase'
+              import { AuthContext } from 'contexts/auth'
+              import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
+              function Login () {
+                const { handleLogin } = useContext(AuthContext)
 
+                const [useInfo, setUserInfo] = useState({
+                  isUserLoggedIn: false,
+                  user: null
+                })
 
+                const { isUserLoggedIn, user } = useInfo
 
+                useEffect(() => {
+                  firebase.auth().onAuthStateChanged((user) => {
+                    console.log('user data:', user)
+                    setUserInfo({
+                      isUserLoggedIn: !!user,
+                      user
+                    })
+                  })
+                }, [])
 
+                const handleLogout = useCallback(() => {
+                  firebase.auth().signOut().then(() => {
+                    console.log('logged out!')
+                    setUserInfo({
+                      isUserLoggedIn: false,
+                      user: null
+                    })
+                  })
+                }, [])
 
+                return (
+                  <Container>
+                    <Grid container justify='center' spacing={10}>
+                      <Grid item>
+                        <Logo />
+                      </Grid>
 
+                      <Grid item xs={12} container justify='center'>
+                        {isUserLoggedIn && (
+                          <>
+                            <pre>{user.displayName}</pre>
+                            <Button variant='contained' onClick={handleLogout}>Sair</Button>
+                          </>
+                        )}
+                        {!isUserLoggedIn && (
+                          <GitHubButton onClick={handleLogin}>
+                            Login with GitHub
+                          </GitHubButton>
+                        )}
+                      </Grid>
+                    </Grid>
+                  </Container>
+                )
+              }
 
+              const Container = styled.div`
+                padding: 5px;
+              `
 
+              const Logo = styled(MainLogo)`
+                width: 100%;
+              `
+
+              const GitHubButton = styled(Button).attrs({
+                variant: 'contained',
+                fullWidth: true
+              })`
+                font-size: 25px;
+                max-width: 480px;
+                padding: 15px;
+                text-transform: none;
+              `
+
+              export default Login
 
 
 
 class #078 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/030/sistema-pedidos
+
+app.js:
+          import React, { lazy, Suspense, useContext, useEffect } from 'react'
+          import { Route, Switch } from 'react-router-dom'
+          import { LinearProgress } from '@material-ui/core'
+          import firebase from 'services/firebase'
+          import { AuthContext } from 'contexts/auth'
+
+          const MainPage = lazy(() => import('pages/main'))
+          const Login = lazy(() => import('pages/login'))
+
+          function App () {
+            const { setUserInfo } = useContext(AuthContext)
+
+            useEffect(() => {
+              firebase.auth().onAuthStateChanged((user) => {
+                console.log('user data:', user)
+                setUserInfo({
+                  isUserLoggedIn: !!user,
+                  user
+                })
+              })
+            }, [setUserInfo])
+
+            return (
+              <>
+                <Suspense fallback={<LinearProgress />}>
+                  <Switch>
+                    <Route path='/login' component={Login} />
+                    <Route path='/' component={MainPage} />
+                  </Switch>
+                </Suspense>
+              </>
+            )
+          }
+
+          export default App
 
 
 
 
 
 
+auth.js:
+          import React, { createContext, useCallback, useState } from 'react'
+          import t from 'prop-types'
+          import firebase from 'services/firebase'
+
+          export const AuthContext = createContext()
+
+          function Auth ({ children }) {
+            const [userInfo, setUserInfo] = useState({
+              isUserLoggedIn: false,
+              user: null
+            })
+
+            const handleLogin = useCallback(() => {
+              const provider = new firebase.auth.GithubAuthProvider()
+              firebase.auth().signInWithRedirect(provider)
+            }, [])
+
+            const handleLogout = useCallback(() => {
+              firebase.auth().signOut().then(() => {
+                console.log('logged out!')
+                setUserInfo({
+                  isUserLoggedIn: false,
+                  user: null
+                })
+              })
+            }, [])
+
+            return (
+              <AuthContext.Provider value={{ handleLogin, handleLogout, userInfo, setUserInfo }}>
+                {children}
+              </AuthContext.Provider>
+            )
+          }
+
+          Auth.propTypes = {
+            children: t.node.isRequired
+          }
+
+          export default Auth
+
+login.js:
 
 
+          import React, { useContext } from 'react'
+          import styled from 'styled-components'
+          import { Button, Grid } from '@material-ui/core'
+          import { AuthContext } from 'contexts/auth'
+          import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
+          function Login () {
+            const { handleLogin } = useContext(AuthContext)
 
+            return (
+              <Container>
+                <Grid container justify='center' spacing={10}>
+                  <Grid item>
+                    <Logo />
+                  </Grid>
 
+                  <Grid item xs={12} container justify='center'>
+                    <GitHubButton onClick={handleLogin}>
+                      Login with GitHub
+                    </GitHubButton>
+                  </Grid>
+                </Grid>
+              </Container>
+            )
+          }
 
+          const Container = styled.div`
+            padding: 5px;
+          `
 
+          const Logo = styled(MainLogo)`
+            width: 100%;
+          `
 
+          const GitHubButton = styled(Button).attrs({
+            variant: 'contained',
+            fullWidth: true
+          })`
+            font-size: 25px;
+            max-width: 480px;
+            padding: 15px;
+            text-transform: none;
+          `
+
+          export default Login
 
 class #079 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Redirect pre and post auth
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/031/sistema-pedidos
 
 
+Route: history, location, match
 
+-> location
 
+Basic logic, simple and poor, just a kick of
 
+app.js:
 
+            import React, { lazy, Suspense, useContext, useEffect } from 'react'
+            import t from 'prop-types'
+            import { Redirect, Route, Switch } from 'react-router-dom'
+            import { LinearProgress } from '@material-ui/core'
+            import firebase from 'services/firebase'
+            import { AuthContext } from 'contexts/auth'
 
+            const MainPage = lazy(() => import('pages/main'))
+            const Login = lazy(() => import('pages/login'))
 
+            function App ({ location }) {
+              const { userInfo, setUserInfo } = useContext(AuthContext)
 
+              const { isUserLoggedIn } = userInfo
 
+              useEffect(() => {
+                firebase.auth().onAuthStateChanged((user) => {
+                  console.log('user data:', user)
+                  setUserInfo({
+                    isUserLoggedIn: !!user,
+                    user
+                  })
+                })
+              }, [])
 
+              if (isUserLoggedIn) {
+                console.log('user is logged in')
+                if (location.pathname === '/login') {
+                  console.log('user is logged and is in login\'s page. So moving user to home...')
+                  return <Redirect to='/' />
+                } else {
+                  console.log('user is logged but not at loggin\'s page')
+                }
+              } else {
+                console.log('user is not logged in')
+                if (location.pathname !== '/login') {
+                  console.log('user is not logged and is not at login\'s page')
+                  return <Redirect to='/login' />
+                } else {
+                  console.log('user is not logged in and is at login\'s page')
+                }
+              }
 
+              return (
+                <>
+                  <Suspense fallback={<LinearProgress />}>
+                    <Switch>
+                      <Route path='/login' component={Login} />
+                      <Route path='/' component={MainPage} />
+                    </Switch>
+                  </Suspense>
+                </>
+              )
+            }
 
+            App.propTypes = {
+              location: t.object.isRequired
+            }
 
-
+            export default App
 
 class #080 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Avoiding unecessary redirects
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/032/sistema-pedidos
+
+app.js:
+
+          import React, { lazy, Suspense, useContext, useState, useEffect } from 'react'
+          import t from 'prop-types'
+          import { Redirect, Route, Switch } from 'react-router-dom'
+          import { LinearProgress } from '@material-ui/core'
+          import firebase from 'services/firebase'
+          import { AuthContext } from 'contexts/auth'
+
+          const MainPage = lazy(() => import('pages/main'))
+          const Login = lazy(() => import('pages/login'))
+
+          function App ({ location }) {
+            const { userInfo, setUserInfo, handleLogout } = useContext(AuthContext)
+            const [didCheckUserIn, setDidCheckUserIn] = useState(false)
+
+            const { isUserLoggedIn } = userInfo
+
+            useEffect(() => {
+              firebase.auth().onAuthStateChanged((user) => {
+                console.log('user data:', user)
+                setUserInfo({
+                  isUserLoggedIn: !!user,
+                  user
+                })
+                setDidCheckUserIn(true)
+              })
+
+              window.handleLogout = handleLogout
+            }, [])
+
+            if (!didCheckUserIn) {
+              console.log('ainda não checou se user is logged or not')
+              return <h1>Loading...</h1>
+            }
+
+            console.log('already checked if user is logged or not')
+
+            if (isUserLoggedIn) {
+              console.log('user is logged in')
+              if (location.pathname === '/login') {
+                console.log('user is logged and is in login\'s page. So moving user to home...')
+                return <Redirect to='/' />
+              } else {
+                console.log('user is logged but not at loggin\'s page')
+              }
+            } else {
+              console.log('user is not logged in')
+              if (location.pathname !== '/login') {
+                console.log('user is not logged and is not at login\'s page')
+                return <Redirect to='/login' />
+              } else {
+                console.log('user is not logged in and is at login\'s page')
+              }
+            }
+
+            return (
+              <>
+                <Suspense fallback={<LinearProgress />}>
+                  <Switch>
+                    <Route path='/login' component={Login} />
+                    <Route path='/' component={MainPage} />
+                  </Switch>
+                </Suspense>
+              </>
+            )
+          }
+
+          App.propTypes = {
+            location: t.object.isRequired
+          }
+
+          export default App
+
+
+
+Suggestion: How to test all conditions?
+
+    cypress.io
+    Tests end-to-end
+
+
 
 class #081 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/033/sistema-pedidos
+
+
+app.js:
+
+        if (!didCheckUserIn) {
+          return <LinearProgress />
+        }
+
+        if (isUserLoggedIn && location.pathname === '/login') {
+          return <Redirect to='/' />
+        }
+
+        if (!isUserLoggedIn && location.pathname !== '/login') {
+          return <Redirect to='/login' />
+        }
+
 
 class #082 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Header
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/034/sistema-pedidos
+
+
+https://material-ui.com/components/app-bar/#app-bar-with-menu
+
+https://material-ui.com/api/toolbar/#demos
+
+https://material-ui.com/api/icon-button/#iconbutton-api
+
+src/pages/main.js:
+
+        import React from 'react'
+        import {
+          AppBar,
+          Toolbar,
+          IconButton
+        } from '@material-ui/core'
+        import { AccountCircle } from '@material-ui/icons'
+        import { ReactComponent as MainLogo } from 'pages/login/logo-react-zzaria.svg'
+
+        const Main = () => (
+          <AppBar>
+            <Toolbar>
+              <MainLogo />
+              <IconButton color='inherit'>
+                <AccountCircle />
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+        )
+
+        export default Main
 
 class #083 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Initial Page - Header (cont.)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/035/sistema-pedidos
+
+main.js:
+
+          import React from 'react'
+          import {
+            AppBar,
+            Toolbar,
+            IconButton,
+            Typography,
+            Menu,
+            MenuItem
+          } from '@material-ui/core'
+          import { AccountCircle } from '@material-ui/icons'
+          import { ReactComponent as MainLogo } from 'pages/login/logo-react-zzaria.svg'
+
+          const Main = () => (
+            <AppBar>
+              <Toolbar>
+                <MainLogo />
+
+                <Typography color='inherit'>
+                  Hi, Paulo
+                </Typography>
+
+                <IconButton color='inherit'>
+                  <AccountCircle />
+                </IconButton>
+
+                <Menu open>
+                  <MenuItem>
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </Toolbar>
+            </AppBar>
+          )
+
+          export default Main
 
 class #084 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Styling the Header
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/036/sistema-pedidos
+
+main.js:
+
+          import React from 'react'
+          import styled from 'styled-components'
+          import {
+            AppBar,
+            Toolbar,
+            IconButton,
+            Typography,
+            Menu,
+            MenuItem
+          } from '@material-ui/core'
+          import { AccountCircle } from '@material-ui/icons'
+          import { ReactComponent as MainLogo } from 'pages/login/logo-react-zzaria.svg'
+
+          const Main = () => (
+            <AppBar>
+              <Toolbar>
+                <LogoContainer>
+                  <Logo />
+                </LogoContainer>
+
+                <Typography color='inherit'>
+                  Hi, Paulo
+                </Typography>
+
+                <IconButton color='inherit'>
+                  <AccountCircle />
+                </IconButton>
+
+                <Menu open={false}>
+                  <MenuItem>
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </Toolbar>
+            </AppBar>
+          )
+
+          const LogoContainer = styled.div`
+            flex-grow: 1;
+          `
+
+          const Logo = styled(MainLogo)`
+            height: 50px;
+            width: 200px;
+
+            & path {
+              fill: #fff;
+            }
+
+            & line {
+              stroke: #fff;
+            }
+          `
+
+          export default Main
 
 class #085 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Header Logic Rules
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/036/sistema-pedidos
+
+open/close login/ logout etc.
+
+main.js:
+
+            import React, { useState, useContext } from 'react'
+            import styled from 'styled-components'
+            import {
+              AppBar,
+              Toolbar as MaterialToolbar,
+              IconButton,
+              Typography,
+              Menu,
+              MenuItem
+            } from '@material-ui/core'
+            import { AccountCircle } from '@material-ui/icons'
+            import { ReactComponent as MainLogo } from 'pages/login/logo-react-zzaria.svg'
+            import { AuthContext } from 'contexts/auth'
+
+            const Main = () => {
+              const [anchorElement, setAnchorElement] = useState(null)
+              const { userInfo, handleLogout } = useContext(AuthContext)
+
+              const handleOpenMenu = (e) => {
+                setAnchorElement(e.target)
+              }
+
+              const handleCloseMenu = () => {
+                setAnchorElement(null)
+              }
+
+              return (
+                <AppBar>
+                  <Toolbar>
+                    <LogoContainer>
+                      <Logo />
+                    </LogoContainer>
+
+                    <Typography color='inherit'>
+                      Hi, {userInfo.user.displayName.split(' ')[0]}
+                    </Typography>
+
+                    <IconButton color='inherit' onClick={handleOpenMenu}>
+                      <AccountCircle />
+                    </IconButton>
+
+                    <Menu
+                      open={Boolean(anchorElement)}
+                      onClose={handleCloseMenu}
+                      anchorEl={anchorElement}
+                    >
+                      <MenuItem onClick={handleLogout}>
+                        Logout
+                      </MenuItem>
+                    </Menu>
+                  </Toolbar>
+                </AppBar>
+              )
+            }
+
+            const Toolbar = styled(MaterialToolbar)`
+              margin: 0 auto;
+              max-width: 960px;
+              width: 100%;
+            `
+
+            const LogoContainer = styled.div`
+              flex-grow: 1;
+            `
+
+            const Logo = styled(MainLogo)`
+              height: 50px;
+              width: 200px;
+
+              & path {
+                fill: #fff;
+              }
+
+              & line {
+                stroke: #fff;
+              }
+            `
+
+            export default Main
+
 
 class #086 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Re-organizing
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/037/sistema-pedidos
+
+Moving logo to another folder.
+
+from src/pages/login
+to src/images
+
+'images/logo-react-zzaria.svg'
+
 
 class #087 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+hot-loader in CRA without inject it.
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/039/sistema-pedidos
+
+    by default CRA doesn't have hot-reloader
+
+    so all the time we refresh the page, the browser checks the github connection
+
+    Terminal:
+    yarn add --dev react-hot-loader --exact
+
+    New file at the root: sisetma-pedidos/
+    
+            .rescriptsrc.js
+
+                        'use strict'
+
+                        module.exports = [
+                          ['use-babel-config', {
+                            plugins: ['react-hot-loader/babel']
+                          }]
+                        ]
+
+
+      root.js:
+
+            import { hot } from 'react-hot-loader' - (top)
+
+            export default hot(module)(Root) - (bottom)
+
+      entire file root.js:
+
+            import React from 'react'
+            import { hot } from 'react-hot-loader'
+            import { BrowserRouter, Route } from 'react-router-dom'
+            import { CssBaseline } from '@material-ui/core'
+            import AuthProvider from 'contexts/auth'
+            import App from './app'
+
+            function Root () {
+              return (
+                <AuthProvider>
+                  <CssBaseline />
+
+                  <BrowserRouter>
+                    <Route component={App} />
+                  </BrowserRouter>
+                </AuthProvider>
+              )
+            }
+
+            export default hot(module)(Root)
+
+Warnings:
+
+react-hot-loader.development.js:2375 React-Hot-Loader: react-🔥-dom patch is not detected. React 16.6+ features may not work.
+
+This is fine and should be removed on further versions.
 
 class #088 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Content
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/040/sistema-pedidos
+
+main.js:
+
+import {
+  AppBar,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar as MaterialToolbar,
+  Typography
+} from '@material-ui/core'
+
+const userName = userInfo.user.displayName.split(' ')[0]
+
+<Content>
+  <Grid container justify='center'>
+    <Grid item>
+      <Typography variant='h3'>
+        O que vai ser hoje, {userName}? =)
+      </Typography>
+    </Grid>
+  </Grid>
+</Content>
+
+const Content = styled.main`
+  padding: 80px 20px 20px;
+`
 
 class #089 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Themes Material-Ui + Mixins 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/041/sistema-pedidos
+
+root.js:
+
+  { createMuiTheme } from '@material-ui/core'
+
+  const theme = createMuiTheme({
+    typography: {
+      useNextVariant: true
+    }
+  })
+
+  console.log(theme)
+
+      breakpoints: {keys: Array(5), values: {…}, up: ƒ, down: ƒ, between: ƒ, …}
+      direction: "ltr"
+      mixins: {toolbar: {…}, gutters: ƒ}
+      overrides: {}
+      palette: {common: {…}, type: "light", primary: {…}, secondary: {…}, error: {…}, …}
+      props: {}
+      shadows: (25) [...]
+      shape: {borderRadius: 4}
+      spacing: ƒ spacing()
+      transitions: {easing: {…}, duration: {…}, create: ƒ, getAutoHeightDuration: ƒ}
+      typography: {htmlFontSize: 16, fontFamily: ""Roboto", "Helvetica", "Arial", sans-serif", fontSize: 14, pxToRem: ƒ, round: ƒ, …}
+      zIndex: {mobileStepper: 1000, speedDial: 1050, appBar: 1100, drawer: 1200, modal: 1300, …}
+      __proto__: Object
+
+
+function Root () {
+  return (
+    <MuiThemeProvider theme={theme}>
+      <AuthProvider>
+        <CssBaseline />
+
+        <BrowserRouter>
+          <Route component={App} />
+        </BrowserRouter>
+      </AuthProvider>
+    </MuiThemeProvider>
+  )
+}
+
+export default hot(module)(Root)
+
+
+-> How to access media queries break points from Material UI?
+
+console.log(theme)
+
+mixins:
+  toolbar:
+    @media (min-width:0px) and (orientation: landscape):
+      minHeight: 48
+
+    @media (min-width:600px):
+      minHeight: 64
+
+      minHeight: 56
+
+https://material-ui.com/customization/default-theme/#default-theme
+
+main.js:
+
+Spacer component:
+
+  <Spacer />
+
+  { withStyles } from '@material-ui/core' 
+
+
+using mixins:
+
+based on that principle:
+
+      const style = {
+        main: {
+          background: '#ccc',
+          height: 100
+        }
+      }
+
+we can edit material-ui's mixins this way:
+
+      const style = (theme) => {
+        return {
+          main: {
+            background: '#ccc',
+            height: 100
+          }
+        }
+      }
+
+If we edit this by hand, anytime the lib changes we might have to update. This way, we are using the own lib to compensate it's own breakpoint styles. If it' theme changes, our SpacerWrapper will follow it.
+
+A few refactorings:
+
+from this:
+
+  const style = (theme) => {
+    return {
+      main: theme.mixins.toolbar
+    }
+  }
+
+to this:
+
+  const style = (theme) => ({
+    main: theme.mixins.toolbar
+  })
+
+
+and from this:
+
+    import t from 'prop-types'
+
+    const SpacerWrapper = ({ classes }) => (
+      <div className={classes.main} />
+    )
+
+    SpacerWrapper.propTypes = {
+      classes: t.object
+    }
+
+    const Spacer = withStyles(style)(SpacerWrapper)
+
+
+to this:
+
+    const Spacer = withStyles(style)(({ classes }) => (
+      <div className={classes.main} />
+    ))
+
 
 class #090 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/042/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #091 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #092 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #093 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #094 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #095 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #096 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #097 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #098 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #099 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #100 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
