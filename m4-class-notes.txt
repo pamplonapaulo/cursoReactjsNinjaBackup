@@ -4644,223 +4644,1819 @@ to this:
 
 
 class #090 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Content's Markup: mapping the array of pizza's sizes
 
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/042/sistema-pedidos
 
+main.js:
 
+          <Content>
+            <Grid container direction='column' alignItems='center'>
 
+              <Typography variant='h3'>
+                O que vai ser hoje, {userName}? =)
+              </Typography>
 
+              <Typography variante='h4'>
+                Choose pizza's size:
+              </Typography>
 
+            </Grid>
 
+            <Grid container spacing={10}>
+              {pizzaSizes.map((pizza) => (
+                <Grid item key={pizza.id} xs={4}>
+                  <Paper style={{ padding: 20 }}>
+                    <div>{pizza.size} cm</div>
+                    <Typography>{pizza.name}</Typography>
+                    <Typography>{pizza.slices} slices, {pizza.flavours} flavours</Typography>
+                  </Paper>
+                </Grid>
+              ))}
 
+            </Grid>
+          </Content>
 
-
-
-
-
-
-
-
+          const pizzaSizes = [
+            {
+              id: 0,
+              name: 'Small',
+              size: 28,
+              slices: 2,
+              falvours: 1
+            },
+            {
+              id: 1,
+              name: 'Medium',
+              size: 30,
+              slices: 6,
+              flavours: 2
+            },
+            {
+              id: 2,
+              name: 'Large',
+              size: 32,
+              slices: 8,
+              flavours: 3
+            }
+          ]
 
 class #091 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Styling initial page (with Material-UI)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/043/sistema-pedidos
+
+1. gutterBottom (material ui)
+
+  It adds space at component's bottom.
+
+      <Typography variant='h3' gutterBottom>
+        O que vai ser hoje, {userName}? =)
+      </Typography>
+
+      <Typography variante='h4' gutterBottom>
+        Choose pizza's size:
+      </Typography>
+
+2. <Divider />
+
+  It adds a line.
+
+      <div>{pizza.size} cm</div>
+
+      <Divider />
+
+      <Typography>{pizza.name}</Typography>
 
 
+3. variant
 
+  It changes text's size.
 
-
-
-
-
-
-
-
-
-
-
-
+      <Typography variant='h5'>{pizza.name}</Typography>
 
 
 class #092 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+The pizza's image
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/044/sistema-pedidos
 
+main.js:
 
+  markup:
 
+      <Pizza>
+        <PizzaText>
+          {pizza.size} cm
+        </PizzaText>
+      </Pizza>
 
+  The styled rules bellow including the 4 lines, using after and before css.
 
+      const Pizza = styled.div`
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        display: flex;
+        height: 200px;
+        justify-content: center;
+        position: relative;
+        width: 200px;
 
+        &::before,
+        &::after {
+          background: #ccc;
+          content: '';
+          position: absolute;
+          transform: rotate(45deg)
+        }
 
+        &::before {
+          height: 1px;
+          width: 160px;
+        }
 
+        &::after {
+          height: 160px;
+          width: 1px;
+        }
+      `
 
+Then the text itself:
 
-
-
-
-
-
+      const PizzaText = styled(Typography).attrs({
+        variant: 'h5'
+      })`
+        align-items: center;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        height: 80px;
+        justify-content: center;
+        position: relative;
+        width: 80px;
+        z-index: 1;
+      `
 
 
 class #093 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Mobile style (sounds like mobile 'second', I know!)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/045/sistema-pedidos
+
+main.js:
+
+insted of:
+
+    <Grid item key={pizza.id} xs={4}>
+
+Just 'xs' make it responsive, it srinks the content until it's limit, which is Pizza's width of 200px. When limit is reached, it puts start to stack the items.
+
+    <Grid item key={pizza.id} xs>
 
 
+OBS: Using styled components to pass just attributes still have to include the opening and closing back ticks:
 
-
-
-
-
-
-
-
-
-
-
-
+        const Title = styled(Typography).attrs({
+          gutterBottom: true,
+          align: 'center'
+        })``
 
 
 
 class #094 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Helper function (texts in singular or plural)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/046/sistema-pedidos
 
+main.js:
 
+  <Typography>
+    {pizza.slices} slices, {' '}
+    {pizza.flavours} {' '}
+    {singularOrPlural(pizza.flavours, 'falvour', 'flavours')}
+  </Typography>
 
-
-
-
-
-
-
-
-
-
-
-
-
+  function singularOrPlural (amount, singular, plural) {
+    return amount === 1 ? singular : plural
+  }
 
 
 class #095 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring: isolating components
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/047/sistema-pedidos
+
+1. Header
+
+  New file: src/pages/main/header.js
+
+      import React, { useState, useContext } from 'react'
+      import styled from 'styled-components'
+      import {
+        AppBar,
+        IconButton,
+        Menu,
+        MenuItem,
+        Toolbar as MaterialToolbar,
+        Typography
+      } from '@material-ui/core'
+      import { AccountCircle } from '@material-ui/icons'
+      import { ReactComponent as MainLogo } from 'images/logo-react-zzaria.svg'
+      import { AuthContext } from 'contexts/auth'
+
+      const Header = () => {
+        const { userInfo, handleLogout } = useContext(AuthContext)
+        const userName = userInfo.user.displayName.split(' ')[0]
+
+        const [anchorElement, setAnchorElement] = useState(null)
+
+        const handleOpenMenu = (e) => {
+          setAnchorElement(e.target)
+        }
+
+        const handleCloseMenu = () => {
+          setAnchorElement(null)
+        }
+
+        return (
+          <AppBar>
+            <Toolbar>
+              <LogoContainer>
+                <Logo />
+              </LogoContainer>
+
+              <Typography color='inherit'>
+                Hi, {userName}
+              </Typography>
+
+              <IconButton color='inherit' onClick={handleOpenMenu}>
+                <AccountCircle />
+              </IconButton>
+
+              <Menu
+                open={Boolean(anchorElement)}
+                onClose={handleCloseMenu}
+                anchorEl={anchorElement}
+              >
+                <MenuItem onClick={handleLogout}>
+                  Logout
+                </MenuItem>
+              </Menu>
+            </Toolbar>
+          </AppBar>
+        )
+      }
+
+      const LogoContainer = styled.div`
+        flex-grow: 1;
+      `
+
+      const Logo = styled(MainLogo)`
+        height: 50px;
+        width: 200px;
+
+        & path {
+          fill: #fff;
+        }
+
+        & line {
+          stroke: #fff;
+        }
+      `
+
+      const Toolbar = styled(MaterialToolbar)`
+        margin: 0 auto;
+        max-width: 960px;
+        width: 100%;
+      `
+
+      export default Header
 
 
+  Update main file: src/pages/main/main.js
 
+      import React, { useContext } from 'react'
+      import styled from 'styled-components'
+      import {
+        Divider as MaterialDivider,
+        Grid,
+        Paper,
+        Typography,
+        withStyles
+      } from '@material-ui/core'
+      import { AuthContext } from 'contexts/auth'
+      import Header from './header'
 
+      const Main = () => {
+        const { userInfo } = useContext(AuthContext)
+        const userName = userInfo.user.displayName.split(' ')[0]
 
+        return (
+          <>
 
+            <Header />
 
+            <Spacer />
 
+            <Content>
+              <Grid container direction='column' alignItems='center'>
 
+                <Title variant='h3'>
+                  O que vai ser hoje, {userName}? =)
+                </Title>
 
+                <Title variante='h4'>
+                  Choose pizza's size:
+                </Title>
 
+              </Grid>
 
+              <PizzasGrid>
+                {pizzaSizes.map((pizza) => (
+                  <Grid item key={pizza.id} xs>
+                    <PaperPizza>
+                      <Pizza>
+                        <PizzaText>
+                          {pizza.size} cm
+                        </PizzaText>
+                      </Pizza>
 
+                      <Divider />
 
+                      <Typography variant='h5'>{pizza.name}</Typography>
+                      <Typography>
+                        {pizza.slices} slices, {' '}
+                        {pizza.flavours} {' '}
+                        {singularOrPlural(pizza.flavours, 'falvour', 'flavours')}
+                      </Typography>
+                    </PaperPizza>
+                  </Grid>
+                ))}
 
+              </PizzasGrid>
+            </Content>
+          </>
+        )
+      }
+
+      function singularOrPlural (amount, singular, plural) {
+        return amount === 1 ? singular : plural
+      }
+
+      const pizzaSizes = [
+        {
+          id: 0,
+          name: 'Small',
+          size: 28,
+          slices: 2,
+          flavours: 1
+        },
+        {
+          id: 1,
+          name: 'Medium',
+          size: 30,
+          slices: 6,
+          flavours: 2
+        },
+        {
+          id: 2,
+          name: 'Large',
+          size: 32,
+          slices: 8,
+          flavours: 3
+        }
+      ]
+
+      const Divider = styled(MaterialDivider)`
+        margin: 20px 0;
+        width: 100%;
+      `
+
+      const Title = styled(Typography).attrs({
+        gutterBottom: true,
+        align: 'center'
+      })``
+
+      const PizzasGrid = styled(Grid).attrs({
+        container: true,
+        spacing: 10
+      })`
+        padding: 20px;
+      `
+
+      const PaperPizza = styled(Paper)`
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        min-width: 250px;
+        padding: 20px 0;
+      `
+
+      const Pizza = styled.div`
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        display: flex;
+        height: 200px;
+        justify-content: center;
+        position: relative;
+        width: 200px;
+
+        &::before,
+        &::after {
+          background: #ccc;
+          content: '';
+          position: absolute;
+          transform: rotate(45deg)
+        }
+
+        &::before {
+          height: 1px;
+          width: 160px;
+        }
+
+        &::after {
+          height: 160px;
+          width: 1px;
+        }
+      `
+
+      const PizzaText = styled(Typography).attrs({
+        variant: 'h5'
+      })`
+        align-items: center;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        height: 80px;
+        justify-content: center;
+        position: relative;
+        width: 80px;
+        z-index: 1;
+      `
+
+      const Content = styled.main`
+        padding: 20px;
+      `
+      const style = (theme) => ({
+        main: theme.mixins.toolbar
+      })
+
+      const Spacer = withStyles(style)(({ classes }) => (
+        <div className={classes.main} />
+      ))
+
+      export default Main
 
 
 class #096 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring: Abstracting user's data
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/048/sistema-pedidos
+
+main.js:
+
+  const { userInfo } = useContext(AuthContext)
+  const userName = userInfo.user.displayName.split(' ')[0]
+
+Being used in 2 files:
+
+  userInfo.user.displayName.split(' ')[0]
+
+Don't Repeat Yoruself!
+
+app.js:
+
+Insted of:
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      console.log('user data:', user)
+      setUserInfo({
+        isUserLoggedIn: !!user,
+        user
+      })
+      setDidCheckUserIn(true)
+    })
+  }, [setUserInfo])
 
 
+replace setUserInfo:
+
+      setUserInfo({
+        isUserLoggedIn: !!user,
+        user: {
+          ...user,
+          firstName: user.displayName.split(' ')[0]
+        }
+      })
+
+  But in case user is not logged in, we need a rule to handle it:
+
+  app.js:
+
+        setUserInfo({
+          isUserLoggedIn: !!user,
+          user: user && {
+            ...user,
+            firstName: user.displayName.split(' ')[0]
+          }
+        })
 
 
+Done. So now at main.js and header.js just reacht he data by:
 
-
-
-
-
-
-
-
-
-
+    {userInfo.user.firstName}
 
 
 
 class #097 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring: next intern pages structure
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/049/sistema-pedidos
+
+- setting a mater page for all app's pages
+
+main.js:
+
+        import React, { Suspense } from 'react'
+        import { Switch, Route } from 'react-router-dom'
+        import styled from 'styled-components'
+        import { withStyles } from '@material-ui/core'
+        import Header from './header'
+
+        const ChoosePizzaSize = React.lazy(() => import('pages/choose-pizza-size'))
+
+        const Main = () => (
+          <>
+            <Header />
+
+            <Spacer />
+
+            <Content>
+              <Suspense fallback='Loading...'>
+                <Switch>
+                  <Route path='/' exact component={ChoosePizzaSize} />
+                </Switch>
+              </Suspense>
+            </Content>
+          </>
+        )
+
+        const Content = styled.main`
+          padding: 20px;
+        `
+        const style = (theme) => ({
+          main: theme.mixins.toolbar
+        })
+
+        const Spacer = withStyles(style)(({ classes }) => (
+          <div className={classes.main} />
+        ))
+
+        export default Main
 
 
+mkdir pages/choose-pizzza-size
 
+  new files:
 
+        index.js
+        choose-pizza-size.js
 
+index.js:
 
+  export { default } from './choose-pizza-size'
 
+choose-pizza-size.js:
 
+        import React, { useContext } from 'react'
+        import styled from 'styled-components'
+        import {
+          Divider as MaterialDivider,
+          Grid,
+          Paper,
+          Typography
+        } from '@material-ui/core'
+        import { AuthContext } from 'contexts/auth'
 
+        const ChoosePizzaSize = () => {
+          const { userInfo } = useContext(AuthContext)
 
+          return (
+            <>
+              <Grid container direction='column' alignItems='center'>
+                <Title variant='h3'>
+                  O que vai ser hoje, {userInfo.user.firstName}? =)
+                </Title>
 
+                <Title variante='h4'>
+                  Choose pizza's size:
+                </Title>
+              </Grid>
 
+              <PizzasGrid>
+                {pizzaSizes.map((pizza) => (
+                  <Grid item key={pizza.id} xs>
+                    <PaperPizza>
+                      <Pizza>
+                        <PizzaText>
+                          {pizza.size} cm
+                        </PizzaText>
+                      </Pizza>
 
+                      <Divider />
 
+                      <Typography variant='h5'>{pizza.name}</Typography>
+                      <Typography>
+                        {pizza.slices} slices, {' '}
+                        {pizza.flavours} {' '}
+                        {singularOrPlural(pizza.flavours, 'falvour', 'flavours')}
+                      </Typography>
+                    </PaperPizza>
+                  </Grid>
+                ))}
+              </PizzasGrid>
+            </>
+          )
+        }
 
+        function singularOrPlural (amount, singular, plural) {
+          return amount === 1 ? singular : plural
+        }
 
+        const pizzaSizes = [
+          {
+            id: 0,
+            name: 'Small',
+            size: 28,
+            slices: 2,
+            flavours: 1
+          },
+          {
+            id: 1,
+            name: 'Medium',
+            size: 30,
+            slices: 6,
+            flavours: 2
+          },
+          {
+            id: 2,
+            name: 'Large',
+            size: 32,
+            slices: 8,
+            flavours: 3
+          }
+        ]
+
+        const Divider = styled(MaterialDivider)`
+          margin: 20px 0;
+          width: 100%;
+        `
+
+        const Title = styled(Typography).attrs({
+          gutterBottom: true,
+          align: 'center'
+        })``
+
+        const PizzasGrid = styled(Grid).attrs({
+          container: true,
+          spacing: 10
+        })`
+          padding: 20px;
+        `
+
+        const PaperPizza = styled(Paper)`
+          align-items: center;
+          display: flex;
+          flex-direction: column;
+          min-width: 250px;
+          padding: 20px 0;
+        `
+
+        const Pizza = styled.div`
+          align-items: center;
+          border: 1px solid #ccc;
+          border-radius: 50%;
+          display: flex;
+          height: 200px;
+          justify-content: center;
+          position: relative;
+          width: 200px;
+
+          &::before,
+          &::after {
+            background: #ccc;
+            content: '';
+            position: absolute;
+            transform: rotate(45deg)
+          }
+
+          &::before {
+            height: 1px;
+            width: 160px;
+          }
+
+          &::after {
+            height: 160px;
+            width: 1px;
+          }
+        `
+
+        const PizzaText = styled(Typography).attrs({
+          variant: 'h5'
+        })`
+          align-items: center;
+          background: #fff;
+          border-radius: 50%;
+          display: flex;
+          height: 80px;
+          justify-content: center;
+          position: relative;
+          width: 80px;
+          z-index: 1;
+        `
+
+        export default ChoosePizzaSize
 
 class #098 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring: organizing fake data
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/050/sistema-pedidos
+
+const pizzaSizes = [
+  {
+    id: 0,
+    name: 'Small',
+    size: 28,
+    slices: 2,
+    flavours: 1
+  },
+  {
+    id: 1,
+    name: 'Medium',
+    size: 30,
+    slices: 6,
+    flavours: 2
+  },
+  {
+    id: 2,
+    name: 'Large',
+    size: 32,
+    slices: 8,
+    flavours: 3
+  }
+]
 
 
+src/fake-data/pizza-sizes.js:
 
+        export default [
+          {
+            id: 0,
+            name: 'Small',
+            size: 28,
+            slices: 2,
+            flavours: 1
+          },
+          {
+            id: 1,
+            name: 'Medium',
+            size: 30,
+            slices: 6,
+            flavours: 2
+          },
+          {
+            id: 2,
+            name: 'Large',
+            size: 32,
+            slices: 8,
+            flavours: 3
+          }
+        ]
 
+choose-pizza-sizes.js:
 
-
-
-
-
-
-
-
-
-
-
+        import pizzaSizes from 'fake-data/pizza-sizes'
 
 
 class #099 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Updating dependencies (Long class: 25 minutes video)
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/051/sistema-pedidos
+
+
+package.json
+
+- always check wich is the current version of the dependency, at it's website.
+- check what changed on them.
+- first, update the dependencies. later, the devDependencies.
+
+To update them:
+
+yarn add --exact ...
+
+    "@material-ui/core": "4.11.0",
+    "@material-ui/icons": "4.9.1",
+    "@testing-library/jest-dom": "4.2.4",
+    "@testing-library/react": "9.3.2",
+    "@testing-library/user-event": "7.1.2",
+    "firebase": "7.15.5",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-router-dom": "5.2.0",
+    "react-scripts": "3.4.1",
+    "styled-components": "5.1.1"
+
+devDependencies:
+
+    "@rescripts/cli": "0.0.14",
+    "@rescripts/rescript-env": "0.0.12",
+    "babel-eslint": "10.1.0",
+    "eslint-config-standard": "14.1.1",
+    "eslint-config-standard-react": "9.2.0",
+    "eslint-plugin-import": "2.22.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-react": "7.20.3",
+    "eslint-plugin-standard": "4.0.1",
+    "react-hot-loader": "4.12.21",
+    "snazzy": "8.0.0",
+    "standard": "14.3.4"
+
+To update them:
+
+yarn add --dev --exact ...
+
+OBS: all versions at class were older or the same them mines. So I didn't update my dependencies.
+
+If you get a major update, big chance something in the code will break.
+
+OBS: using crete-react-app to start a project installs these 3 dependencies at once:
+
+    "react"
+    "react-dom"
+    "react-scripts"
+
+How to update your global version of create-react-app?
+
+Check the version:
+
+  create-react-app --version
+
+      Mine:             3.3.0
+      Current at NPM:   3.4.1
+      Daciuk, at class: 3.0.1
+
+  To update it:
+
+      yarn global add create-react-app
+
+
+How to list everything global on your NPM:
+
+      npm list -g --depth 0
+
+How to list everything global on your YARN:
+
+      yarn global list
+
+How to know where YARN stores global packages:
+
+      yarn global bin
+
+      (outputs the path to that bin folder)
+
+
+Some extra comments from Daciuk on direct chat:
+
+              se vc instalou o yarn pelo pacote do sistema, não pelo NPM, ele vai ter deps do sistema mesmo, é normal.. se elas não estiverem sendo utilizadas, pode remover sem crise.. 
+
+              sobre os globais, hoje nem precisa mais, pode remover todos, e usar tudo à partir do yarn create ou npx  :)
+
+              Fernando Daciuk, [Jul 9, 2020 at 2:33:09 PM]:
+              aí pode remover o create-react-app global, e usar sempre com yarn create react-app <seu app>, que aí vc vai usar sempre a versão mais recente do CRA :)
+
+              todo pacote que começar com o nome create-, vc pode usar o yarn create <resto_do_comando>
+
+              se for global
+
+              e para os outros pacotes, pode usar o npx
+
+
+create react app:
+https://create-react-app.dev/
+https://create-react-app.dev/docs/updating-to-new-releases/
+
+Check the change log:
+https://github.com/facebook/create-react-app/blob/master/CHANGELOG.md
+
+reminder:
+
+jsconfig.json:
+
+      {
+        "compilerOptions": {
+          "baseUrl": "src"
+        },
+
+        "include": ["src"]
+      }
+Insted of using the .env file to set paths.
+https://create-react-app.dev/docs/importing-a-component/#absolute-imports
+https://code.visualstudio.com/docs/languages/jsconfig
+
+
+Also, .env shouldn't have BROWSER=null anymore. Change it for:
+
+      BROWSER=none
+
+Now, Daciuk faces the issue I have been facing for a while:
+
+Linter asks us to use something inside the array on the second parameter of useEffect:
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      console.log('user data:', user)
+      setUserInfo({
+        isUserLoggedIn: !!user,
+        user: user && {
+          ...user,
+          firstName: user.displayName.split(' ')[0]
+        }
+      })
+      setDidCheckUserIn(true)
+    })
+  }, [setUserInfo])
 
 
 
+Material-UI unit change:
 
-
-
-
-
-
-
-
-
-
-
-
+Ealier, 'spacing' was set with pixels.
+Now it's 8x the value, in pixels.
 
 
 class #100 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Next screen/page: pick up a flavour.
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/052/sistema-pedidos
+
+
+choose-pizza-flavours.js:
+
+    import {
+      Card,
+      CardActionArea as MaterialCardActionArea
+    } from '@material-ui/core'
+
+    <Card>
+      <CardActionArea to='/choose-pizza-flavours'>
+        <Pizza>
+          <PizzaText>
+            {pizza.size} cm
+          </PizzaText>
+        </Pizza>
+
+        <Divider />
+
+        <Typography variant='h5'>{pizza.name}</Typography>
+        <Typography>
+          {pizza.slices} slices, {' '}
+          {pizza.flavours} {' '}
+          {singularOrPlural(pizza.flavours, 'falvour', 'flavours')}
+        </Typography>
+      </CardActionArea>
+    </Card>
+
+    const CardActionArea = styled(MaterialCardActionArea).attrs({
+      component: Link
+    })`
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      min-width: 250px;
+      padding: 20px 0;
+    `
 
 class #101 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+The Route to flavors
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/053/sistema-pedidos
+
+How to share data between these pages? many possibilities. We are picking STATE.
+
+
+choose-pizza-size.js:
+
+    <CardActionArea to={{
+      pathname: '/pizza-flavours',
+      state: pizza
+    }}>
+
+choose-pizza-flavours.js:
+
+      import t from 'prop-types'
+
+      const ChoosePizzaFlavours = ({ location }) => {
+
+        return (
+        )
+      }
+
+      ChoosePizzaFlavours.propTypes = {
+        location: t.object.isRequired
+      }
+
+
+
+ANother option, could be SEARCH: the URL.
+
+If data was stored in the URL, a user could share the URL with friends and the page rendered would have the same data.
+
+Daciuk thinks this should be local and temp. This is not the siuation that a user would share a link with a given URL containing all this data. It might not be so clear to the other user that some options already had been taken, like the size (on the previous page).
+
+So our option will be state, inside the location object.
+
 
 class #102 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Refactoring: Routes' names abstraction
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+
+Files containing:
+
+      path=
+      to=
+      pathname:
+
+            Search on Terminal with RegEx:
+
+                grep -E "(path|to)=|pathname" src/**/*.js
+
+            (Doesn't work on my Terminal)
+
+src/routes:
+
+  export const HOME = '/'
+  export const LOGIN = '/login'
+  export const CHOOSE_PIZZA_FLAVOURS = '/choose-pizza-flavours'
+
+then just replace any path=, to=, or pathname that use it. Those files were:
+  
+  app.js
+  main.js
+  choose-pizza-size.js
 
 class #103 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Page Choose Flavours
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/055/sistema-pedidos
+
+
+new folder:
+
+src/ui:
+
+  title.js:
+
+          import React from 'react'
+          import styled from 'styled-components'
+          import { Typography } from '@material-ui/core'
+
+          const Title = styled(Typography).attrs({
+            gutterBottom: true,
+            align: 'center'
+          })``
+
+          export const H3 = (props) => <Title variant='h3' {...props} />
+          export const H4 = (props) => <Title variant='h4' {...props} />
+
+          export default Title
+
+
+
+  header-content.js:
+
+          import React from 'react'
+          import t from 'prop-types'
+          import { Grid } from '@material-ui/core'
+
+          const HeaderContent = ({ children }) => (
+            <Grid container direction='column' alignItems='center'>
+              {children}
+            </Grid>
+          )
+
+          HeaderContent.propTypes = {
+            children: t.node.isRequired
+          }
+
+          export default HeaderContent
+
+
+  index.js:
+
+          export { default as Title, H3, H4 } from './title'
+          export { default as HeaderContent } from './header-content'
+
+
+  So now the 2 pages this app has so far will call all the stuff 'ui' folder has to offer:
+
+  choose-pizza-flavours.js:
+
+          import React from 'react'
+          import t from 'prop-types'
+          import { H4, HeaderContent } from 'ui'
+
+          const ChoosePizzaFlavours = ({ location }) => {
+            return (
+              <>
+                <HeaderContent>
+                  <H4>
+                    Choose up to {location.state.flavours} flavours:
+                  </H4>
+                </HeaderContent>
+              </>
+            )
+          }
+
+          ChoosePizzaFlavours.propTypes = {
+            location: t.object.isRequired
+          }
+
+          export default ChoosePizzaFlavours
+
+  choose-pizza-size.js:
+
+          <HeaderContent>
+            <H3>
+              O que vai ser hoje, {userInfo.user.firstName}? =)
+            </H3>
+
+            <H4>
+              Choose pizza's size:
+            </H4>
+          </HeaderContent>
+
+
+new folder:
+
+  src/utils:
+
+      index.js:
+
+              export { default as singularOrPlural } from './singular-or-plural'
+
+      singular-or-plural.js:
+
+              function singularOrPlural (amount, singular, plural) {
+                return amount === 1 ? singular : plural
+              }
+
+              export default singularOrPlural
+
+
 
 class #104 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Data Structure: pizza flavors
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/056/sistema-pedidos
+
+src/fake-data/pizzas-flavours.js
+
+          export default [
+            {
+              id: 0,
+              image: '/fake-data/images/pizza-calabresa.png',
+              name: 'Calabresa',
+              value: {
+                '0': 20,
+                '1': 30,
+                '2': 40
+              }
+            },
+
+            {
+              id: 1,
+              image: '/fake-data/images/pizza-frango-catupiry.png',
+              name: 'Frango com Catupiry',
+              value: {
+                '0': 25,
+                '1': 35,
+                '2': 45
+              }
+            },
+
+            {
+              id: 1,
+              image: '/fake-data/images/pizza-prestigio.png',
+              name: 'Prestígio',
+              value: {
+                '0': 30,
+                '1': 40,
+                '2': 50
+              }
+            }
+          ]
 
 class #105 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Markup: flavors
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/057/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #106 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Listing Flavours, Align and Link
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/058/sistema-pedidos
+
+
+ui/card-link.js:
+
+      import styled from 'styled-components'
+      import { Link } from 'react-router-dom'
+      import { CardActionArea } from '@material-ui/core'
+
+      const CardLink = styled(CardActionArea).attrs({
+        component: Link
+      })`
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        min-width: 250px;
+        padding: 20px 0;
+      `
+
+      export default CardLink
+
+
+The CardLink component was used either in choose-pizza-size or choose-pizza-flavours.
+
+At choose-pizza-flavours, we used it without it's 'link' feature. How was that possible?
+
+      We imported the CardLink, but renamed that in the JSX, as <Label>. Then using styled-components we made this:
+
+          const Label = styled(CardLink).attrs({
+            component: 'label'
+          })``
+
+      So it gets the style that comes from the CardLink component, but it's not using it as a link. Notice that in choose-pizza-size.js this component gets properties:
+
+                    <CardLink to={{
+                      pathname: CHOOSE_PIZZA_FLAVOURS,
+                      state: pizza
+                    }}
+                    >
+
+      But in choose-pizza-flavours.js, just a simple tag:
+
+                    <Label>
+
+      That decision was made because we don't want to redirect user in one click, like we did in choosing sizes. User can't pick more than one size!
+
+      At flavors choices, user mostly will pick more than one flavours. The redirect will happen later, in a bottom bar actions area to be coded in the next classes. So we want the user to be able to select it, not move to the next page from this single click.
+
+      So we also included a <input type='checkbox' /> beside the <Label>, meaning the selection to be done.
+
+      Also, since <Label> wraps everything on each item, any click in this big area will select the checkbox.
+
+
 class #107 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours: rules of selection
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/059/sistema-pedidos
+
+Master rule: depending on the size, user may pick a specific number of flavours.
+
+chose-pizza-flavours.js:
+
+  const [checkboxes, setCheckboxes] = useState(() => ({}))
+
+useState({})
+or
+useState(() => ({}))
+?
+
+1) useState({})
+
+    each time the component is re-rendered, a new object will be created.
+
+2) useState(() => ({}))
+
+    each time the component is re-rendered, the same reference will be used, it doesn't create a new object every time.
+
+    Not a big deal in performance, but good!
+
+
+Warning: hooks creation never should be conditional. Put them on the top, before all IFs! Linter also warnings it if you do.
+
+Why an object? Cuz we want it dynamiclly
+
+      JSX:
+
+          <input
+            type='checkbox'
+            value=''
+            checked={!!checkboxes[pizza.id]}
+            onChange={handleChangeCheckbox(pizza.id)}
+          />
+
+      Function:
+
+          const handleChangeCheckbox = (pizzaId) => (e) => {
+            setCheckboxes((checkboxes) => {
+              return {
+                ...checkboxes,
+                [pizzaId]: !checkboxes[pizzaId]
+              }
+            })
+          }
+
+
 
 class #108 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours: limiting the number of flavours, based on the size
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/060/sistema-pedidos
+
+Refactoring:  e.target.checked
+
+      const handleChangeCheckbox = (pizzaId) => (e) => {
+        setCheckboxes((checkboxes) => {
+          return {
+            ...checkboxes,
+            [pizzaId]: e.target.checked
+          }
+        })
+      }
+
+Limit selection logic
+
+1. How many checkboxes have true value?
+2. Convert checkboxes into an array.
+
+  Object.keys(checkboxes)
+
+        Takes just it's keys
+        ["0", "1", "2"]
+
+  Object.values(checkboxes)
+
+        Takes just it's values
+        [true, false, true]
+
+  Object.entries(checkboxes)
+
+        Takes an array for each checkbox containing it's key and value
+        [ ["0", true], ["1", false], ["2", true] ]
+
+
+  We gonna use:
+  
+      Object.values(checkboxes)
+
+  Plus: filter
+
+      Object.values(checkboxes).filter(c => c === true)
+
+  Which is the same as: (little refactoring)
+
+      Object.values(checkboxes).filter(c => !!c)
+
+  More...
+
+      Object.values(checkboxes).filter(c => Boolean(c))
+
+  Still too much. Make it smaller!
+
+      Object.values(checkboxes).filter(Boolean)
+
+  Plus: length
+
+      Object.values(checkboxes).filter(Boolean).length
+
+
+  by the end:
+
+        function checkboxesChecked (checkboxes) {
+          return Object.values(checkboxes).filter(Boolean)
+        }
+
+        const handleChangeCheckbox = (pizzaId) => (e) => {
+          if (
+            checkboxesChecked(checkboxes).length === flavours &&
+            e.target.checked === true
+          ) {
+            return
+          }
+
+          setCheckboxes((checkboxes) => {
+            return {
+              ...checkboxes,
+              [pizzaId]: e.target.checked
+            }
+          })
+        }
+
+https://github.com/da2k/curso-reactjs-ninja/issues/500
+
 
 class #109 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours: style of selection
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/061/sistema-pedidos
+
+
+choose-pizza-flavours.js:
+
+    import { Card as MaterialCard } from '@material-ui/core
+
+  JSX:
+
+    <Card checked={!!checkboxes[pissa.id]}>
+
+  style:
+
+    const Card = styled(MaterialCard)`
+      border: 2px solid transparent;
+      border-color: ${({ checked }) => checked ? '#000' : ''};
+    `
+
+
+  Hidden the checkbox itself:
+
+  insted of:
+            <input
+              type='checkbox'
+              value=''
+              checked={!!checkboxes[pizza.id]}
+              onChange={handleChangeCheckbox(pizza.id)}
+            />
+
+  This:
+            <Checkbox
+              value=''
+              checked={!!checkboxes[pizza.id]}
+              onChange={handleChangeCheckbox(pizza.id)}
+            />
+
+            const Checkbox = styled.input.attrs({
+              type: 'checkbox'
+            })`
+              display: none;
+            `
 
 class #110 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ThemeProvider at Styled-components
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/062/sistema-pedidos
+
+root.js:
+
+import { ThemeProvider } from 'styled-components'
+
+Then insted of:
+
+      function Root () {
+        return (
+          <MuiThemeProvider theme={theme}>
+            <AuthProvider>
+              <CssBaseline />
+
+              <BrowserRouter>
+                <Route component={App} />
+              </BrowserRouter>
+            </AuthProvider>
+          </MuiThemeProvider>
+        )
+      }
+
+This:
+
+      function Root () {
+        return (
+          <MuiThemeProvider theme={theme}>
+            <ThemeProvider theme={theme}>
+              <AuthProvider>
+                <CssBaseline />
+
+                <BrowserRouter>
+                  <Route component={App} />
+                </BrowserRouter>
+              </AuthProvider>
+            </ThemeProvider>
+          </MuiThemeProvider>
+        )
+      }
+
+Now, with the inclusion of this "ThemeProvider" wrapping everything but the MuiThemeProvider, inside it our styled-components now also consumes the theme.
+
+Now, changes that we make using styled-components will effect the same 'theme' object:
+
+      const theme = createMuiTheme({
+        typography: {
+          useNextVariant: true
+        }
+      })
+
+      console.log('theme:', theme)
+
+Example:
+
+      console.log('theme:', theme)
+
+      theme: {
+        ...theme,
+        palette: {
+          ...palette,
+          secondary: {
+            contrastText: "#fff,
+            dark: "#c51162",
+            light: "#ff4081",
+            main: "#f50057"
+          }
+        }
+      }
+
+This is being apssed via props, inside the string of styled-components:
+
+We don't have to inject it manually. It's there, thanks to the Provider in the root.js.
+
+How it works?
+
+Insted of:
+
+const Card = styled(MaterialCard)`
+  border: 2px solid transparent;
+  border-color: ${({ checked }) => checked ? '#000' : ''};
+`
+
+Pass 'theme' as prop, like that:
+
+const Card = styled(MaterialCard)`
+  border: 2px solid transparent;
+  border-color: ${({ theme, checked }) => checked ? theme.palette.secondary.light : ''};
+`
 
 class #111 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Material-ui's vars all over the app (refactoring)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/063/sistema-pedidos
+
+Replacing style at...
+
+  choose-pizza-size.js:
+
+    background: ${({ theme }) => theme.palette.common.white};
+
+    border: 1px solid ${({ theme }) => theme.palette.grey.A100};
+
+
+  login.js:
+
+    padding: ${({ theme }) => theme.spacing(3)}px; (that means 3 * 8px)
+    
+    font-size: ${({ theme }) => theme.typography.h5.fontSize};
+
+    padding: ${({ theme }) => theme.spacing(2)}px}; (that means 2 * 8px)
+
+
+  header.js:
+
+    max-width: ${({ theme }) => theme.breakpoints.values.lg}px;
+
+  main.js:
+
+    padding: ${({ theme }) => theme.spacing(3)}px; (that means 3 * 8px)
+
+
+  card-link:
+
+    from this: padding: 20px 0;   
+    to this: padding: ${({ theme }) => theme.spacing(3)}px 0;
+
+    or: padding: ${({ theme }) => theme.spacing(3, 0)}; (don't have to pass pixels)
+
+  divider.js:
+
+    margin: ${({ theme }) => theme.spacing(3, 0)};
+
+  pizzas-grid.js:
+
+    padding: ${({ theme }) => theme.spacing(3)}px;
+
+It's also possible to manually override the theme.anything.value itself. Check the documentation and have fun.
 
 class #112 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+helper: currency
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/064/sistema-pedidos
+
+
+toLocaleString()
+
+  This method converts to local format. example:
+
+    (1300.00)toLocaleString('pt-BR')
+    // 1.300,00
+
+choose-pizza-flavours.js:
+
+    <Typography variant='h5'>
+      {pizza.value[id].toLocaleString('en-IN', {
+        style: 'currency',
+        currency: 'GBP'
+      })}
+    </Typography>
+
+
+    Most common currencies:
+
+    https://www.joshmcarthur.com/til/2018/04/11/til-tolocalestring.html
+
+
+  or isolating it:
+
+  utils/to-money.js
+
+          function toMoney (value) {
+            return Number(value).toLocaleString('en-IN', {
+              style: 'currency',
+              currency: 'GBP'
+            })
+          }
+
+          export default toMoney
+
+another method: Intl (stands for International)
+
+          function toMoney (value) {
+            return new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'GBP'
+            }).format(value)
+          }
 
 class #113 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Footer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/065/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #114 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/066/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #115 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/067/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #116 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/068/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #117 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/069/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #118 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #119 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
