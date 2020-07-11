@@ -5898,163 +5898,411 @@ ui/card-link.js:
       export default CardLink
 
 
+The CardLink component was used either in choose-pizza-size or choose-pizza-flavours.
 
+At choose-pizza-flavours, we used it without it's 'link' feature. How was that possible?
 
+      We imported the CardLink, but renamed that in the JSX, as <Label>. Then using styled-components we made this:
 
+          const Label = styled(CardLink).attrs({
+            component: 'label'
+          })``
 
+      So it gets the style that comes from the CardLink component, but it's not using it as a link. Notice that in choose-pizza-size.js this component gets properties:
 
+                    <CardLink to={{
+                      pathname: CHOOSE_PIZZA_FLAVOURS,
+                      state: pizza
+                    }}
+                    >
 
+      But in choose-pizza-flavours.js, just a simple tag:
 
+                    <Label>
 
+      That decision was made because we don't want to redirect user in one click, like we did in choosing sizes. User can't pick more than one size!
 
+      At flavors choices, user mostly will pick more than one flavours. The redirect will happen later, in a bottom bar actions area to be coded in the next classes. So we want the user to be able to select it, not move to the next page from this single click.
 
+      So we also included a <input type='checkbox' /> beside the <Label>, meaning the selection to be done.
 
-
-
-
-
+      Also, since <Label> wraps everything on each item, any click in this big area will select the checkbox.
 
 
 class #107 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours: rules of selection
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/059/sistema-pedidos
 
+Master rule: depending on the size, user may pick a specific number of flavours.
+
+chose-pizza-flavours.js:
+
+  const [checkboxes, setCheckboxes] = useState(() => ({}))
+
+useState({})
+or
+useState(() => ({}))
+?
+
+1) useState({})
+
+    each time the component is re-rendered, a new object will be created.
+
+2) useState(() => ({}))
+
+    each time the component is re-rendered, the same reference will be used, it doesn't create a new object every time.
+
+    Not a big deal in performance, but good!
 
 
+Warning: hooks creation never should be conditional. Put them on the top, before all IFs! Linter also warnings it if you do.
 
+Why an object? Cuz we want it dynamiclly
 
+      JSX:
 
+          <input
+            type='checkbox'
+            value=''
+            checked={!!checkboxes[pizza.id]}
+            onChange={handleChangeCheckbox(pizza.id)}
+          />
 
+      Function:
 
-
-
-
-
-
-
-
-
-
-
+          const handleChangeCheckbox = (pizzaId) => (e) => {
+            setCheckboxes((checkboxes) => {
+              return {
+                ...checkboxes,
+                [pizzaId]: !checkboxes[pizzaId]
+              }
+            })
+          }
 
 
 
 class #108 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours: limiting the number of flavours, based on the size
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/060/sistema-pedidos
 
+Refactoring:  e.target.checked
+
+      const handleChangeCheckbox = (pizzaId) => (e) => {
+        setCheckboxes((checkboxes) => {
+          return {
+            ...checkboxes,
+            [pizzaId]: e.target.checked
+          }
+        })
+      }
+
+Limit selection logic
+
+1. How many checkboxes have true value?
+2. Convert checkboxes into an array.
+
+  Object.keys(checkboxes)
+
+        Takes just it's keys
+        ["0", "1", "2"]
+
+  Object.values(checkboxes)
+
+        Takes just it's values
+        [true, false, true]
+
+  Object.entries(checkboxes)
+
+        Takes an array for each checkbox containing it's key and value
+        [ ["0", true], ["1", false], ["2", true] ]
 
 
+  We gonna use:
+  
+      Object.values(checkboxes)
+
+  Plus: filter
+
+      Object.values(checkboxes).filter(c => c === true)
+
+  Which is the same as: (little refactoring)
+
+      Object.values(checkboxes).filter(c => !!c)
+
+  More...
+
+      Object.values(checkboxes).filter(c => Boolean(c))
+
+  Still too much. Make it smaller!
+
+      Object.values(checkboxes).filter(Boolean)
+
+  Plus: length
+
+      Object.values(checkboxes).filter(Boolean).length
 
 
+  by the end:
 
+        function checkboxesChecked (checkboxes) {
+          return Object.values(checkboxes).filter(Boolean)
+        }
 
+        const handleChangeCheckbox = (pizzaId) => (e) => {
+          if (
+            checkboxesChecked(checkboxes).length === flavours &&
+            e.target.checked === true
+          ) {
+            return
+          }
 
+          setCheckboxes((checkboxes) => {
+            return {
+              ...checkboxes,
+              [pizzaId]: e.target.checked
+            }
+          })
+        }
 
-
-
-
-
-
-
-
-
-
-
+https://github.com/da2k/curso-reactjs-ninja/issues/500
 
 
 class #109 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+Flavours: style of selection
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/061/sistema-pedidos
 
 
+choose-pizza-flavours.js:
+
+    import { Card as MaterialCard } from '@material-ui/core
+
+  JSX:
+
+    <Card checked={!!checkboxes[pissa.id]}>
+
+  style:
+
+    const Card = styled(MaterialCard)`
+      border: 2px solid transparent;
+      border-color: ${({ checked }) => checked ? '#000' : ''};
+    `
 
 
+  Hidden the checkbox itself:
 
+  insted of:
+            <input
+              type='checkbox'
+              value=''
+              checked={!!checkboxes[pizza.id]}
+              onChange={handleChangeCheckbox(pizza.id)}
+            />
 
+  This:
+            <Checkbox
+              value=''
+              checked={!!checkboxes[pizza.id]}
+              onChange={handleChangeCheckbox(pizza.id)}
+            />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+            const Checkbox = styled.input.attrs({
+              type: 'checkbox'
+            })`
+              display: none;
+            `
 
 class #110 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+ThemeProvider at Styled-components
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/062/sistema-pedidos
 
+root.js:
 
+import { ThemeProvider } from 'styled-components'
 
+Then insted of:
 
+      function Root () {
+        return (
+          <MuiThemeProvider theme={theme}>
+            <AuthProvider>
+              <CssBaseline />
 
+              <BrowserRouter>
+                <Route component={App} />
+              </BrowserRouter>
+            </AuthProvider>
+          </MuiThemeProvider>
+        )
+      }
 
+This:
 
+      function Root () {
+        return (
+          <MuiThemeProvider theme={theme}>
+            <ThemeProvider theme={theme}>
+              <AuthProvider>
+                <CssBaseline />
 
+                <BrowserRouter>
+                  <Route component={App} />
+                </BrowserRouter>
+              </AuthProvider>
+            </ThemeProvider>
+          </MuiThemeProvider>
+        )
+      }
 
+Now, with the inclusion of this "ThemeProvider" wrapping everything but the MuiThemeProvider, inside it our styled-components now also consumes the theme.
 
+Now, changes that we make using styled-components will effect the same 'theme' object:
 
+      const theme = createMuiTheme({
+        typography: {
+          useNextVariant: true
+        }
+      })
 
+      console.log('theme:', theme)
 
+Example:
 
+      console.log('theme:', theme)
 
+      theme: {
+        ...theme,
+        palette: {
+          ...palette,
+          secondary: {
+            contrastText: "#fff,
+            dark: "#c51162",
+            light: "#ff4081",
+            main: "#f50057"
+          }
+        }
+      }
 
+This is being apssed via props, inside the string of styled-components:
 
+We don't have to inject it manually. It's there, thanks to the Provider in the root.js.
 
+How it works?
 
+Insted of:
 
+const Card = styled(MaterialCard)`
+  border: 2px solid transparent;
+  border-color: ${({ checked }) => checked ? '#000' : ''};
+`
+
+Pass 'theme' as prop, like that:
+
+const Card = styled(MaterialCard)`
+  border: 2px solid transparent;
+  border-color: ${({ theme, checked }) => checked ? theme.palette.secondary.light : ''};
+`
 
 class #111 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+Material-ui's vars all over the app (refactoring)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/063/sistema-pedidos
+
+Replacing style at...
+
+  choose-pizza-size.js:
+
+    background: ${({ theme }) => theme.palette.common.white};
+
+    border: 1px solid ${({ theme }) => theme.palette.grey.A100};
 
 
+  login.js:
+
+    padding: ${({ theme }) => theme.spacing(3)}px; (that means 3 * 8px)
+    
+    font-size: ${({ theme }) => theme.typography.h5.fontSize};
+
+    padding: ${({ theme }) => theme.spacing(2)}px}; (that means 2 * 8px)
 
 
+  header.js:
+
+    max-width: ${({ theme }) => theme.breakpoints.values.lg}px;
+
+  main.js:
+
+    padding: ${({ theme }) => theme.spacing(3)}px; (that means 3 * 8px)
 
 
+  card-link:
 
+    from this: padding: 20px 0;   
+    to this: padding: ${({ theme }) => theme.spacing(3)}px 0;
 
+    or: padding: ${({ theme }) => theme.spacing(3, 0)}; (don't have to pass pixels)
 
+  divider.js:
 
+    margin: ${({ theme }) => theme.spacing(3, 0)};
 
+  pizzas-grid.js:
 
+    padding: ${({ theme }) => theme.spacing(3)}px;
 
-
-
-
-
-
-
-
+It's also possible to manually override the theme.anything.value itself. Check the documentation and have fun.
 
 class #112 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+helper: currency
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/064/sistema-pedidos
 
 
+toLocaleString()
+
+  This method converts to local format. example:
+
+    (1300.00)toLocaleString('pt-BR')
+    // 1.300,00
+
+choose-pizza-flavours.js:
+
+    <Typography variant='h5'>
+      {pizza.value[id].toLocaleString('en-IN', {
+        style: 'currency',
+        currency: 'GBP'
+      })}
+    </Typography>
 
 
+    Most common currencies:
+
+    https://www.joshmcarthur.com/til/2018/04/11/til-tolocalestring.html
 
 
+  or isolating it:
 
+  utils/to-money.js
 
+          function toMoney (value) {
+            return Number(value).toLocaleString('en-IN', {
+              style: 'currency',
+              currency: 'GBP'
+            })
+          }
 
+          export default toMoney
 
+another method: Intl (stands for International)
 
-
-
-
-
-
-
-
-
-
+          function toMoney (value) {
+            return new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'GBP'
+            }).format(value)
+          }
 
 class #113 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+Footer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/065/sistema-pedidos
+
 
 
 
@@ -6077,7 +6325,7 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
 
 class #114 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/066/sistema-pedidos
 
 
 
@@ -6100,7 +6348,7 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
 
 class #115 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/067/sistema-pedidos
 
 
 
@@ -6123,7 +6371,7 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
 
 class #116 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/068/sistema-pedidos
 
 
 
@@ -6146,7 +6394,7 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
 
 class #117 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/069/sistema-pedidos
 
 
 
@@ -6169,7 +6417,7 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
 
 class #118 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/054/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 
 
 

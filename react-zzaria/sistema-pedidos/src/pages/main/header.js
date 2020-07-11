@@ -54,6 +54,12 @@ const Header = () => {
   )
 }
 
+const Toolbar = styled(MaterialToolbar)`
+  margin: 0 auto;
+  max-width: ${({ theme }) => theme.breakpoints.values.lg}px;
+  width: 100%;
+`
+
 const LogoContainer = styled.div`
   flex-grow: 1;
 `
@@ -63,18 +69,12 @@ const Logo = styled(MainLogo)`
   width: 200px;
 
   & path {
-    fill: #fff;
+    fill: ${({ theme }) => theme.palette.common.white};
   }
 
   & line {
-    stroke: #fff;
+    stroke: ${({ theme }) => theme.palette.common.white};
   }
-`
-
-const Toolbar = styled(MaterialToolbar)`
-  margin: 0 auto;
-  max-width: 960px;
-  width: 100%;
 `
 
 export default Header
