@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import {
   Card,
@@ -7,6 +7,7 @@ import {
 } from '@material-ui/core'
 import {
   CardLink,
+  Content,
   Divider,
   H3,
   H4,
@@ -14,16 +15,16 @@ import {
   PizzasGrid
 } from 'ui'
 import { singularOrPlural } from 'utils'
-import { AuthContext } from 'contexts/auth'
+import { useAuth } from 'hooks'
 import pizzaSizes from 'fake-data/pizzas-sizes.js'
 
 import { CHOOSE_PIZZA_FLAVOURS } from 'routes'
 
 const ChoosePizzaSize = () => {
-  const { userInfo } = useContext(AuthContext)
+  const { userInfo } = useAuth()
 
   return (
-    <>
+    <Content>
       <HeaderContent>
         <H3>
           O que vai ser hoje, {userInfo.user.firstName}? =)
@@ -62,7 +63,7 @@ const ChoosePizzaSize = () => {
           </Grid>
         ))}
       </PizzasGrid>
-    </>
+    </Content>
   )
 }
 

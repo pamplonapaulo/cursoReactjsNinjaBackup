@@ -6305,237 +6305,1038 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzza
 
 
 
+choose-pizza-flavours.js:
 
+        <Footer>
+          <Container>
+            <h2>Content</h2>
+          </Container>
+        </Footer>
 
+        const Footer = styled.footer`
+          box-shadow: 0 0 3px ${({ theme, checked }) => theme.palette.grey[400]};
+          padding: ${({ theme }) => theme.spacing(3)}px;
+          width: 100%;
+        `
 
+src/ui/content.js:
 
+        import styled from 'styled-components'
 
+        const Content = styled.main`
+          padding: ${({ theme }) => theme.spacing(3)}px;
+        `
 
-
-
-
-
-
-
-
-
-
-
-
+        export default Content
 
 
 class #114 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Fixing Footer in the Bottom
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/066/sistema-pedidos
 
+So far, depending on the screen size, there is a gap between the top bottom and the footer itself.
 
 
+import { createGlobalStyle } from 'styled-components'
 
+<GlobalStyle />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const GlobalStyle = createGlobalStyle`
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+`
 
 class #115 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/067/sistema-pedidos
 
+On Daciuks's video, by including createGlobalStyle from styled-component, it broke the style from Material-ui. That didn't happen with my app. So sounds like a bug that was already fixed.
+
+Anyways, here is what Daciuk made to fix the issue.
+
+at choose-pizza-sflavours.js:
+
+    Insted of:
+
+        const Card = styled(MaterialCard)`
+          border: 2px solid transparent;
+          border-color: ${({ theme, checked }) => checked ? theme.palette.secondary.light : ''};
+        `
+
+    Have this:
+
+        const Card = styled(MaterialCard)`
+          && {
+            border: 2px solid transparent;
+            border-color: ${({ theme, checked }) => checked ? theme.palette.secondary.light : ''};
+          }
+        `
+
+Daciuk had to do this on each component extended from material-ui that has been styled by us.
+
+What the '&& { }' does?
+
+It adds 2 classes and that helps to override the material-ui style.
 
 
+choose-pizza-size.js:
 
+    const PizzaText = styled(Typography).attrs({
+      variant: 'h5'
+    })`
+      && {
+        align-items: center;
+        background: ${({ theme }) => theme.palette.common.white};
+        border-radius: 50%;
+        display: flex;
+        height: 80px;
+        justify-content: center;
+        position: relative;
+        width: 80px;
+        z-index: 1;
+      }
+    `
 
+main.js:
 
+    const Toolbar = styled(MaterialToolbar)`
+      && {
+        margin: 0 auto;
+        max-width: ${({ theme }) => theme.breakpoints.values.lg}px;
+        width: 100%;
+      }
+    `
 
+ui/card-link.js:
 
+      const CardLink = styled(CardActionArea).attrs({
+        component: Link
+      })`
+        && {
+          align-items: center;
+          display: flex;
+          flex-direction: column;
+          min-width: 250px;
+          padding: ${({ theme }) => theme.spacing(3, 0)};
+        }
+      `
 
+ui/divider.js:
 
+      const Divider = styled(MaterialDivider)`
+        && {
+          margin: ${({ theme }) => theme.spacing(3, 0)};
+          width: 100%;
+        }
+      `
 
-
-
-
-
-
-
-
-
+1 classes overrride 1 class. That's how we overcome this big.
 
 
 class #116 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Footer Grid
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/068/sistema-pedidos
 
 
+choose-pizza-flavours.js:
 
+JSX:
 
+      <Footer>
+        <Container>
+          <Grid container>
+            <Grid item>
 
+            </Grid>
 
+            <Grid item>
 
+            </Grid>
+          </Grid>
+        </Container>
+      </Footer>
 
-
-
-
-
-
-
-
-
-
-
-
-
+      const OrderContainer = styled(Grid).attrs({
+        item: true
+      })`
+      && {
+        flex-grow: 1;
+      }
+      `
 
 class #117 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/069/sistema-pedidos
 
+Footer's Data
 
 
+import { AuthContext } from 'contexts/auth'
+
+const { userInfo } = useContext(AuthContext)
+
+const { flavours, id, name, slices } = location.state
 
 
+    <Typography>
+      <b>{userInfo.user.firstName}, seu pedido é:</b>
+    </Typography>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <Typography>
+      Pizza <b>{name.toUpperCase()}</b> {'- '}
+      ({slices} slices,{' '}
+      {flavours} {singularOrPlural(flavours, 'flavour', 'flavours')})
+    </Typography>
 
 
 class #118 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Buttons' action on Footer
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 
+1.btn change size
+2.btn how many
 
+      import {
+        Button as MaterialButton,
+        Grid
+      } from '@material-ui/core'
 
+      import { HOME, CHOOSE_PIZZA_AMOUNT } from 'routes'
 
+JSX:
 
+      <Grid item>
+        <Button to={HOME}>Change size</Button>
+        <Button color='primary' to={CHOOSE_PIZZA_AMOUNT}>How many?</Button>
+      </Grid>
 
+styled:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      const Button = styled(MaterialButton).attrs({
+        variant: 'contained',
+        component: Link
+      })`
+        margin-left: ${({ theme }) => theme.spacing(2)}px;
+      `
 
 class #119 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Abstracting Authentication
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/071/sistema-pedidos
+
+
+So far, every time we need to reach data from the Authentication, we are using a large amount of code:
+
+      import { useContext } from 'react'
+
+      import { AuthContext } from 'contexts/auth'
+
+      const { userInfo, setUserInfo } = useContext(AuthContext)
+
+
+Let's abstract this by using a custom hook.
+
+new folder:
+
+    src/hooks
+
+            index.js:
+
+                    export { default as useAuth } from './auth'
+
+            auth.js:
+
+                    import { useContext } from 'react'
+                    import { AuthContext } from 'contexts/auth'
+
+                    function useAuth () {
+                      return useContext(AuthContext)
+                    }
+
+                    export default useAuth
+
+
+updated app.js:
+    
+    - removed { useContext } import
+    - removed { AuthContext } import
+
+    - added this:
+
+      import { useAuth } from 'hooks'
+
+    - replaced this:
+
+      useContext(AuthContext)
+
+      for:
+
+      useAuth()
+
+same update made at:
+
+    choose-pizza-flavours.js
+    choose-pizza-size.js
+    header.js
+    main.js
+    login.js
+
+
+Why this auth.js file is not in '/utils' folder?
+
+  Because Hooks can be use only in:
+  
+    1) function components
+    
+    2) or inside a custom hook: it's name have to start with 'use' word.
+
+
+
+Header > Logo > Get a link on it.
+
+  import { HOME } from 'routes'
+
+  <LinkLogo to={HOME}>
+    <Logo />
+  </LinkLogo>
+
+  const LinkLogo = styled(Link)`
+    display: inline-block;
+  `
+
+
 
 class #120 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Choose amount of Pizzas
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/072/sistema-pedidos
+
+
+src/pages/choose-pizza-amount
+
 
 class #121 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Amount's page Markup
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/073/sistema-pedidos
+
+
+JSX:
+
+    <Content>
+      <HeaderContent>
+        <H4>
+          How many pizzas would you like with this flavours?
+        </H4>
+      </HeaderContent>
+
+      <MainContent>
+        <Input defaultValue='1' />
+      </MainContent>
+    </Content>
+
+styled:
+
+    const Input = styled(MaterialInput).attrs({
+      type: 'number'
+    })`
+      & input {
+        font-size: 80px;
+        padding: 10px;
+        text-align: center;
+        width: 150px;
+      }
+
+      & input::-webkit-inner-spin-button {
+        opacity: 1;
+      }
+    `
+
+    const MainContent = styled.div`
+      display: flex;
+      justify-content: center;
+      margin-top: ${({ theme }) => theme.spacing(2)}px
+    `
+
 
 class #122 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Isolating the footer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/074/sistema-pedidos
+
+
+src/ui/footer.js:
+
+        import React from 'react'
+        import t from 'prop-types'
+        import { withRouter, Link } from 'react-router-dom'
+        import styled from 'styled-components'
+        import {
+          Button as MaterialButton,
+          Container,
+          Grid,
+          Typography
+        } from '@material-ui/core'
+        import { useAuth } from 'hooks'
+        import { singularOrPlural } from 'utils'
+        import { HOME, CHOOSE_PIZZA_AMOUNT } from 'routes'
+
+        function Footer ({ location }) {
+          const { userInfo } = useAuth()
+
+          const { flavours, name, slices } = location.state
+          return (
+            <FooterContent>
+              <Container>
+                <Grid container>
+                  <OrderContainer>
+                    <Typography>
+                      <b>{userInfo.user.firstName}, seu pedido é:</b>
+                    </Typography>
+
+                    <Typography>
+                      Pizza <b>{name.toUpperCase()}</b> {'- '}
+                      ({slices} slices,{' '}
+                      {flavours} {singularOrPlural(flavours, 'flavour', 'flavours')})
+                    </Typography>
+                  </OrderContainer>
+
+                  <Grid item>
+                    <Button to={HOME}>Change size</Button>
+                    <Button color='primary' to={CHOOSE_PIZZA_AMOUNT}>How many?</Button>
+                  </Grid>
+                </Grid>
+              </Container>
+            </FooterContent>
+          )
+        }
+
+        Footer.propTypes = {
+          location: t.object.isRequired
+        }
+
+        const FooterContent = styled.footer`
+          box-shadow: 0 0 3px ${({ theme, checked }) => theme.palette.grey[400]};
+          padding: ${({ theme }) => theme.spacing(3)}px;
+          width: 100%;
+        `
+
+        const OrderContainer = styled(Grid).attrs({
+          item: true
+        })`
+        && {
+          flex-grow: 1;
+        }
+        `
+
+        const Button = styled(MaterialButton).attrs({
+          variant: 'contained',
+          component: Link
+        })`
+          margin-left: ${({ theme }) => theme.spacing(2)}px;
+        `
+
+        export default withRouter(Footer)
+
 
 class #123 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Footer: dynamic buttons
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/075/sistema-pedidos
+
+
+Footer's buttons must have different actions depending on what page user is.
+
+
+footer.js:
+
+      insted of static:
+
+              <Grid item>
+                <Button to={HOME}>Change size</Button>
+                <Button color='primary' to={CHOOSE_PIZZA_AMOUNT}>How many?</Button>
+              </Grid>
+
+      dynamic:
+
+              <Grid item>
+                {buttons.map((button) => (
+                  <Button key={button.to} {...button} />
+                ))}
+              </Grid>
+
+
+
+choose-pizza-flavours.js:
+
+              <Footer
+                buttons={[
+                  {
+                    to: HOME,
+                    children: 'Change size'
+                  },
+                  {
+                    to: CHOOSE_PIZZA_AMOUNT,
+                    children: 'How many?'
+                  }
+                ]}
+              />
+
 
 class #124 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Choose Amount page: add footer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/076/sistema-pedidos
+
+page's buttons:
+
+    -> change flavours
+    -> finish order
+
+JSX:
+
+  <Footer
+    buttons={[
+      {
+        to: CHOOSE_PIZZA_FLAVOURS,
+        children: 'Change flavours'
+      },
+
+      {
+        to: '/',
+        children: 'Finish order',
+        color: 'primary'
+      }
+    ]}
+  />
 
 class #125 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Footer: passing flavours data
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/077/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #126 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/078/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #127 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/079/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #128 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/080/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #129 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/081/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #120 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/082/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/083/sistema-pedidos
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/084/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/085/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/086/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/087/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/088/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/089/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/079/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #142 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #143 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #144 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #145 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #146 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #147 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #148 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #149 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #150 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 
 class #151 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #152 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #153 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #154 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #155 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #156 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #157 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #158 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #159 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #160 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 
 class #161 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #162 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #163 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #164 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #165 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #166 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #167 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #168 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #169 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #170 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 
 class #171 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #172 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #173 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #174 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #175 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #176 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #177 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #178 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #179 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 class #180 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
 
 class #181 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #182 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

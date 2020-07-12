@@ -1,5 +1,6 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
+import { Link } from 'react-router-dom'
 import {
   AppBar,
   IconButton,
@@ -10,10 +11,11 @@ import {
 } from '@material-ui/core'
 import { AccountCircle } from '@material-ui/icons'
 import { ReactComponent as MainLogo } from 'images/logo-react-zzaria.svg'
-import { AuthContext } from 'contexts/auth'
+import { useAuth } from 'hooks'
+import { HOME } from 'routes'
 
 const Header = () => {
-  const { userInfo, handleLogout } = useContext(AuthContext)
+  const { userInfo, handleLogout } = useAuth()
 
   const [anchorElement, setAnchorElement] = useState(null)
 
@@ -29,7 +31,10 @@ const Header = () => {
     <AppBar>
       <Toolbar>
         <LogoContainer>
-          <Logo />
+          <LinkLogo to={HOME}>
+            <Logo />
+          </LinkLogo>
+
         </LogoContainer>
 
         <Typography color='inherit'>
@@ -62,6 +67,10 @@ const Toolbar = styled(MaterialToolbar)`
 
 const LogoContainer = styled.div`
   flex-grow: 1;
+`
+
+const LinkLogo = styled(Link)`
+  display: inline-block;
 `
 
 const Logo = styled(MainLogo)`
