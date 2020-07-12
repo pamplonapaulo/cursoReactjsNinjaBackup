@@ -11,10 +11,14 @@ import {
 import { useAuth } from 'hooks'
 import { singularOrPlural } from 'utils'
 
-function Footer ({ buttons, location }) {
+function Footer ({ buttons, history, location }) {
   const { userInfo } = useAuth()
 
-  const { flavours, name, slices } = location.state
+  const { pizzaSize, pizzaFlavours } = location.state
+  const { flavours, name, slices } = pizzaSize
+
+  console.log('pizzaFlavours: ', pizzaFlavours)
+
   return (
     <FooterContent>
       <Container>
@@ -29,13 +33,32 @@ function Footer ({ buttons, location }) {
               ({slices} slices,{' '}
               {flavours} {singularOrPlural(flavours, 'flavour', 'flavours')})
             </Typography>
+
+            {pizzaFlavours && (
+              <Typography>
+                {singularOrPlural(pizzaFlavours.length, 'with flavour', 'with flavours')}{' '}
+                <b>{pizzaFlavours.map(({ name }) => name).join(', ')}</b>
+              </Typography>
+            )}
+
           </OrderContainer>
 
-          <Grid item>
-            {buttons.map((button) => (
-              <Button key={button.to} {...button} />
-            ))}
-          </Grid>
+          <ButtonsContainer>
+            <Button
+              {...buttons.back}
+              component='a'
+              onClick={(e) => {
+                e.preventDefault()
+                history.goBack()
+              }}
+            />
+
+            <Button
+              {...buttons.action}
+              component={Link}
+              color='primary'
+            />
+          </ButtonsContainer>
         </Grid>
       </Container>
     </FooterContent>
@@ -43,7 +66,8 @@ function Footer ({ buttons, location }) {
 }
 
 Footer.propTypes = {
-  buttons: t.array.isRequired,
+  buttons: t.object.isRequired,
+  history: t.object.isRequired,
   location: t.object.isRequired
 }
 
@@ -61,9 +85,15 @@ const OrderContainer = styled(Grid).attrs({
 }
 `
 
+const ButtonsContainer = styled(Grid).attrs({
+  item: true
+})`
+  align-items: center;
+  display: flex;
+`
+
 const Button = styled(MaterialButton).attrs({
-  variant: 'contained',
-  component: Link
+  variant: 'contained'
 })`
   margin-left: ${({ theme }) => theme.spacing(2)}px;
 `
