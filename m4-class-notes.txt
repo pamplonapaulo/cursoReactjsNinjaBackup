@@ -6809,383 +6809,638 @@ class #125 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Footer: passing flavours data
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/077/sistema-pedidos
 
+choose-pizza-size.js:
+
+        <CardLink to={{
+          pathname: CHOOSE_PIZZA_FLAVOURS,
+          state: {
+            pizzaSize: pizza
+          }
+        }}
+        >
+
+choose-pizza-flavours.js:
+
+        const { flavours, id } = location.state.pizzaSize
+
+        <Footer
+          buttons={[
+            {
+              to: HOME,
+              children: 'Change size'
+            },
+            {
+              to: {
+                pathname: CHOOSE_PIZZA_AMOUNT,
+                state: {
+                  ...location.state,
+                  pizzaFlavours: [{
+                    id: '',
+                    name: ''
+                  }]
+                }
+              },
+              children: 'How many?',
+              color: 'primary'
+            }
+          ]}
+        />
+
+        turning later into this:
+
+                state: {
+                  ...location.state,
+                  pizzaFlavours: getFlavoursNameAndId(checkboxes)
+                }
 
 
+        with this:
+
+                function getFlavoursNameAndId (checkboxes) {
+                  return Object.entries(checkboxes)
+                    .filter(([_, value]) => !!value)
+                    .map(([id]) => ({
+                      id,
+                      name: pizzaFlavours.find((flavour) => flavour.id === id).name
+                    }))
+                }
+
+footer.js:
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                {pizzaFlavours && (
+                  <Typography>
+                    {singularOrPlural(pizzaFlavours.length, 'with flavour', 'with flavours')}{' '}
+                    <b>{pizzaFlavours.map(({ name }) => name).join(', ')}</b>
+                  </Typography>
+                )}
 
 
 class #126 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Footer: fixing backwards button at choose-pizza-amount's page
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/078/sistema-pedidos
 
+choose-pizza-flavours.js:
+
+      <Footer
+        buttons={{
+          back: {
+            children: 'Change size'
+          },
+
+          action: {
+            to: {
+              pathname: CHOOSE_PIZZA_AMOUNT,
+              state: {
+                ...location.state,
+                pizzaFlavours: getFlavoursNameAndId(checkboxes)
+              }
+            },
+            children: 'How many?'
+          }
+        }}
+      />
+
+choose-pizza-amount.js:
+
+        <Footer
+          buttons={{
+            back: {
+              children: 'Change flavours'
+            },
+
+            action: {
+              to: '/',
+              children: 'Finish order'
+            }
+          }}
+        />
+      </>
 
 
+footer.js:
 
+          <Grid item>
+            <Button
+              {...buttons.back}
+              component='a'
+              onClick={(e) => {
+                e.preventDefault()
+                history.goBack()
+              }}
+            />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            <Button
+              {...buttons.action}
+              component={Link}
+              color='primary'
+            />
+          </Grid>
+        </Grid>
 
 
 class #127 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavour selection have to be required, before next page
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/079/sistema-pedidos
 
 
+choose-pizza-flavours.js:
 
+      <Footer
+        buttons={{
+          back: {
+            children: 'Change size'
+          },
 
+          action: {
+            to: {
+              pathname: CHOOSE_PIZZA_AMOUNT,
+              state: {
+                ...location.state,
+                pizzaFlavours: getFlavoursNameAndId(checkboxes)
+              }
+            },
+            children: 'How many?',
+            disabled: checkboxesChecked(checkboxes).length === 0
+          }
+        }}
+      />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      function checkboxesChecked (checkboxes) {
+        return Object.values(checkboxes).filter(Boolean)
+      }
 
 
 class #128 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Footer: Buttons alignment
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/080/sistema-pedidos
 
 
+ui/footer.js:
 
+    <ButtonsContainer>
+      <Button
+        {...buttons.back}
+        component='a'
+        onClick={(e) => {
+          e.preventDefault()
+          history.goBack()
+        }}
+      />
 
+      <Button
+        {...buttons.action}
+        component={Link}
+        color='primary'
+      />
+    </ButtonsContainer>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    const ButtonsContainer = styled(Grid).attrs({
+      item: true
+    })`
+      align-items: center;
+      display: flex;
+    `
 
 
 class #129 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Redirect if page has no state
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/081/sistema-pedidos
 
 
+choose-pizza-amount.js:
+
+      import t from 'prop-types'
+      import { Redirect } from 'react-router-dom'
+      import { HOME } from 'routes'
+
+      function ChoosePizzaAmount ({ location }) {
+        if (!location.state) {
+          return <Redirect to={HOME} />
+        }
+        return (
+
+        ChoosePizzaAmount.propTypes = {
+          location: t.object.isRequired
+        }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class #120 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Quantity/Amount Input
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/082/sistema-pedidos
 
+So far, user can set negative values as the amount of pizzas. Let's fix it.
+
+choose-pizza-amount.js:
 
 
 
+        <MainContent>
+          <Input
+            value={amount}
+            onChange={handleChange}
+            autofocus
+          />
+        </MainContent>
+
+        function ChoosePizzaAmount ({ location }) {
+          const [amount, setAmount] = useState(1)
+          if (!location.state) {
+            return <Redirect to={HOME} />
+          }
+
+          function handleChange (e) {
+            const { value } = e.target
+
+            if (value >= 1) {
+              setAmount(e.target.value)
+            }
+          }
+          return (...
 
 
 
+NEW ROUTE CHECKOUT
+
+import { HOME, CHECKOUT } from 'routes'
 
 
+      <Footer
+        buttons={{
+          back: {
+            children: 'Change flavours'
+          },
+
+          action: {
+            to: CHECKOUT,
+            children: 'Finish order'
+          }
+        }}
+      />
 
 
+src/routes.js:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      export const HOME = '/'
+      export const LOGIN = '/login'
+      export const CHOOSE_PIZZA_FLAVOURS = '/choose-pizza-flavours'
+      export const CHOOSE_PIZZA_AMOUNT = '/choose-pizza-amount'
+      export const CHECKOUT = '/checkout'
 
 class #131 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Set second pizza
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/083/sistema-pedidos
 
+choose-pizza-amount.js:
 
+        <MainContent>
 
+          ...
 
+          <Button variant='contained' color='secondary'>
+            Choose next pizza
+          </Button>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        </MainContent>
 
 class #132 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Checkout: data structure
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/084/sistema-pedidos
 
+new CONTEXT: Order
+also update CONTEXT: Auth
+then new file index.js (contextx)
+
+src/contexts/order.js
+
+          import React, { createContext } from 'react'
+          import t from 'prop-types'
+
+          const OrderContext = createContext()
+
+          function OrderProvider ({ children }) {
+            return (
+              <OrderContext.Provider value={{}}>
+                {children}
+              </OrderContext.Provider>
+            )
+          }
+
+          OrderProvider.propTypes = {
+            children: t.node.isRequired
+          }
+
+          export default { OrderProvider, OrderContext }
+
+src/contexts/auth.js:
+
+          import React, { createContext, useCallback, useState } from 'react'
+          import t from 'prop-types'
+          import firebase from 'services/firebase'
+
+          const AuthContext = createContext()
+
+          function AuthProvider ({ children }) {
+            const [userInfo, setUserInfo] = useState({
+              isUserLoggedIn: false,
+              user: null
+            })
+
+            const handleLogin = useCallback(() => {
+              const provider = new firebase.auth.GithubAuthProvider()
+              firebase.auth().signInWithRedirect(provider)
+            }, [])
+
+            const handleLogout = useCallback(() => {
+              firebase.auth().signOut().then(() => {
+                console.log('logged out!')
+                setUserInfo({
+                  isUserLoggedIn: false,
+                  user: null
+                })
+              })
+            }, [])
+
+            return (
+              <AuthContext.Provider value={{ handleLogin, handleLogout, userInfo, setUserInfo }}>
+                {children}
+              </AuthContext.Provider>
+            )
+          }
+
+          AuthProvider.propTypes = {
+            children: t.node.isRequired
+          }
+
+          export default { AuthProvider, AuthContext }
 
 
+src/contexts/index.js:
+
+          export * from './auth'
+          export * from './order'
 
 
+src/root.js:
 
+          import { AuthProvider, OrderProvider } from 'contexts'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          <AuthProvider>
+            <OrderProvider>
+              ...
+            </OrderProvider>
+          </AuthProvider>
 
 class #133 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Structure to add extra pizza
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/085/sistema-pedidos
 
 
+choose-pizza-amount.js:
 
 
+      function addPizza () {
+        addPizzaToOrder({
+          size: location.state.pizzaSize.id,
+          flavours: location.state.pizzaFlavours.map(f => f.id),
+          amount
+        })
+      }
 
 
+      <ButtonAddPizza to={HOME} onClick={addPizza}>
+        Choose extra pizza
+      </ButtonAddPizza>
 
+      <Footer
+        buttons={{
+          back: {
+            children: 'Change flavours'
+          },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          action: {
+            to: CHECKOUT,
+            onClick: addPizza,
+            children: 'Finish order'
+          }
+        }}
+      />
 
 
 
 
 class #134 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Saving a pizza at Context
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/086/sistema-pedidos
 
 
+Reminder: separating the isolated states is a good practice!
+
+Insdef of one single state:
+
+      const [order, setOrder] = useState({})
+
+Different states for each data:
+
+      const [pizza, setPizza] = useState({})
+      const [address, setAddress] = useState({})
+      const [phone, setPhone] = useState({})
+
+Reminder: Imutability and new arrays
+
+      Do not use PUSH, use CONCAT!
+
+      function addPizzaToOrder (pizza) {
+        addPizza((piizas) => pizzas.concat(pizza))
+      }
 
 
 
 
+So, contexts/order.js:
+
+          import React, { createContext, useState } from 'react'
+          import t from 'prop-types'
+
+          const OrderContext = createContext()
+
+          function OrderProvider ({ children }) {
+            const [pizzas, addPizza] = useState([])
+
+            function addPizzaToOrder (pizza) {
+              addPizza((piizas) => pizzas.concat(pizza))
+            }
+
+            return (
+              <OrderContext.Provider value={{
+                order: {
+                  pizzas
+                },
+                addPizzaToOrder
+              }}
+              >
+                {children}
+              </OrderContext.Provider>
+            )
+          }
+
+          OrderProvider.propTypes = {
+            children: t.node.isRequired
+          }
+
+          export { OrderProvider, OrderContext }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Another hook to study later: useReducer
 
 
 
 class #135 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Checkout Page
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/087/sistema-pedidos
 
 
+src/pages/checkout
+
+  index.js:
+
+          export { default } from './checkout'
 
 
+  checkout.js
+
+          import React from 'react'
+          import { Content } from 'ui'
+
+          function Cehckout () {
+            return (
+              <Content>
+                <h1>Checkout</h1>
+              </Content>
+            )
+          }
+
+          export default Cehckout
 
 
+src/pages/main/main.js:
 
 
+          import React, { Suspense } from 'react'
+          import { Switch, Route } from 'react-router-dom'
+          import { withStyles } from '@material-ui/core'
+          import Header from './header'
 
+          import * as routes from 'routes'
 
+          const ChoosePizzaSize = React.lazy(() => import('pages/choose-pizza-size'))
+          const ChoosePizzaFlavours = React.lazy(() => import('pages/choose-pizza-flavours'))
+          const ChoosePizzaAmount = React.lazy(() => import('pages/choose-pizza-amount'))
+          const Checkout = React.lazy(() => import('pages/checkout'))
 
+          const Main = () => (
+            <>
+              <Header />
 
+              <Spacer />
 
+              <Suspense fallback='Loading...'>
+                <Switch>
+                  <Route
+                    path={routes.HOME}
+                    exact
+                    component={ChoosePizzaSize}
+                  />
+                  <Route
+                    path={routes.CHOOSE_PIZZA_FLAVOURS}
+                    component={ChoosePizzaFlavours}
+                  />
+                  <Route
+                    path={routes.CHOOSE_PIZZA_AMOUNT}
+                    component={ChoosePizzaAmount}
+                  />
+                  <Route
+                    path={routes.CHECKOUT}
+                    component={Checkout}
+                  />
+                </Switch>
+              </Suspense>
+            </>
+          )
 
+          const style = (theme) => ({
+            main: theme.mixins.toolbar
+          })
 
+          const Spacer = withStyles(style)(({ classes }) => (
+            <div className={classes.main} />
+          ))
 
-
-
-
-
-
-
-
-
-
-
-
-
+          export default Main
 
 class #136 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Checkout Page Markup
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/088/sistema-pedidos
 
 
+pages/ckeckout.js:
 
+            import React from 'react'
+            import styled from 'styled-components'
+            import {
+              Grid,
+              Paper
+            } from '@material-ui/core'
+            import {
+              Content,
+              Title as UiTitle
+            } from 'ui'
 
+            function Cehckout () {
+              return (
+                <Content>
+                  <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                      <Title>Whats the address to delivery?</Title>
+                      <PaperContainer>
+                        Address to delivery
+                      </PaperContainer>
 
+                      <Title>Whats is your phone number?</Title>
+                      <PaperContainer>
+                        Phone number
+                      </PaperContainer>
+                    </Grid>
 
+                    <Grid container item xs={12} md={6} direction='column'>
+                      <Title>Order details:</Title>
+                      <PaperContainer>
+                        Piizas
+                      </PaperContainer>
+                    </Grid>
+                  </Grid>
+                </Content>
+              )
+            }
 
+            const Title = styled(UiTitle).attrs({
+              variant: 'h6'
+            })`
+              text-align: left;
+            `
 
+            const PaperContainer = styled(Paper)`
+              flex-grow: 1;
+              margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+              padding: ${({ theme }) => theme.spacing(2)}px;
+            `
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            export default Cehckout
 
 class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Markup: address and phone fields
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/089/sistema-pedidos
+
 
 
 
