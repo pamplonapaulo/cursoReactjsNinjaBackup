@@ -9,13 +9,15 @@ import {
 } from '@material-ui/core'
 import {
   CardLink,
+  Content,
   Divider,
+  Footer,
   H4,
   HeaderContent,
   PizzasGrid
 } from 'ui'
 import { singularOrPlural, toMoney } from 'utils'
-import { HOME } from 'routes'
+import { HOME, CHOOSE_PIZZA_AMOUNT } from 'routes'
 
 import pizzaFlavours from 'fake-data/pizzas-flavours.js'
 
@@ -49,40 +51,59 @@ const ChoosePizzaFlavours = ({ location }) => {
 
   return (
     <>
-      <HeaderContent>
-        <H4>
-          Choose up to {flavours} {' '}
-          {singularOrPlural(flavours, 'flavor', 'flavours')}:
-        </H4>
-      </HeaderContent>
+      <Content>
+        <HeaderContent>
+          <H4>
+            Choose up to {flavours} {' '}
+            {singularOrPlural(flavours, 'flavor', 'flavours')}:
+          </H4>
+        </HeaderContent>
 
-      <PizzasGrid>
-        {pizzaFlavours.map((pizza) => (
-          <Grid item key={pizza.id} xs>
-            <Card checked={!!checkboxes[pizza.id]}>
-              <Label>
-                <Checkbox
-                  value=''
-                  checked={!!checkboxes[pizza.id]}
-                  onChange={handleChangeCheckbox(pizza.id)}
-                />
+        <PizzasGrid>
+          {pizzaFlavours.map((pizza) => (
+            <Grid item key={pizza.id} xs>
+              <Card checked={!!checkboxes[pizza.id]}>
+                <Label>
+                  <Checkbox
+                    value=''
+                    checked={!!checkboxes[pizza.id]}
+                    onChange={handleChangeCheckbox(pizza.id)}
+                  />
 
-                <Img src={pizza.image} alt={pizza.name} />
+                  <Img src={pizza.image} alt={pizza.name} />
 
-                <Divider />
+                  <Divider />
 
-                <Typography>
-                  {pizza.name}
-                </Typography>
+                  <Typography>
+                    {pizza.name}
+                  </Typography>
 
-                <Typography variant='h5'>
-                  {toMoney(pizza.value[id])}
-                </Typography>
-              </Label>
-            </Card>
-          </Grid>
-        ))}
-      </PizzasGrid>
+                  <Typography variant='h5'>
+                    {toMoney(pizza.value[id])}
+                  </Typography>
+                </Label>
+              </Card>
+            </Grid>
+          ))}
+        </PizzasGrid>
+      </Content>
+
+      <Footer
+        buttons={[
+          {
+            to: HOME,
+            children: 'Change size'
+          },
+          {
+            to: {
+              pathname: CHOOSE_PIZZA_AMOUNT,
+              state: location.state
+            },
+            children: 'How many?',
+            color: 'primary'
+          }
+        ]}
+      />
     </>
   )
 }
