@@ -1,13 +1,35 @@
 import React, { createContext, useState } from 'react'
 import t from 'prop-types'
+import { v4 as uuidv4 } from 'uuid'
 
 const OrderContext = createContext()
 
 function OrderProvider ({ children }) {
   const [pizzas, addPizza] = useState([])
+  const [orderInProgress, setOrderInProgress] = useState(false)
 
   function addPizzaToOrder (pizza) {
-    addPizza((piizas) => pizzas.concat(pizza))
+    if (orderInProgress) {
+      return addPizza((piizas) => pizzas.concat(newPizza(pizza)))
+    }
+    setOrderInProgress(true)
+    addPizza([newPizza(pizza)])
+  }
+
+  function newPizza (pizza) {
+    return {
+      id: uuidv4(),
+      ...pizza
+    }
+  }
+
+  function removePizzaFromOrder (id) {
+    addPizza((pizzas) => pizzas.filter(p => p.id !== id))
+  }
+
+  function sendOrder () {
+    console.log('send order')
+    addPizza([])
   }
 
   return (
@@ -15,7 +37,9 @@ function OrderProvider ({ children }) {
       order: {
         pizzas
       },
-      addPizzaToOrder
+      addPizzaToOrder,
+      removePizzaFromOrder,
+      sendOrder
     }}
     >
       {children}

@@ -7441,157 +7441,1845 @@ class #137 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Markup: address and phone fields
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/089/sistema-pedidos
 
+From material-ui/core, TextField already comes with input text + label.
 
+          import React from 'react'
+          import t from 'prop-types'
+          import styled from 'styled-components'
+          import {
+            Grid,
+            Paper,
+            TextField as MaterialTextField
+          } from '@material-ui/core'
+          import {
+            Content,
+            Title as UiTitle
+          } from 'ui'
 
+          function Cehckout () {
+            return (
+              <Content>
+                <Grid container spacing={4}>
+                  <Grid item xs={12} md={6}>
+                    <Title>Whats the address to delivery?</Title>
+                    <PaperContainer>
+                      <Grid container spacing={2}>
+                        <TextField label='Post Code' xs={4} autoFocus />
+                        <Grid item xs={8} />
+                        <TextField label='Street name' xs={9} />
+                        <TextField label='Number' xs={3} />
+                        <TextField label='Complement' xs={12} />
+                        <TextField label='City' xs={9} />
+                        <TextField label='State' xs={3} />
+                      </Grid>
+                    </PaperContainer>
 
+                    <Title>Whats is your phone number?</Title>
+                    <PaperContainer>
+                      <TextField label='Phone Number' xs={4} />
+                    </PaperContainer>
+                  </Grid>
 
+                  <Grid container item xs={12} md={6} direction='column'>
+                    <Title>Order details:</Title>
+                    <PaperContainer>
+                      Piizas
+                    </PaperContainer>
+                  </Grid>
+                </Grid>
+              </Content>
+            )
+          }
 
+          function TextField ({ xs, autoFocus, ...props }) {
+            return (
+              <Grid item xs={xs}>
+                <MaterialTextField
+                  fullWidth
+                  variant='outlined'
+                  inputProps={{
+                    autoFocus
+                  }}
+                  {...props}
+                />
+              </Grid>
+            )
+          }
 
+          TextField.propTypes = {
+            autoFocus: t.bool,
+            xs: t.number
+          }
 
+          const Title = styled(UiTitle).attrs({
+            variant: 'h6'
+          })`
+            text-align: left;
+          `
 
+          const PaperContainer = styled(Paper)`
+            flex-grow: 1;
+            margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+            padding: ${({ theme }) => theme.spacing(2)}px;
+          `
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          export default Cehckout
 
 
 class #138 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/079/sistema-pedidos
+Checkout: Order Details
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/090/sistema-pedidos
 
+pages/checkout.js:
 
+              import React from 'react'
+              import t from 'prop-types'
+              import styled from 'styled-components'
+              import {
+                Grid,
+                List,
+                ListItem,
+                Paper,
+                TextField as MaterialTextField,
+                Typography
+              } from '@material-ui/core'
+              import {
+                Content,
+                Title as UiTitle
+              } from 'ui'
+              import { useOrder } from 'hooks'
+              import { singularOrPlural } from 'utils'
 
+              function Cehckout () {
+                const { order } = useOrder()
 
+                return (
+                  <Content>
+                    <Grid container spacing={4}>
+                      <Grid item xs={12} md={6}>
+                        <Title>Whats the address to delivery?</Title>
+                        <PaperContainer>
+                          <Grid container spacing={2}>
+                            <TextField label='Post Code' xs={4} autoFocus />
+                            <Grid item xs={8} />
+                            <TextField label='Street name' xs={9} />
+                            <TextField label='Number' xs={3} />
+                            <TextField label='Complement' xs={12} />
+                            <TextField label='City' xs={9} />
+                            <TextField label='State' xs={3} />
+                          </Grid>
+                        </PaperContainer>
 
+                        <Title>Whats is your phone number?</Title>
+                        <PaperContainer>
+                          <TextField label='Phone Number' xs={4} />
+                        </PaperContainer>
+                      </Grid>
 
+                      <Grid container item xs={12} md={6} direction='column'>
+                        <Title>Order details:</Title>
+                        <PaperContainer>
+                          <List>
+                            {order.pizzas.map((pizza, index) => {
+                              const { pizzaFlavours, pizzaSize, amount } = pizza
+                              const { name, slices, flavours } = pizzaSize
+                              return (
+                                <ListItem key={index}>
+                                  <Typography>
+                                    {amount} {' '}
+                                    {singularOrPlural(amount, 'pizza', 'pizzas')} {' '}
+                                    <b>{name.toUpperCase()}</b> {'- '}
+                                    ({slices} slices,{' '}
+                                    {flavours} {singularOrPlural(flavours, 'flavour', 'flavours')})
 
+                                    <br />
 
+                                    {singularOrPlural(pizzaFlavours.length, 'with flavour', 'with flavours')}{' '}
+                                    <b>{pizzaFlavours.map(({ name }) => name).join(', ')}</b>
+                                  </Typography>
+                                </ListItem>
+                              )
+                            })}
+                          </List>
+                        </PaperContainer>
+                      </Grid>
+                    </Grid>
+                  </Content>
+                )
+              }
 
+              function TextField ({ xs, autoFocus, ...props }) {
+                return (
+                  <Grid item xs={xs}>
+                    <MaterialTextField
+                      fullWidth
+                      variant='outlined'
+                      inputProps={{
+                        autoFocus
+                      }}
+                      {...props}
+                    />
+                  </Grid>
+                )
+              }
 
+              TextField.propTypes = {
+                autoFocus: t.bool,
+                xs: t.number
+              }
 
+              const Title = styled(UiTitle).attrs({
+                variant: 'h6'
+              })`
+                text-align: left;
+              `
 
+              const PaperContainer = styled(Paper)`
+                flex-grow: 1;
+                margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+                padding: ${({ theme }) => theme.spacing(2)}px;
+              `
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+              export default Cehckout
 
 
 class #139 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #130 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Checkout custom Header
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/091/sistema-pedidos
 
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+
+header.js:
+
+
+          import React from 'react'
+          import styled from 'styled-components'
+          import { Route, Switch } from 'react-router-dom'
+          import {
+            AppBar,
+            Toolbar as MaterialToolbar
+          } from '@material-ui/core'
+          import HeaderCommon from './header-common'
+          import HeaderCheckout from './header-checkout'
+          import { CHECKOUT } from 'routes'
+
+          const Header = () => (
+            <AppBar>
+              <Toolbar>
+                <Switch>
+                  <Route path={CHECKOUT} component={HeaderCheckout} />
+                  <Route component={HeaderCommon} />
+                </Switch>
+              </Toolbar>
+            </AppBar>
+          )
+
+          const Toolbar = styled(MaterialToolbar)`
+            margin: 0 auto;
+            max-width: ${({ theme }) => theme.breakpoints.values.lg}px;
+            width: 100%;
+          `
+
+          export default Header
+
+
+
+header-checkout.js:
+
+          import React from 'react'
+          import styled from 'styled-components'
+          import Logo from './logo'
+
+          function HeaderCheckout () {
+            return (
+              <LogoContainer>
+                <Logo />
+              </LogoContainer>
+            )
+          }
+
+          const LogoContainer = styled.div`
+            display: flex;
+            justify-content: center;
+            flex-grow: 1;
+          `
+
+          export default HeaderCheckout
+
+
+
+
+header-common.js:
+
+
+          import React, { useState } from 'react'
+          import styled from 'styled-components'
+          import { Link } from 'react-router-dom'
+          import {
+            IconButton,
+            Menu,
+            MenuItem,
+            Typography
+          } from '@material-ui/core'
+          import { AccountCircle } from '@material-ui/icons'
+          import Logo from './logo'
+          import { useAuth } from 'hooks'
+          import { HOME } from 'routes'
+
+          function HeaderCommon () {
+            const { userInfo, handleLogout } = useAuth()
+
+            const [anchorElement, setAnchorElement] = useState(null)
+
+            const handleOpenMenu = (e) => {
+              setAnchorElement(e.target)
+            }
+
+            const handleCloseMenu = () => {
+              setAnchorElement(null)
+            }
+
+            return (
+              <>
+                <LogoContainer>
+                  <LinkLogo to={HOME}>
+                    <Logo />
+                  </LinkLogo>
+                </LogoContainer>
+
+                <Typography color='inherit'>
+                  Hi, {userInfo.user.firstName}
+                </Typography>
+
+                <IconButton color='inherit' onClick={handleOpenMenu}>
+                  <AccountCircle />
+                </IconButton>
+
+                <Menu
+                  open={Boolean(anchorElement)}
+                  onClose={handleCloseMenu}
+                  anchorEl={anchorElement}
+                >
+                  <MenuItem onClick={handleLogout}>
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </>
+            )
+          }
+
+          const LogoContainer = styled.div`
+            flex-grow: 1;
+          `
+
+          const LinkLogo = styled(Link)`
+            display: inline-block;
+          `
+
+          const Logo = styled(MainLogo)`
+            height: 50px;
+            width: 200px;
+
+            & path {
+              fill: ${({ theme }) => theme.palette.common.white};
+            }
+
+            & line {
+              stroke: ${({ theme }) => theme.palette.common.white};
+            }
+          `
+
+          export default HeaderCommon
+
+
+
+
+logo.js:
+
+          import styled from 'styled-components'
+          import { ReactComponent as MainLogo } from 'images/logo-react-zzaria.svg'
+
+          const Logo = styled(MainLogo)`
+            height: 50px;
+            width: 200px;
+
+            & path {
+              fill: ${({ theme }) => theme.palette.common.white};
+            }
+
+            & line {
+              stroke: ${({ theme }) => theme.palette.common.white};
+            }
+          `
+
+          export default Logo
+
+
+class #140 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Custom Footer: checkout page or not
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/092/sistema-pedidos
+
+Passing or not passing data to Footer component: checkout page doesn't need this data.
+
+cool short circuit:
+
+      insted of:
+
+          {children ? children : <FooterWithOrderAndButtons {...props} />}
+
+      use this:
+
+          {children || <FooterWithOrderAndButtons {...props} />}
+
+
+ui/footer/footer.js:
+
+          import React from 'react'
+          import t from 'prop-types'
+          import styled from 'styled-components'
+          import { Container } from '@material-ui/core'
+          import FooterWithOrderAndButtons from './footer-with-order-and-buttons'
+
+          const Footer = ({ children, ...props }) => (
+            <FooterContent>
+              <Container>
+                {children || <FooterWithOrderAndButtons {...props} />}
+              </Container>
+            </FooterContent>
+          )
+
+          Footer.propTypes = {
+            children: t.node
+          }
+
+          const FooterContent = styled.footer`
+            box-shadow: 0 0 3px ${({ theme, checked }) => theme.palette.grey[400]};
+            padding: ${({ theme }) => theme.spacing(3)}px;
+            width: 100%;
+          `
+
+          export default Footer
+
+
+ui/footer/footer-with-order-and-buttons.js:
+
+            import React from 'react'
+            import t from 'prop-types'
+            import { withRouter, Link } from 'react-router-dom'
+            import styled from 'styled-components'
+            import {
+              Button as MaterialButton,
+              Grid,
+              Typography
+            } from '@material-ui/core'
+            import { useAuth } from 'hooks'
+            import { singularOrPlural } from 'utils'
+
+            function FooterWithOrderAndButtons ({ buttons, history, location }) {
+              const { userInfo } = useAuth()
+
+              const { pizzaSize, pizzaFlavours } = location.state
+              const { flavours, name, slices } = pizzaSize
+
+              console.log('pizzaFlavours: ', pizzaFlavours)
+
+              return (
+                <Grid container>
+                  <OrderContainer>
+                    <Typography>
+                      <b>{userInfo.user.firstName}, seu pedido é:</b>
+                    </Typography>
+
+                    <Typography>
+                      Pizza <b>{name.toUpperCase()}</b> {'- '}
+                      ({slices} slices,{' '}
+                      {flavours} {singularOrPlural(flavours, 'flavour', 'flavours')})
+                    </Typography>
+
+                    {pizzaFlavours && (
+                      <Typography>
+                        {singularOrPlural(pizzaFlavours.length, 'with flavour', 'with flavours')}{' '}
+                        <b>{pizzaFlavours.map(({ name }) => name).join(', ')}</b>
+                      </Typography>
+                    )}
+
+                  </OrderContainer>
+
+                  <ButtonsContainer>
+                    <Button
+                      {...buttons.back}
+                      component='a'
+                      onClick={(e) => {
+                        e.preventDefault()
+                        history.goBack()
+                      }}
+                    />
+
+                    <Button
+                      {...buttons.action}
+                      component={Link}
+                      color='primary'
+                    />
+                  </ButtonsContainer>
+                </Grid>
+              )
+            }
+
+            FooterWithOrderAndButtons.propTypes = {
+              buttons: t.object.isRequired,
+              history: t.object.isRequired,
+              location: t.object.isRequired
+            }
+
+            const OrderContainer = styled(Grid).attrs({
+              item: true
+            })`
+            && {
+              flex-grow: 1;
+            }
+            `
+
+            const ButtonsContainer = styled(Grid).attrs({
+              item: true
+            })`
+              align-items: center;
+              display: flex;
+            `
+
+            const Button = styled(MaterialButton).attrs({
+              variant: 'contained'
+            })`
+              margin-left: ${({ theme }) => theme.spacing(2)}px;
+            `
+
+            export default withRouter(FooterWithOrderAndButtons)
+
+
+src/pages/checkout/checkout.js:
+
+            import React from 'react'
+            import t from 'prop-types'
+            import styled from 'styled-components'
+            import {
+              Grid,
+              List,
+              ListItem,
+              Paper,
+              TextField as MaterialTextField,
+              Typography
+            } from '@material-ui/core'
+            import {
+              Content,
+              Footer,
+              Title as UiTitle
+            } from 'ui'
+            import { useOrder } from 'hooks'
+            import { singularOrPlural } from 'utils'
+
+            function Cehckout () {
+              const { order } = useOrder()
+
+              return (
+                <>
+                  <Content>
+                    <Grid container spacing={4}>
+                      <Grid item xs={12} md={6}>
+                        <Title>Whats the address to delivery?</Title>
+                        <PaperContainer>
+                          <Grid container spacing={2}>
+                            <TextField label='Post Code' xs={4} autoFocus />
+                            <Grid item xs={8} />
+                            <TextField label='Street name' xs={9} />
+                            <TextField label='Number' xs={3} />
+                            <TextField label='Complement' xs={12} />
+                            <TextField label='City' xs={9} />
+                            <TextField label='State' xs={3} />
+                          </Grid>
+                        </PaperContainer>
+
+                        <Title>Whats is your phone number?</Title>
+                        <PaperContainer>
+                          <TextField label='Phone Number' xs={4} />
+                        </PaperContainer>
+                      </Grid>
+
+                      <Grid container item xs={12} md={6} direction='column'>
+                        <Title>Order details:</Title>
+                        <PaperContainer>
+                          <List>
+                            {order.pizzas.map((pizza, index) => {
+                              const { pizzaFlavours, pizzaSize, amount } = pizza
+                              const { name, slices, flavours } = pizzaSize
+                              return (
+                                <ListItem key={index}>
+                                  <Typography>
+                                    {amount} {' '}
+                                    {singularOrPlural(amount, 'pizza', 'pizzas')} {' '}
+                                    <b>{name.toUpperCase()}</b> {'- '}
+                                    ({slices} slices,{' '}
+                                    {flavours} {singularOrPlural(flavours, 'flavour', 'flavours')})
+
+                                    <br />
+
+                                    {singularOrPlural(pizzaFlavours.length, 'with flavour', 'with flavours')}{' '}
+                                    <b>{pizzaFlavours.map(({ name }) => name).join(', ')}</b>
+                                  </Typography>
+                                </ListItem>
+                              )
+                            })}
+                          </List>
+                        </PaperContainer>
+                      </Grid>
+                    </Grid>
+                  </Content>
+
+                  <Footer>
+                    Footer do checkout
+                  </Footer>
+                </>
+              )
+            }
+
+            function TextField ({ xs, autoFocus, ...props }) {
+              return (
+                <Grid item xs={xs}>
+                  <MaterialTextField
+                    fullWidth
+                    variant='outlined'
+                    inputProps={{
+                      autoFocus
+                    }}
+                    {...props}
+                  />
+                </Grid>
+              )
+            }
+
+            TextField.propTypes = {
+              autoFocus: t.bool,
+              xs: t.number
+            }
+
+            const Title = styled(UiTitle).attrs({
+              variant: 'h6'
+            })`
+              text-align: left;
+            `
+
+            const PaperContainer = styled(Paper)`
+              flex-grow: 1;
+              margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+              padding: ${({ theme }) => theme.spacing(2)}px;
+            `
+
+            export default Cehckout
+
 class #141 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Checkout's Footer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/093/sistema-pedidos
+
+
+checkout.js / footer:
+
+      <Footer>
+        <FooterContent>
+          <Button variant='contained' color='primary'>
+            Confirm data
+          </Button>
+        </FooterContent>
+      </Footer>
+
+      const FooterContent = styled.div`
+        display: flex;
+        justify-content: flex-end;
+      `
+
+
+max-width main content area:
+
+ui/content.js: getting the Container from material-ui
+
+          import React from 'react'
+          import t from 'prop-types'
+          import styled from 'styled-components'
+          import { Container } from '@material-ui/core'
+
+          const Content = ({ children, ...props }) => (
+            <Main {...props}>
+              <Container>
+                {children}
+              </Container>
+            </Main>
+          )
+
+          Content.propTypes = {
+            children: t.node.isRequired
+          }
+          const Main = styled.main`
+            flex-grow: 1;
+            padding: ${({ theme }) => theme.spacing(3)}px;
+          `
+
+          export default Content
+
 class #142 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Page Order confirmation 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/094/sistema-pedidos
+
+
+Daciuk routine of every new pages:
+
+- new folder
+- new files: index + named
+- set index file
+- set the most basic named file, which looks like:
+
+          import React from 'react'
+
+          function CheckoutConfirmation () {
+            return (
+              <Content>
+                checkout confirmation
+              </Content>
+            )
+          }
+
+          export default CheckoutConfirmation
+
+- set the route at main.js:
+
+    the dynamic import using lazy:
+
+        const CheckoutConfirmation = React.lazy(() => import('pages/checkout/submit-order'))
+
+    the route tag itself:
+
+        <Route
+          path={routes.CHECKOUT_CONFIRMATION}
+          component={CheckoutConfirmation}
+        />
+
+- set the route const at routes.js:
+
+        export const CHECKOUT_CONFIRMATION = '/checkout/submit-order'
+
+    But in this case, better:
+
+        export const CHECKOUT_CONFIRMATION = `${CHECKOUT}/submit-order`
+
+    Also, in this case, we must avoid undesirable matches: /checkout/
+
+    Add exact in the /checkout/ tag route:
+
+        <Route
+          path={routes.CHECKOUT}
+          exact
+          component={Checkout}
+        />
+
+- set the <Link> (from 'react-router-dom') in the page that will move the user to this new rote, containing props 'component={}' plus 'to={}'
+
+        import { Link } from 'react-router-dom'
+
+        <Button
+          compomemt={Link}
+          to={CHECKOUT_CONFIRMATION}
+        >
+          Confirm data
+        </Button>
+
 class #143 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Header - Order Confirmation
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/094/sistema-pedidos
+
+checkout-confirmation.js:
+
+          import React from 'react'
+          import styled from 'styled-components'
+          import { Typography } from '@material-ui/core'
+          import {
+            Content,
+            H4
+          } from 'ui'
+          import { useAuth } from 'hooks'
+
+          function CheckoutConfirmation () {
+            const { userInfo } = useAuth()
+            return (
+              <Content>
+                <Header>
+                  <H4>Oi, {userInfo.user.firstName}</H4>
+                  <Typography>Could you please confirm the order and your address details?</Typography>
+                </Header>
+              </Content>
+            )
+          }
+
+          const Header = styled.div`
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: ${({ theme }) => theme.spacing(3)}px;
+            text-align: center;
+          `
+
+          export default CheckoutConfirmation
+
+
 class #144 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Order Confirmation: setting content
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/095/sistema-pedidos
+
+checkout-confirmation.js:
+
+          import React from 'react'
+          import styled from 'styled-components'
+          import {
+            Container,
+            Paper,
+            Typography
+          } from '@material-ui/core'
+          import {
+            Content,
+            H4,
+            OrderInfo
+          } from 'ui'
+          import { useAuth } from 'hooks'
+
+          function CheckoutConfirmation () {
+            const { userInfo } = useAuth()
+            return (
+              <Content>
+                <Header>
+                  <H4>Oi, {userInfo.user.firstName}</H4>
+                  <Typography>Could you please confirm the order and your address details?</Typography>
+                </Header>
+
+                <Container maxWidth='sm'>
+                  <PaperContainer>
+                    <Typography variant='h6'>Your order</Typography>
+                    <OrderInfo />
+                  </PaperContainer>
+                </Container>
+              </Content>
+            )
+          }
+
+          const Header = styled.div`
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: ${({ theme }) => theme.spacing(3)}px;
+            text-align: center;
+          `
+
+          const PaperContainer = styled(Paper)`
+            padding: ${({ theme }) => theme.spacing(3)}px
+          `
+
+          export default CheckoutConfirmation
+
+
 class #145 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Adding Address and Phone at checkout-confirmation.js
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/096/sistema-pedidos
+
+checkout-confirmation.js:
+
+            return (
+              <Content>
+                <Header>
+                  <H4>Oi, {userInfo.user.firstName}</H4>
+                  <Typography>Could you please confirm the order and your address details?</Typography>
+                </Header>
+
+                <Container maxWidth='sm'>
+                  <PaperContainer>
+                    <H6>Your order</H6>
+                    <OrderInfo />
+
+                    <Divider />
+
+                    <H6>Delivery address:</H6>
+                    <Typography>1 Street Code, 01100011</Typography>
+
+                    <Divider />
+
+                    <H6>Contact phone number:</H6>
+                    <Typography>(11) 9999 999 99</Typography>
+
+                  </PaperContainer>
+                </Container>
+              </Content>
+            )
+
 class #146 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Confirmation page: footer
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/097/sistema-pedidos
+
+
+cool short circuit inside styled component:
+
+          const FooterContent = styled.div`
+            display: flex;
+            justify-content: ${({ justifyContent }) => justifyContent || 'flex-end'};
+          `
+
+footer-checkout.js:
+
+          import React from 'react'
+          import t from 'prop-types'
+          import styled from 'styled-components'
+          import { Footer } from 'ui'
+
+          function FooterCheckout ({ children, justifyContent }) {
+            return (
+              <Footer>
+                <FooterContent justifyContent={justifyContent}>
+                  {children}
+                </FooterContent>
+              </Footer>
+            )
+          }
+
+          FooterCheckout.propTypes = {
+            children: t.node.isRequired,
+            justifyContent: t.string
+          }
+
+          const FooterContent = styled.div`
+            display: flex;
+            justify-content: ${({ justifyContent }) => justifyContent || 'flex-end'};
+          `
+
+          export default FooterCheckout
+
+
+this deserve a second close up look:
+
+footer-checkout.js:
+
+  const FooterContent = styled.div`
+    justify-content: ${({ justifyContent }) => justifyContent || 'flex-end'};
+  `
+checkout-confirmation.js:
+
+      <FooterCheckout justifyContent='center'>
+
+      </FooterCheckout>
+
+checkout.js:
+
+      <FooterCheckout>
+
+      </FooterCheckout>
+
+
 class #147 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Order Successful
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/099/sistema-pedidos
+
+new route:
+
+  src/routes.js:
+
+      export const CHECKOUT_SUCCESS = `${CHECKOUT}/success`
+
+  src/pages/main/main.js:
+
+        const CheckoutSuccess = React.lazy(() => import('pages/checkout-success'))
+
+        <Route
+          path={routes.CHECKOUT_SUCCESS}
+          component={CheckoutSuccess}
+        />
+
+
+New Folder:
+pages/checkout-success
+
+  index.js:
+
+        export { default } from './checkout-success'
+
+  checkout-success.js: BUT WILL CHANGE
+
+        import React from 'react'
+        import { Link } from 'react-router-dom'
+        import styled from 'styled-components'
+        import {
+          Button,
+          Container,
+          Divider as MaterialDivider,
+          Paper,
+          Typography
+        } from '@material-ui/core'
+        import {
+          Content,
+          H4,
+          H6,
+          OrderInfo
+        } from 'ui'
+        import { useAuth } from 'hooks'
+        import FooterCheckout from 'pages/checkout/footer-checkout'
+        import { HOME } from 'routes'
+
+        function CheckoutSuccess () {
+          const { userInfo } = useAuth()
+          return (
+            <>
+              <Content>
+                <Header>
+                  <H4>There you go, {userInfo.user.firstName}!</H4>
+                  <Typography>Your order is being prepared and will be delivered in up to:</Typography>
+
+                  <H6>40 minutes</H6>
+                </Header>
+
+                <Container maxWidth='sm'>
+                  <PaperContainer>
+                    <H6>Your order</H6>
+                    <OrderInfo />
+
+                    <Divider />
+
+                    <H6>Delivery address:</H6>
+                    <Typography>1 Street Code, 01100011</Typography>
+
+                    <Divider />
+
+                    <H6>Contact phone number:</H6>
+                    <Typography>(11) 9999 999 99</Typography>
+
+                  </PaperContainer>
+                </Container>
+              </Content>
+
+              <FooterCheckout justify-content='center'>
+                <Button
+                  color='secondary'
+                  size='large'
+                  component={Link}
+                  to={HOME}
+                >
+                  {'<'} Back to home
+                </Button>
+              </FooterCheckout>
+            </>
+          )
+        }
+
+        const Header = styled.div`
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          margin-bottom: ${({ theme }) => theme.spacing(3)}px;
+          text-align: center;
+        `
+
+        const PaperContainer = styled(Paper)`
+          padding: ${({ theme }) => theme.spacing(3)}px
+        `
+
+        const Divider = styled(MaterialDivider)`
+          margin: ${({ theme }) => theme.spacing(2, 3)}
+        `
+
+        export default CheckoutSuccess
+
+
 class #148 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Fixing a bug
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/099/sistema-pedidos
+
+Even after finishing one order, if user get's back to the home to include later another pizza, the previous one which was already ordered will still be in the state and will be counted as another order.
+
+
+src/contexts/order.js
+
+- the application starts with no pizza stored in the contexts:
+
+      const [pizzas, addPizza] = useState([])
+
+each new order, we concat the new one in the array:
+
+      function addPizzaToOrder (pizza) {
+        addPizza((piizas) => pizzas.concat(pizza))
+      }
+
+If the user gets back to home without refresh the page, our context will still keep those previous pizzas.
+
+How to clean up the context?
+
+
+
+new code:
+
+src/contexts/order.js
+
+    function sendOrder () {
+      console.log('send order')
+    }
+
+    <OrderContext.Provider value={{
+      order: {
+        pizzas
+      },
+      addPizzaToOrder,
+      sendOrder
+    }}
+    >
+
+src/pages/checkout-confirmation.js
+
+    import { useAuth, useOrder } from 'hooks'
+
+    const { sendOrder } = useOrder()
+
+    <FooterCheckout justifyContent='center'>
+      <Button
+        variant='contained'
+        color='primary'
+        size='large'
+        component={Link}
+        to={CHECKOUT_SUCCESS}
+        onClick={sendOrder}
+      >
+        Validate
+      </Button>
+    </FooterCheckout>
+
+
+BUT....
+
+
+This code bellow is not exactly what we need:
+
+    function sendOrder () {
+      console.log('send order')
+      addPizza([])
+    }
+
+Why? Because the next page of checkout-success.js is still expecting the state 'pizzas' to display what user just ordered. That way, the field gets blank.
+
+How about another state?
+
+  const [orderInProgress, setOrderInProgress] = useState(false)
+
+  function addPizzaToOrder (pizza) {
+    if (orderInProgress) {
+      return addPizza((piizas) => pizzas.concat(pizza))
+    }
+    setOrderInProgress(true)
+    addPizza([pizza])
+  }
+
+  In case is the very first order or user today, orderInProgress is false and code inside condition won't get executed. So first pizza will be set inside the state alone in the array. Before that, orderInProgress will get bool true.
+
+  So next time, next pizzas will be concated in the array, until the user gets done in the checkout success. Nice.
+
+
 class #149 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Fixing Double Order Bug
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/100/sistema-pedidos
+
+The bug:
+
+  If user moves from page amount, by clicking in "Finish order", and after opening the next page "Checkout" decides to go backwards by cliking in his browser's back button, then if he clicks again in "Finish order" he will be adding a second same pizza in his cart.
+
+  The button "Finish order" has:
+
+        <Footer
+          buttons={{
+            back: {
+              children: 'Change flavours'
+            },
+
+            action: {
+              to: CHECKOUT,
+              onClick: addPizza,
+              children: 'Finish order'
+            }
+          }}
+        />
+
+  Which triggers:
+
+        function addPizza () {
+          addPizzaToOrder({
+            ...location.state,
+            amount
+          })
+        }
+
+  And then all data in the location.state gets delivered to pizza array:
+
+    function addPizzaToOrder (pizza) {
+      if (orderInProgress) {
+        return addPizza((piizas) => pizzas.concat(pizza))
+      }
+      setOrderInProgress(true)
+      addPizza([pizza])
+    }
+
+
+Daciuk's solution here is to let the user remove pizzas if eventually he get's any duplication.
+
+
+src/ui/order-info.js:
+
+    import { IconButton } from '@material-ui/core'
+    import { Close } from '@material-ui/icons'
+
+    <IconButton title='Remove' color='secondary'>
+      <Close />
+    </IconButton>
+
+    const ListItem = styled(MaterialListItem)`
+      && {
+        display: flex;
+        justify-content: space-between;
+      }
+    `
+
 class #150 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Prevent Remove Button from display in other pages
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/101/sistema-pedidos
+
+src/ui/order-info.js:
+
+showOptions prop:
+
+          function OrderInfo ({ showOptions }) { }
+
+          {showOptions && (
+            <IconButton title='Remove' color='secondary'>
+              <Close />
+            </IconButton>
+          )}
+
+          OrderInfo.propTypes = {
+            showOptions: t.bool
+          }
+
+src/pages/checkout/chekout.js:
+
+          <PaperContainer>
+            <OrderInfo showOptions />
+          </PaperContainer>
+
 
 class #151 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #152 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #153 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #154 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #155 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #156 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #157 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #158 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #159 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
-class #160 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+Remove Pizza: logic
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/102/sistema-pedidos
 
+
+src/contexts/order.js
+
+    function removePizzaFromOrder (id) {
+      
+    }
+
+    <OrderContext.Provider value={{
+      order: {
+        pizzas
+      },
+      addPizzaToOrder,
+      removePizzaFromOrder,
+      sendOrder
+    }}
+    >
+      {children}
+    </OrderContext.Provider>
+
+
+
+src/ui/order-info.js:
+
+    const { order, removePizzaFromOrder } = useOrder()
+
+    <IconButton
+      title='Remove'
+      color='secondary'
+      onClick={() => removePizzaFromOrder(pizza.id)}
+    >
+      <Close />
+    </IconButton>
+
+But we still have no ID for those pizzzas. Let's install UUID
+
+yarn add uuid --exact
+
+
+src/contexts/order.js:
+
+      import { v4 as uuidv4 } from 'uuid'
+
+uuidv4()
+
+      function addPizzaToOrder (pizza) {
+        
+        if (orderInProgress) {
+          return addPizza((piizas) => pizzas.concat({ id: uuidv4(), ...pizza}))
+        }
+        setOrderInProgress(true)
+        addPizza([{ id: uuidv4(), ...pizza}])
+      }
+
+or better:
+
+      function addPizzaToOrder (pizza) {
+        if (orderInProgress) {
+          return addPizza((piizas) => pizzas.concat(newPizza(pizza)))
+        }
+        setOrderInProgress(true)
+        addPizza([newPizza(pizza)])
+      }
+
+      function newPizza (pizza) {
+        return {
+          id: uuidv4(),
+          ...pizza
+        }
+      }
+
+
+      Then finally....
+
+        function removePizzaFromOrder (id) {
+          addPizza((pizzas) => pizzas.filter(p => p.id !== id))
+        }
+
+
+        If the id passed in the parameter is not equal to any p.id, filter will return true and the item will be included in the new array. If the id is equal to p.id, then filter returns false and this item won't be included in the array.
+
+
+class #152 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Small Refactoring
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/103/sistema-pedidos
+
+
+checkout.js
+
+  if no pizza on the basket, user have to get redirected.
+
+        import { Redirect } from 'react-router-dom'
+        import { HOME } from 'routes'
+        import { useOrder } from 'hooks'
+
+        function Checkout () {
+          const { order } = useOrder()
+
+          if (!order.pizzas.length) {
+            return <Redirect to={HOME} />
+          }
+
+          ...
+        }
+
+class #153 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Form address isolation
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/104/sistema-pedidos
+
+src/pages/checkout/form-address.js
+
+              import React from 'react'
+              import {
+                Grid
+              } from '@material-ui/core'
+              import TextField from './text-field'
+
+              function FormAddress () {
+                return (
+                  <Grid container spacing={2}>
+                    <TextField label='Post Code' xs={4} autoFocus />
+                    <Grid item xs={8} />
+                    <TextField label='Street name' xs={9} />
+                    <TextField label='Number' xs={3} />
+                    <TextField label='Complement' xs={12} />
+                    <TextField label='City' xs={9} />
+                    <TextField label='State' xs={3} />
+                  </Grid>
+                )
+              }
+
+              export default FormAddress
+
+
+
+
+src/pages/checkout/checkout.js
+
+              import React from 'react'
+              import styled from 'styled-components'
+              import { Link, Redirect } from 'react-router-dom'
+              import {
+                Button,
+                Grid,
+                Paper
+              } from '@material-ui/core'
+              import {
+                Content,
+                OrderInfo,
+                Title as UiTitle
+              } from 'ui'
+              import FooterCheckout from 'pages/checkout/footer-checkout'
+              import FormAddress from './form-address'
+              import TextField from './text-field'
+              import { CHECKOUT_CONFIRMATION, HOME } from 'routes'
+              import { useOrder } from 'hooks'
+
+              function Checkout () {
+                const { order } = useOrder()
+
+                if (!order.pizzas.length) {
+                  return <Redirect to={HOME} />
+                }
+
+                return (
+                  <>
+                    <Content>
+                      <Grid container spacing={4}>
+                        <Grid item xs={12} md={6}>
+                          <Title>Whats the address to delivery?</Title>
+                          <PaperContainer>
+                            <FormAddress />
+                          </PaperContainer>
+
+                          <Title>Whats is your phone number?</Title>
+                          <PaperContainer>
+                            <TextField label='Phone Number' xs={4} />
+                          </PaperContainer>
+                        </Grid>
+
+                        <Grid container item xs={12} md={6} direction='column'>
+                          <Title>Order details:</Title>
+                          <PaperContainer>
+                            <OrderInfo showOptions />
+                          </PaperContainer>
+                        </Grid>
+                      </Grid>
+                    </Content>
+
+                    <FooterCheckout>
+                      <Button
+                        variant='contained'
+                        color='primary'
+                        component={Link}
+                        to={CHECKOUT_CONFIRMATION}
+                      >
+                        Confirm
+                      </Button>
+                    </FooterCheckout>
+                  </>
+                )
+              }
+
+              const Title = styled(UiTitle).attrs({
+                variant: 'h6'
+              })`
+                text-align: left;
+              `
+
+              const PaperContainer = styled(Paper)`
+                flex-grow: 1;
+                margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+                padding: ${({ theme }) => theme.spacing(2)}px;
+              `
+
+              export default Checkout
+
+
+
+
+src/pages/checkout/text-field.js
+
+              import React from 'react'
+              import t from 'prop-types'
+              import {
+                Grid,
+                TextField as MaterialTextField
+              } from '@material-ui/core'
+
+              function TextField ({ xs, autoFocus, ...props }) {
+                return (
+                  <Grid item xs={xs}>
+                    <MaterialTextField
+                      fullWidth
+                      variant='outlined'
+                      inputProps={{
+                        autoFocus
+                      }}
+                      {...props}
+                    />
+                  </Grid>
+                )
+              }
+
+              TextField.propTypes = {
+                autoFocus: t.bool,
+                xs: t.number
+              }
+
+              export default TextField
+
+
+class #154 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Postcode's mask: using RegEx to avoid wrong characters
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/105/sistema-pedidos
+
+src/pages/form-address.js:
+
+      const [postcode, setPostcode] = useState('')
+
+      function handleChangePostcode (e) {
+        setPostcode(postcodeMask(e.target.value))
+      }
+
+      function postcodeMask (value) {
+        return value
+          .replace(/\D+/g, '')
+          .replace(/(\d{5})(\d)/, '$1-$2')
+          .replace(/(-\d{3})\d+?$/, '$1')
+      }
+
+      <TextField
+        label='Post Code'
+        xs={4}
+        autoFocus
+        value={postcode}
+        onChange={handleChangePostcode}
+      />
+
+      DISCLAIMER:
+      In case you are a non-Brazilian having a look at this Git repository, mind that we are using here the Brazilian postcode format, which is 5 numbers plus a dash plus 3 final numbers (12345-123). The mask we got to achieve this format is that:
+
+      function postcodeMask (value) {
+        return value
+          .replace(/\D+/g, '')
+          .replace(/(\d{5})(\d)/, '$1-$2')
+          .replace(/(-\d{3})\d+?$/, '$1')
+      }
+
+Form Masks with vanilla Javascript
+https://www.youtube.com/watch?v=r-8isv_TnVA
+
+
+class #155 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Brazilian Postcode API: Autofill the street and cia. (part 1: fetch)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/106/sistema-pedidos
+
+form-address.js:
+
+Wrong approach:
+
+          useEffect(() => {
+
+            console.log('search postcode: ', postcode)
+
+          }, [postcode])
+
+Why? We want to search only when postcode reaches all characters it should have. So we will use:
+
+          useEffect(() => {
+            function fetchAddress () {
+              if (postcode.length < 9) {
+                return
+              }
+              console.log('buscar cep: ', postcode)
+            }
+            fetchAddress()
+          }, [postcode])
+
+API documentation:
+https://apicep.com/api-de-consulta/
+
+Example:
+https://ws.apicep.com/cep/06233-030.json
+
+
+fetch()
+
+        useEffect(() => {
+          async function fetchAddress () {
+            if (postcode.length < 9) {
+              return
+            }
+            const data = await fetch(
+              `https://ws.apicep.com/cep/${postcode}.json`
+            )
+            const result = await data.json()
+            console.log('address: ', result)
+          }
+          fetchAddress()
+        }, [postcode])
+
+
+
+class #156 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+useReducer Hook
+Brazilian Postcode API: Autofill the street and cia. (part 2: filling the fields)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/108/sistema-pedidos
+
+What's the best approach to fill all the fields once we get the api's response?
+
+Should we have states for each data in the form?
+
+      const [address, setAddress] = useState({})
+      const [number, setNumber] = useState('')
+      const [city, setCity] = useState({})
+      const [country, setCountry] = useState('')
+
+useReducer will make things easier.
+
+Reducers reminder:
+      -> Dispatch
+      Reducer functions must be pure: no api request, no mutability, no change external vars, etc.
+
+
+
+form-address.js:
+
+          import React, { useState, useEffect, useReducer } from 'react'
+          import {
+            Grid
+          } from '@material-ui/core'
+          import TextField from './text-field'
+
+          function FormAddress () {
+            const [postcode, setPostcode] = useState('')
+            const [addressState, dispatch] = useReducer(reducer, initialState)
+
+            console.log('addressState:', addressState)
+
+            useEffect(() => {
+              async function fetchAddress () {
+                if (postcode.length < 9) {
+                  return
+                }
+                const data = await fetch(
+                  `https://ws.apicep.com/cep/${postcode}.json`
+                )
+                const result = await data.json()
+
+                dispatch({
+                  type: 'UPDATE_FULL_ADDRESS',
+                  payload: result
+                })
+              }
+              fetchAddress()
+            }, [postcode])
+
+            function handleChangePostcode (e) {
+              setPostcode(postcodeMask(e.target.value))
+            }
+
+            function postcodeMask (value) {
+              return value
+                .replace(/\D+/g, '')
+                .replace(/(\d{5})(\d)/, '$1-$2')
+                .replace(/(-\d{3})\d+?$/, '$1')
+            }
+
+            return (
+              <Grid container spacing={2}>
+                <TextField
+                  label='Post Code'
+                  xs={4}
+                  autoFocus
+                  value={postcode}
+                  onChange={handleChangePostcode}
+                />
+                <Grid item xs={8} />
+                <TextField label='Street name' xs={9} />
+                <TextField label='Number' xs={3} />
+                <TextField label='Complement' xs={12} />
+                <TextField label='City' xs={9} />
+                <TextField label='State' xs={3} />
+              </Grid>
+            )
+          }
+
+          function reducer (state, action) {
+            console.log(action)
+            if (action.type === 'UPDATE_FULL_ADDRESS') {
+              return {
+                ...state,
+                ...action.payload
+              }
+            }
+            return state
+          }
+
+          const initialState = {
+            code: '',
+            address: '',
+            number: '',
+            district: '',
+            complement: '',
+            city: '',
+            state: '',
+            error: null
+          }
+
+          export default FormAddress
+
+
+class #157 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/109/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #158 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/110/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #159 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/111/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #160 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/112/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #160 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/113/sistema-pedidos
 class #161 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/114/sistema-pedidos
 class #162 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/115/sistema-pedidos
 class #163 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/116/sistema-pedidos
 class #164 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/117/sistema-pedidos
 class #165 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/118/sistema-pedidos
 class #166 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/119/sistema-pedidos
 class #167 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120/sistema-pedidos
 class #168 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/121/sistema-pedidos
 class #169 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/122/sistema-pedidos
 class #170 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/123/sistema-pedidos
 
 class #171 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/124/sistema-pedidos
 class #172 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/125/sistema-pedidos
 class #173 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/126/sistema-pedidos
 class #174 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/127/sistema-pedidos
 class #175 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/128/sistema-pedidos
 class #176 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/129/sistema-pedidos
 class #177 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/130/sistema-pedidos
 class #178 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/131/sistema-pedidos
 class #179 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/132/sistema-pedidos
 class #180 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/070/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/133/sistema-pedidos
 
 class #181 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 class #182 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
