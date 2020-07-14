@@ -92,6 +92,9 @@ https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m03/samples/33-
 CEP APIs:
 
 1. http://apps.widenet.com.br/busca-cep/api-de-consulta
+
+    (https://apicep.com/api-de-consulta/)
+
 2. https://viacep.com.br/
 
 Daciuk's own AJAX lib:
