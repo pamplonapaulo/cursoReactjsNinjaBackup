@@ -9125,191 +9125,1558 @@ form-address.js:
 
 
 class #157 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/109/sistema-pedidos
+Form: logic rules
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/108/sistema-pedidos
+
+markup refactoring:
+
+insted of:
+
+      <TextField label='Street name' xs={9} />
+      <TextField label='Number' xs={3} />
+      <TextField label='Complement' xs={12} />
+      <TextField label='City' xs={9} />
+      <TextField label='State' xs={3} />
+
+have this map:
+
+            {[
+              {
+                label: 'Street name',
+                xs: 9,
+                name: 'address'
+              },
+              {
+                label: 'Number',
+                xs: 3,
+                name: 'number'
+              },
+              {
+                label: 'Complement',
+                xs: 12,
+                name: 'complement'
+              },
+              {
+                label: 'City',
+                xs: 9,
+                name: 'city'
+              },
+              {
+                label: 'State',
+                xs: 3,
+                name: 'state'
+              }
+            ].map((field) => (
+              <TextField
+                {...field}
+                key={field.name}
+                value={addressState[field.name]}
+                onChange={handleChangeField}
+              />
+            ))}
 
 
+- Freezing fields while postcode is being found
+
+        const [fetchingPostcode, setFetchingPostcode] = useState(false)
+
+        setFetchingPostcode(true) <- running inside fetchAddress()
+
+        include message:
+
+              <Grid item xs={8}>
+                {fetchingPostcode && 'Loading postcode...'}
 
 
+        then while is fetching, fields get disabled:
+
+              <TextField
+                disabled={fetchingPostcode}
+              />
 
 
+Make it prettier:
 
+      import { CircularProgress } from '@material-ui/core'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      {fetchingPostcode && <CircularProgress size={20} />}
 
 
 class #158 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/110/sistema-pedidos
+Form Actions
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/109/sistema-pedidos
+
+
+So far, after last class, fields can't be edited.
+
+-  handleChangeField(e)
+
+- write another action for reducer
+
+        function handleChangeField (e) {
+          const { name, value } = e.target
+
+          dispatch({
+            type: 'UPDATE_FIELD',
+            payload: { name, value }
+          })
+        }
+        
+- include it on reducer:
+
+
+        function reducer (state, action) {
+          console.log(action)
+          if (action.type === 'UPDATE_FULL_ADDRESS') {
+            return {
+              ...state,
+              ...action.payload
+            }
+          }
+
+          if (action.type === 'UPDATE_FIELD') {
+            return {
+              ...state,
+              [action.payload.name]: action.payload.value
+            }
+          }
+          return state
+        }
+
+Reminder:
+
+    return {
+      ...state,
+      [action.payload.name]: action.payload.value
+    }
+
+By passing a prop name wrapped by brackets, it converts it in the object key.
 
 
 
+Hook: useRef
 
+  const numberField = useRef()
 
+  Used to access the DOM, in this case the input field, to get it focused to be set by the user after the fetch. So...
 
+      {
+        label: 'Number',
+        xs: 3,
+        name: 'number',
+        inputRef: numberField
+      }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      fetchAddress () {
+        ...
+        numberField.current.focus()
+      }
 
 
 class #159 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/111/sistema-pedidos
+Form: handling errors
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/110/sistema-pedidos
 
 
+payload -> status: 404, ok: false
+
+Promise Reminder:
+
+      promises have then() and catch();
+      async / awair let you use try/catch;
+      But fetch() doesn't have catch(), erros only network erros: if you get offline.
+
+That said, use the response.message to fill the error message with our own dispatch 'FAIL' type:
+
+Inside fetchAddress():
+
+      if (!result.ok) {
+        dispatch({
+          type: 'FAIL',
+          payload: {
+            error: result.message
+          }
+        })
+        return // aborting, preventing the flow inside the func fetchAddress()
+      }
 
 
+Adding a red border in the postcode field: material-ui already comes with error prop.
+
+      <TextField
+        label='Post Code'
+        xs={4}
+        autoFocus
+        value={postcode}
+        onChange={handleChangePostcode}
+        error={!!addressState.error}
+      />
 
 
+addressState.error
+  
+    in case is null, turns into false with the !!
+    in case is a string, turns into true with the !!
 
+    So error={true} gets red.
 
+Now make sure it won't keep red when user gets a real postcode: error: null
 
+  if (action.type === 'UPDATE_FULL_ADDRESS') {
+    return {
+      ...state,
+      ...action.payload,
+      error: null
+    }
+  }
 
+Also, make sure the fields reset to blank if the data gets error:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  if (action.type === 'RESET') {
+    return {
+      initialState
+    }
+  }
 
 class #160 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Form: Phone number field
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/111/sistema-pedidos
+
+So far, phone field gets any mess. We are going to:
+
+  - create it's state
+  - create it's mask
+
+new file: phone-field.js
+
+
+from src/pages/checkout/checkout.js, take the <TextField /> and replace it with the new <PhoneFiled />:
+
+          <PaperContainer>
+            <TextField label='Phone Number' xs={4} />
+          </PaperContainer>
+
+          <PaperContainer>
+            <PhoneField />
+          </PaperContainer>
+
+
+src/pages/checkout/phone-field.js
+
+          import React from 'react'
+          import TextField from './text-field'
+
+          function PhoneField () {
+            return (
+              <TextField label='Phone Number' xs={4} />
+            )
+          }
+
+          export default PhoneField
+
+
+Using masks may follow 2 different approaches.
+
+  1. saving value at state after the mask
+
+      function handleChangePhone (e) {
+        setPhone(phoneMask(e.target.value))
+      }
+
+  2. using the mask on the presentation, at user's input, before save it
+
+      <TextField
+        label='Phone Number'
+        xs={4}
+        value={phoneMask(phone)}
+        onChange={handleChangePhone}
+      />
+
+In some situations we may want to use it just in presentation of the value, meaning we apply the mask based on the value and save it on state without special characters such as $, like while displaying money data for instance.
+
+The phone mask:
+
+  function phoneMask (value) {
+    return value
+      .replace(/D+/g, '')
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+      .replace(/(-\d{4})\d+?$/, '$1')
+  }
+
+  What format we want?
+  
+  The Brazilian phone format, which can have 8 or 9 numbers, always started by 2 numbers wrapped by parentesis, meaning the state code, followed by a blank space plus 4 or 5 numbers plus a dash (-) plus 4 numbers.
+
+  Translating the RegEx above:
+
+        .replace(/D+/g, '')
+        
+              It ignores any value that is not a number ('D' stands for a digit)
+
+        .replace(/(\d{2})(\d)/, '($1) $2')
+              
+              The ( ) inside RegEx catches group/piece of the expression.
+              The curly braces mean the amount of digits being catched.
+              So 2 digits are our zone code, which later we wrap inside parentesis that are displaied in the Brazilian phone format, followed by a blank space then the rest of the digits, catched by the $2.
+
+
+        .replace(/(\d{4})(\d)/, '$1-$2')
+
+              The second scope in the last regex catches the rest of the digits and here above is separated in a group of 4 digits and the rest of them. Then we put a dash between the two scopes/catches.
+
+
+        .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+
+              Here, depending on the amount of the digits we may or not have the scope/catch $2 joined with the left side of the dash.
+
+
+        .replace(/(-\d{4})\d+?$/, '$1')
+
+              Then we make sure if the input field already got the total of 4 digits in the right and no more than 5 digits in the left, any extra digit won't be allowed.
+
+        In this sequence, each .replace() considers the whole result of each previous one, but filtered by the RegEx, which in this case is ignoring that part that doesn't need any extra treatment.
+
+
+class #161 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Save Address and Phone
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/112/sistema-pedidos
 
 
+src/contexts/order.js:
+
+  const [phone, addPhone] = useState('')
+  const [address, addAddress] = useState({})
+
+  <OrderContext.Provider value={{
+    order: {
+      pizzas,
+      address,
+      phone
+    },
+    addPizzaToOrder,
+    removePizzaFromOrder,
+    addAddress,
+    addPhone,
+    sendOrder
+  }}
+  >
+
+Then we import the custom hook in our files
+
+form-address.js + phone-field.js
+
+      import { useOrder } from 'hooks'
+  
+And there are 2 possible approaches:
+
+1 )
+
+  form-address.js:
+
+          const { addAddress } = useOrder()
+
+          useEffect(() => {
+            addAddress(addressState)
+          }, [addressState, addAddress])
+
+  phone-field.js:
+
+          const { addPhone } = useOrder()
+
+          useEffect(() => {
+            addPhone(phone)
+          }, [phone, addPhone])
+
+  This appoarch is acceptable because we need this data just to the checkout page. If we need to reuse these fields, so we should have another approach. Let's see it...
 
 
+2 ) onUpdate prop
+
+          phone-field.js:
+
+                function PhoneField ({ onUpdate = () => {} }) {
+
+                  useEffect(() => {
+                    onUpdate(phone)
+                  }, [phone, onUpdate])
+
+                }
+
+          form-address.js:
+
+                function FormAddress ({ onUpdate = () => {} }) {
+
+                  useEffect(() => {
+                    onUpdate(addressState)
+                  }, [addressState, onUpdate])
+
+                }
+
+          checkout.js:
+
+                const { order, addAddress, addPhone } = useOrder()
+
+                <FormAddress onUpdate={addAddress} />
+
+                <PhoneField onUpdate={addPhone} />
+
+Why use the 2nd approach? Because we might want to reuse those components in other areas of our application. By doing this way, we got these components isolated, they have no strict dependency with the hooks/state. If are totally sure that only the checkout will use it, so it's ok to pick the 1st approach.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class #160 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/113/sistema-pedidos
-class #161 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/114/sistema-pedidos
 class #162 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/115/sistema-pedidos
+Update Page Confirmation
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/113/sistema-pedidos
+
+
+checkout-confirmation.js
+checkout-success.js
+
+          import { useOrder } from 'hooks'
+          const { order } = useOrder()
+
+
+          <PaperContainer>
+            <H6>Your order</H6>
+            <OrderInfo />
+
+            <Divider />
+
+            <H6>Delivery address:</H6>
+            <Typography>
+              {order.address.number}
+              {' '}
+              {order.address.address},
+              {' '}
+              {order.address.complement}<br />
+              Neighborhood: {order.address.district}<br />
+              Postcode: {order.address.code}<br />
+              {order.address.city}/ {order.address.state}
+            </Typography>
+
+            <Divider />
+
+            <H6>Contact phone number:</H6>
+            <Typography>{order.phone}</Typography>
+
+          </PaperContainer>
+
 class #163 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/116/sistema-pedidos
+Moving our dev fake data to the real data at Firebase
+
+-> Cloud Firestore
+
+Start in production mode
+
+Location: multi-region
+
+Start Collection
+(It's like a data array)
+
+Collection ID: pizzasSizes
+
+Document ID
+(It's like a JSON)
+
+Would be instef of this:
+
+[
+  {
+    id: '0',
+    name: 'Small',
+    size: 28,
+    slices: 2,
+    flavours: 1
+  },
+  {
+    id: '1',
+    name: 'Medium',
+    size: 30,
+    slices: 6,
+    flavours: 2
+  },
+  {
+    id: '2',
+    name: 'Large',
+    size: 32,
+    slices: 8,
+    flavours: 3
+  }
+]
+
+this:
+
+{
+  '0': {},
+  '1': {},
+  '2': {}
+}
+
+Other option could be the "Auto ID". But just for now we won't use AutoID.
+
+Let's start by setting 0 id. Then start/move to the next step.
+
+Add Field
+
+  Do not use quotation marks.
+
+document 0 id:
+
+          flavours: 1
+          name: "Small"
+          size: 28
+          slices: 2
+
+
+
+Collection ID: pizzasFlavours
+
+Our original fake data:
+
+[
+  {
+    id: '0',
+    image: '/fake-data/images/pizza-calabresa.png',
+    name: 'Calabresa',
+    value: {
+      0: 20,
+      1: 30,
+      2: 40
+    }
+  },
+
+  {
+    id: '1',
+    image: '/fake-data/images/pizza-frango-catupiry.png',
+    name: 'Frango com Catupiry',
+    value: {
+      0: 25,
+      1: 35,
+      2: 45
+    }
+  },
+
+  {
+    id: '2',
+    image: '/fake-data/images/pizza-prestigio.jpg',
+    name: 'Prestígio',
+    value: {
+      0: 30,
+      1: 40,
+      2: 50
+    }
+  }
+]
+
+What types to use in this case?
+    
+    image: string,
+    name: string,
+    value: map
+
+
+
 class #164 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/117/sistema-pedidos
+Take data from database to our application: sizes
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/114/sistema-pedidos
+
+Firestore documentation
+https://firebase.google.com/docs/firestore?authuser=0
+
+
+
+named export must have variable creation (const):
+
+      export const db = firebase.firestore()
+
+
+src/services/firebase.js
+
+  new lines:
+
+      import 'firebase/firestore'
+
+      export const db = firebase.firestore()
+
+            OBS 1:
+            
+                Don't forget that named export must have variable creation (meaning 'const' key word)
+
+            OBS 2:
+
+                this:
+                      export const db = firebase.firestore()
+
+                is the same as this:
+
+                      const db = firebase.firestore()
+                      export { db }
+
+
+Now we can remove the fake data and reach the real data from db
+
+  choose-pizza-size.js
+  choose-pizza-flavours.js
+
+Reminder:
+
+  Every database request must get ran at componentDidMount (if in Classes) or useEffect (if functions)
+
+  import { db } from 'services/firebase'
+
+  useEffect(() => {
+    db.collection('pizzasSizes').get().then(querySnapshot => {
+      console.log(querySnapshot)
+    })
+  }, [])
+
+  OBS: querySnapshot comes from Firebase
+
+  Temporaty (and extremelly dangerous) change on our Firebase database:
+
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /{document=**} {
+        allow read, write: if true;
+      }
+    }
+  }
+
+  That means anyone accessing our DB using our keys would be allowed to read or write over there. By default, it comes with allow false:
+
+      match /{document=**} {
+        allow read, write: if true;
+      }
+
+
+  With this, here is how we call the content of collection:
+
+          const [pizzasSizes, setPizzasSizes] = useState([])
+
+          useEffect(() => {
+            db.collection('pizzasSizes').get().then(querySnapshot => {
+              const sizes = []
+              querySnapshot.forEach(doc => {
+                sizes.push({
+                  id: doc.id,
+                  ...doc.data()
+                })
+              })
+              console.log(sizes)
+              setPizzasSizes(sizes)
+            })
+          }, [])
+
+
+0: {id: "0", name: "Small", slices: 2, size: 28, flavours: 1}
+1: {id: "1", size: 30, slices: 6, flavours: 2, name: "Medium"}
+2: {id: "2", flavours: 3, name: "Large", size: 32, slices: 8}
+
+
 class #165 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/118/sistema-pedidos
+Take data from database to our application: flavours
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/115/sistema-pedidos
+
+  choose-pizza-flavours.js
+
+      import { db } from 'services/firebase'
+
+      const [pizzasFlavours, setPizzasFlavours] = useState([])
+
+      useEffect(() => {
+        db.collection('pizzasFlavours').get().then(querySnapshot => {
+          const flavours = []
+          querySnapshot.forEach(doc => {
+            flavours.push({
+              id: doc.id,
+              ...doc.data()
+            })
+          })
+          setPizzasFlavours(flavours)
+        })
+      }, [])
+
+
+  A weird test by Daciuk: if user clicks fast backwards and forwards, the promise inside these useEffect starts and before it's end user is already in the other page. I wonder what kind of crazy user would do that, but anyways there is a way to prevent it:
+
+    useEffect(() => {
+      let mounted = true
+      db.collection('pizzasFlavours').get().then(querySnapshot => {
+        const flavours = []
+        querySnapshot.forEach(doc => {
+          flavours.push({
+            id: doc.id,
+            ...doc.data()
+          })
+        })
+
+        if (mounted) {
+          console.log('mounted')
+          setPizzasFlavours(flavours)  
+        } else {
+          console.log('unmounted')
+        }
+      })
+      
+      return () => {
+        mounted = false
+      }
+    }, [])
+
+    So when this weirdo user behaves like trying to break our app, console.log above will show 'unmounted', which means the code just prevented the set of 'flavours'.
+    
+    Daciuk says we could also have a specific hook for that. We should have this every time we have an async/promises that user could switch pages and the component will get unmounted before executed a setState.
+
+
 class #166 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/119/sistema-pedidos
+Abstracting the 2 calls from DB in a single custom hook
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/116/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #167 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/119/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #168 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/121/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #169 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/122/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/121/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #170 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/123/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/122/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #171 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/124/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/123/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #172 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/125/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/124/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #173 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/126/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/125/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #174 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/127/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/126/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #175 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/128/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/127/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #176 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/129/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/128/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #177 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/130/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/129/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #178 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/131/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/130/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #179 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/132/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/131/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #180 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/133/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/132/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class #181 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/133/sistema-pedidos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #182 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #183 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #184 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #185 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #186 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #187 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #188 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #189 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #190 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #190 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #191 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #192 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #193 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #194 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #195 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #196 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #197 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #198 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #199 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #200 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #201 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #202 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #203 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #204 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #205 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #206 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #207 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #208 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class #209 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

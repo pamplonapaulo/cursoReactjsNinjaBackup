@@ -14,12 +14,14 @@ import {
   H6,
   OrderInfo
 } from 'ui'
-import { useAuth } from 'hooks'
 import FooterCheckout from 'pages/checkout/footer-checkout'
+import { useAuth, useOrder } from 'hooks'
 import { HOME } from 'routes'
 
 function CheckoutSuccess () {
   const { userInfo } = useAuth()
+  const { order } = useOrder()
+
   return (
     <>
       <Content>
@@ -38,12 +40,21 @@ function CheckoutSuccess () {
             <Divider />
 
             <H6>Delivery address:</H6>
-            <Typography>1 Street Code, 01100011</Typography>
+            <Typography>
+              {order.address.number}
+              {' '}
+              {order.address.address},
+              {' '}
+              {order.address.complement}<br />
+              Neighborhood: {order.address.district}<br />
+              Postcode: {order.address.code}<br />
+              {order.address.city}/ {order.address.state}
+            </Typography>
 
             <Divider />
 
             <H6>Contact phone number:</H6>
-            <Typography>(11) 9999 999 99</Typography>
+            <Typography>{order.phone}</Typography>
 
           </PaperContainer>
         </Container>

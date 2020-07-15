@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import t from 'prop-types'
 import styled from 'styled-components'
 import { Redirect } from 'react-router-dom'
@@ -18,11 +18,35 @@ import {
 } from 'ui'
 import { singularOrPlural, toMoney } from 'utils'
 import { HOME, CHOOSE_PIZZA_AMOUNT } from 'routes'
-
-import pizzaFlavours from 'fake-data/pizzas-flavours.js'
+import { db } from 'services/firebase'
 
 const ChoosePizzaFlavours = ({ location }) => {
   const [checkboxes, setCheckboxes] = useState(() => ({}))
+  const [pizzasFlavours, setPizzasFlavours] = useState([])
+
+  useEffect(() => {
+    let mounted = true
+    db.collection('pizzasFlavours').get().then(querySnapshot => {
+      const flavours = []
+      querySnapshot.forEach(doc => {
+        flavours.push({
+          id: doc.id,
+          ...doc.data()
+        })
+      })
+
+      if (mounted) {
+        console.log('mounted')
+        setPizzasFlavours(flavours)
+      } else {
+        console.log('unmounted')
+      }
+    })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   if (!location.state) {
     return <Redirect to={HOME} />
@@ -56,7 +80,7 @@ const ChoosePizzaFlavours = ({ location }) => {
         </HeaderContent>
 
         <PizzasGrid>
-          {pizzaFlavours.map((pizza) => (
+          {pizzasFlavours.map((pizza) => (
             <Grid item key={pizza.id} xs>
               <Card checked={!!checkboxes[pizza.id]}>
                 <Label>
@@ -95,7 +119,10 @@ const ChoosePizzaFlavours = ({ location }) => {
               pathname: CHOOSE_PIZZA_AMOUNT,
               state: {
                 ...location.state,
-                pizzaFlavours: getFlavoursNameAndId(checkboxes)
+                pizzaFlavours: getFlavoursNameAndId({
+                  checkboxes,
+                  pizzasFlavours
+                })
               }
             },
             children: 'How many?',
@@ -115,12 +142,12 @@ function checkboxesChecked (checkboxes) {
   return Object.values(checkboxes).filter(Boolean)
 }
 
-function getFlavoursNameAndId (checkboxes) {
+function getFlavoursNameAndId ({ checkboxes, pizzasFlavours }) {
   return Object.entries(checkboxes)
     .filter(([_, value]) => !!value)
     .map(([id]) => ({
       id,
-      name: pizzaFlavours.find((flavour) => flavour.id === id).name
+      name: pizzasFlavours.find((flavour) => flavour.id === id).name
     }))
 }
 
