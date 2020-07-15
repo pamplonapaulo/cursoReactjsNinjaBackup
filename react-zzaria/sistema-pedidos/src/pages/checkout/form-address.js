@@ -138,7 +138,6 @@ FormAddress.propTypes = {
 }
 
 function reducer (state, action) {
-  console.log(action)
   if (action.type === 'UPDATE_FULL_ADDRESS') {
     return {
       ...state,
