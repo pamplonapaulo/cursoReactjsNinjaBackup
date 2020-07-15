@@ -13,12 +13,12 @@ import {
 } from 'ui'
 import FooterCheckout from 'pages/checkout/footer-checkout'
 import FormAddress from './form-address'
-import TextField from './text-field'
+import PhoneField from './phone-field'
 import { CHECKOUT_CONFIRMATION, HOME } from 'routes'
 import { useOrder } from 'hooks'
 
 function Checkout () {
-  const { order } = useOrder()
+  const { order, addAddress, addPhone } = useOrder()
 
   if (!order.pizzas.length) {
     return <Redirect to={HOME} />
@@ -31,12 +31,12 @@ function Checkout () {
           <Grid item xs={12} md={6}>
             <Title>Whats the address to delivery?</Title>
             <PaperContainer>
-              <FormAddress />
+              <FormAddress onUpdate={addAddress} />
             </PaperContainer>
 
             <Title>Whats is your phone number?</Title>
             <PaperContainer>
-              <TextField label='Phone Number' xs={4} />
+              <PhoneField onUpdate={addPhone} />
             </PaperContainer>
           </Grid>
 
