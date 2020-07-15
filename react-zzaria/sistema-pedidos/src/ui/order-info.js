@@ -13,7 +13,6 @@ import { useOrder } from 'hooks'
 
 function OrderInfo ({ showOptions }) {
   const { order, removePizzaFromOrder } = useOrder()
-  console.log(order)
 
   return (
     <List>

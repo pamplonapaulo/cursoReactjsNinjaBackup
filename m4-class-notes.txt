@@ -2492,13 +2492,13 @@ edit login.js:
       import firebase from 'firebase'
 
       var config = {
-        apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
-        authDomain: 'pamplona-pizzas.firebaseapp.com',
-        databaseURL: 'https://pamplona-pizzas.firebaseio.com',
-        projectId: 'pamplona-pizzas',
+        apiKey: 'xxxxxxx',
+        authDomain: 'xxx-xxx.firebaseapp.com',
+        databaseURL: 'https://xxx-xxx.firebaseio.com',
+        projectId: 'xxx-xxx',
         storageBucket: 'pamplona-pizzas.appspot.com',
-        messagingSenderId: '165890800996',
-        appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+        messagingSenderId: 'xxxx',
+        appId: 'xxx'
       }
 
       firebase.initializeApp(config)
@@ -2627,13 +2627,13 @@ import { Button, Grid } from '@material-ui/core'
 import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
 var config = {
-  apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
-  authDomain: 'pamplona-pizzas.firebaseapp.com',
-  databaseURL: 'https://pamplona-pizzas.firebaseio.com',
-  projectId: 'pamplona-pizzas',
+  apiKey: 'xxxxxxx',
+  authDomain: 'xxx-xxx.firebaseapp.com',
+  databaseURL: 'https://xxx-xxx.firebaseio.com',
+  projectId: 'xxx-xxx',
   storageBucket: 'pamplona-pizzas.appspot.com',
-  messagingSenderId: '165890800996',
-  appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+  messagingSenderId: 'xxxx',
+  appId: 'xxx'
 }
 // Initialize Firebase
 firebase.initializeApp(config)
@@ -3164,13 +3164,13 @@ import { Button, Grid } from '@material-ui/core'
 import { ReactComponent as MainLogo } from './logo-react-zzaria.svg'
 
 const config = {
-  apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
-  authDomain: 'pamplona-pizzas.firebaseapp.com',
-  databaseURL: 'https://pamplona-pizzas.firebaseio.com',
-  projectId: 'pamplona-pizzas',
+  apiKey: 'xxxxxxx',
+  authDomain: 'xxx-xxx.firebaseapp.com',
+  databaseURL: 'https://xxx-xxx.firebaseio.com',
+  projectId: 'xxx-xxx',
   storageBucket: 'pamplona-pizzas.appspot.com',
-  messagingSenderId: '165890800996',
-  appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+  messagingSenderId: 'xxxx',
+  appId: 'xxx'
 }
 // Initialize Firebase
 firebase.initializeApp(config)
@@ -3378,13 +3378,13 @@ new folder:
     import 'firebase/auth'
 
     const config = {
-      apiKey: 'AIzaSyC5OErDyC2TwywKxaFFpu_Exi-6X2QaoCM',
-      authDomain: 'pamplona-pizzas.firebaseapp.com',
-      databaseURL: 'https://pamplona-pizzas.firebaseio.com',
-      projectId: 'pamplona-pizzas',
+      apiKey: 'xxxxxxx',
+      authDomain: 'xxx-xxx.firebaseapp.com',
+      databaseURL: 'https://xxx-xxx.firebaseio.com',
+      projectId: 'xxx-xxx',
       storageBucket: 'pamplona-pizzas.appspot.com',
-      messagingSenderId: '165890800996',
-      appId: '1:165890800996:web:5385484eb8cce4d6e78e71'
+      messagingSenderId: 'xxxx',
+      appId: 'xxx'
     }
     // Initialize Firebase
     firebase.initializeApp(config)
@@ -9835,69 +9835,383 @@ Abstracting the 2 calls from DB in a single custom hook
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/116/sistema-pedidos
 
 
+reminders:
+
+- hooks name must start with 'use'
 
 
+src/hooks/db.js:
 
+          import { useEffect, useState } from 'react'
+          import { db } from 'services/firebase'
 
+          function useCollection (collection) {
+            const [data, setData] = useState(null)
 
+            useEffect(() => {
+              let mounted = true
 
+              db.collection(collection).get().then(querySnapshot => {
+                const docs = []
 
+                querySnapshot.forEach(doc => {
+                  docs.push({
+                    id: doc.id,
+                    ...doc.data()
+                  })
+                })
 
+                if (mounted) {
+                  setData(docs)
+                }
+              })
 
+              return () => {
+                mounted = false
+              }
+            }, [collection])
 
+            return data
+          }
 
-
-
-
+          export default useCollection
 
 
 class #167 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/119/sistema-pedidos
+Saving order in Firestore
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/117/sistema-pedidos
+
+
+src/contexts/order.js
+
+
+- we don't have yet a collection called orders in our Firestore.  Do we have to create is manually in the website?
+
+No.
+
+When we try to send data to a collection that doesn't exisit yet, Firestore will actually create it.
+
+
+    db.collection('orders').add({
+
+    })
+
+
+  method add() adds with a random ID
+
+Why do not use this:
+
+      createdAt: new Date()
+
+new Date() is generated in the client side. If user changes it's time in the computer, he can crack the app.
+
+How to use server side time? Firebase has something...
+
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
 
 
 
+src/contexts/order.js
 
+            import React, { createContext, useState } from 'react'
+            import t from 'prop-types'
+            import { v4 as uuidv4 } from 'uuid'
+            import firebase, { db } from 'services/firebase'
+            import { useAuth } from 'hooks'
 
+            const OrderContext = createContext()
 
+            function OrderProvider ({ children }) {
+              const [pizzas, addPizza] = useState([])
+              const [orderInProgress, setOrderInProgress] = useState(false)
+              const [phone, addPhone] = useState('')
+              const [address, addAddress] = useState({})
+              const { userInfo } = useAuth()
 
+              function addPizzaToOrder (pizza) {
+                if (orderInProgress) {
+                  return addPizza((piizas) => pizzas.concat(newPizza(pizza)))
+                }
+                setOrderInProgress(true)
+                addPizza([newPizza(pizza)])
+              }
 
+              function newPizza (pizza) {
+                return {
+                  id: uuidv4(),
+                  ...pizza
+                }
+              }
 
+              function removePizzaFromOrder (id) {
+                addPizza((pizzas) => pizzas.filter(p => p.id !== id))
+              }
 
+              async function sendOrder () {
+                console.log('send order')
 
+                try {
+                  await db.collection('orders').add({
+                    userId: userInfo.user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    address,
+                    phone,
+                    pizzas: pizzas.map(pizza => ({
+                      size: pizza.pizzasSizes,
+                      falavours: pizza.pizzasFlavours,
+                      amount: pizza.amount
+                    }))
+                  })
+                } catch (e) {
+                  console.log('error saving order:', e)
+                }
 
+                setOrderInProgress(false)
+              }
 
+              return (
+                <OrderContext.Provider value={{
+                  order: {
+                    pizzas,
+                    address,
+                    phone
+                  },
+                  addPizzaToOrder,
+                  removePizzaFromOrder,
+                  addAddress,
+                  addPhone,
+                  sendOrder
+                }}
+                >
+                  {children}
+                </OrderContext.Provider>
+              )
+            }
 
+            OrderProvider.propTypes = {
+              children: t.node.isRequired
+            }
+
+            export { OrderProvider, OrderContext }
 
 
 
 class #168 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Secutiry Rules
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120/sistema-pedidos
 
 
 
 
+Firebase > Firestore > Database > Rules
+
+anyone can do anything: allow read, write: if true
+
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /{document=**} {
+            allow read, write: if true;
+          }
+        }
+      }
 
 
+No one can do nothing: allow read, write: if false
+
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /{document=**} {
+            allow read, write: if false;
+          }
+        }
+      }
+
+Or empity:
+
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+
+        }
+      }
 
 
+Any document, recursivelly:
+
+    {document=**}
 
 
+Each collection needs specific rules.
+
+Version of rules:
+
+    rules_version = '2';
+
+    OBS: If blank, Firebase will use version '1'
+
+    Recursiveness doesn't work in version '1', so if it's needed use version '2'
 
 
+Default structure:
+
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+
+        }
+      }
+
+{database}
+
+  It's a variable that means the current database opened in Firebase's website. We may have the hability to handle more than one database in the future, depending on Firebase will. For now we keep using just like it is.
 
 
+Writting rules...
 
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /pizzasSizes/0 {
+            allow read, write: if false;
+          }
+
+          match /{document=**} {
+            allow read, write: if true;
+          }
+        }
+      }
+
+- rules always start with 'match':    match /pizzasSizes/0
+- followed by collection name:        /pizzasSizes/0
+- starting from a specific document:  /0
+- not allowed read and write:         allow read, write: if false
+
+- match from the root:                match /
+- match from all the docs at root:    match /{document=**}
+
+- so the block code above says any document greater than 0 will have read and write allowed.
+
+
+Allow read if user is logged:
+
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /pizzasSizes/{size} {
+            allow read: if request.auth.uid != null;
+          }
+
+          match /pizzasFlavours/{flavour} {
+            allow read: if request.auth.uid != null;
+          }
+
+          match /orders/{order} {
+            allow read: if request.auth.uid == resource.data.userId;
+            allow write: if request.auth.uid == request.resource.data;
+          }
+        }
+      }
+
+
+Use 'playground rules' to have simulations before publish it.
+
+
+allow write: if request.auth.uid == request.resource.data:
+
+      It checks if the logged user is the same at the order'data user's id.
 
 
 class #169 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/121/sistema-pedidos
+Env vars to save security keys
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/118/sistema-pedidos
 
+src/services/firebase.js
 
+those keys in this file are mostly public.
 
+the good practice is to have one DB to development and another to production.
 
+to keep these keys, we use environment variables.
 
+dotenv:
 
+https://www.npmjs.com/package/dotenv
 
+Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env. Storing configuration in the environment separate from code is based on The Twelve-Factor App methodology.
+
+That said, we are moving out auth data in firebase.js to our .env file, which was created earlier.
+
+.env so far is almost empity:
+
+  BROWSER=none
+
+updating it to:
+
+All .env variables must start with:
+
+    REACT_APP_ + name
+
+We can define different vars to each environment, dev or prod
+
+Converting from JS to .env:
+
+from: 
+
+        const config = {
+          apiKey: 'xxxxxxx',
+          authDomain: 'xxx-xxx.firebaseapp.com',
+          databaseURL: 'https://xxx-xxx.firebaseio.com',
+          projectId: 'xxx-xxx',
+          storageBucket: 'pamplona-pizzas.appspot.com',
+          messagingSenderId: 'xxxx',
+          appId: 'xxx'
+        }
+
+to:
+
+.env:
+          REACT_APP_API_KEY=xxxxxxx
+          REACT_APP_AUTH_DOMAIN=xxxx-xxxx.firebaseapp.com
+          REACT_APP_DATABASE_URL=https://xxxx-xxxx.firebaseio.com
+          REACT_APP_PROJECT_ID=xxxx-xxxx
+          REACT_APP_STORAGED_BUCKET=xxxx-xxxxx.appspot.com
+          REACT_APP_MESSAGING_SENDER_ID=xxxxxxx
+          REACT_APP_APP_ID=xxxx
+
+and firebase.js:
+
+          const config = {
+            apiKey: process.env.REACT_APP_API_KEY,
+            authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+            databaseURL: process.env.REACT_APP_DATABASE_URL,
+            projectId: process.env.REACT_APP_PROJECT_ID,
+            storageBucket: process.env.REACT_APP_STORAGED_BUCKET,
+            messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+            appId: process.env.REACT_APP_APP_ID
+          }
+
+After that, must shut down the server and turn on it again. It reads the .env only when starting up.
+
+Recomended:
+
+        .env.production
+        .env.development
+        .env.local
+
+.gitignore:
+
+        # misc
+        .DS_Store
+        .env.local
+        .env.development.local
+        .env.test.local
+        .env.production.local
+
+Those versions of .env above in .gitignore won't be sent to git repo.
+
+So now we are renaming our .env to .env.local, meaning we are keeping it away from the git.
 
 
 
