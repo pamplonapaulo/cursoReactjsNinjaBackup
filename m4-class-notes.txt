@@ -9998,7 +9998,7 @@ src/contexts/order.js
 
 class #168 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Secutiry Rules
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/118/sistema-pedidos
 
 
 
@@ -10125,7 +10125,7 @@ allow write: if request.auth.uid == request.resource.data:
 
 class #169 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Env vars to save security keys
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/118/sistema-pedidos
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/119/sistema-pedidos
 
 src/services/firebase.js
 
@@ -10213,76 +10213,67 @@ Those versions of .env above in .gitignore won't be sent to git repo.
 
 So now we are renaming our .env to .env.local, meaning we are keeping it away from the git.
 
-
-
-
-
-
-
-
-
-
 class #170 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/122/sistema-pedidos
+Continuous deployment: GitHub + Netlify.com
 
+Netlify: 
 
+Site Settings > Build & Deploy > Environment Variables:
 
+Edit Variables
 
+Then copy from your notes and paste it in the fields on Netlify
 
+After that:
 
+click SAVE
 
+Trigger deploy > deploy site (yup, again. Now with the .env with the new variables)
 
-
-
-
-
-
-
-
-
+Netlify limits: 300 minutes in builds per month (free)
 
 class #171 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/123/sistema-pedidos
+Production env settings
 
+GitHub loggin authentication: page not found
 
+Single Page Application - SPA (not a static website)
 
+The Route should be physic in the server. How to render index.html to every request get via browser URL?
 
+Netlify doesn't udnerstand routes such as /login in out application. Locally, our CRA has webpack (which uses SPA server) that understand that: they keep using index.html in the root. 
 
+How to let Netlify understand we are using a SPA?
 
+create a file at 'public' folder:
 
+react-zzaria-sistema-pedido/public
 
+new file:
 
+  _redirects
 
+Edit it, including:
 
+/* /index.html 200
 
+That means for each get request, should load index.html with status 200
 
+Meanwhile, Daciuk starts another database at Firebase, to be used as production-database of this application.
 
+After all setup, don't forget of the authorized domain in Firebase settings, including the domian of your Netlify.
 
-
+Remember that if you set a new database, all the settings we got in the previous one now should be copy and pasted to this new production database.
 
 
 class #172 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/124/sistema-pedidos
+Next project: Orders Management System
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Presentetion of the project
 
 
 class #173 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/125/sistema-pedidos
-
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120
 
 
 
