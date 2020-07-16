@@ -10109,7 +10109,7 @@ Allow read if user is logged:
 
           match /orders/{order} {
             allow read: if request.auth.uid == resource.data.userId;
-            allow write: if request.auth.uid == request.resource.data;
+            allow write: if request.auth.uid == request.resource.data.userId;
           }
         }
       }
