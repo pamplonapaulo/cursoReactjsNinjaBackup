@@ -1,64 +1,105 @@
-import React, { Suspense } from 'react'
-import { Switch, Route } from 'react-router-dom'
-import { withStyles } from '@material-ui/core'
-import Header from './header'
+import React, { lazy, Suspense } from 'react'
+import styled from 'styled-components'
+import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import {
+  Divider,
+  Drawer as MaterialDrawer,
+  List,
+  ListItem,
+  ListItemText,
+  Typography
+} from '@material-ui/core'
 
 import * as routes from 'routes'
 
-const ChoosePizzaSize = React.lazy(() => import('pages/choose-pizza-size'))
-const ChoosePizzaFlavours = React.lazy(() => import('pages/choose-pizza-flavours'))
-const ChoosePizzaAmount = React.lazy(() => import('pages/choose-pizza-amount'))
-const Checkout = React.lazy(() => import('pages/checkout'))
-const CheckoutConfirmation = React.lazy(() => import('pages/checkout-confirmation'))
-const CheckoutSuccess = React.lazy(() => import('pages/checkout-success'))
+const Orders = lazy(() => import('pages/orders'))
+const PizzasSizes = lazy(() => import('pages/pizzas-sizes'))
+const PizzasFlavours = lazy(() => import('pages/pizzas-flavours'))
 
-const Main = () => (
-  <>
-    <Header />
+const Main = () => {
+  const { pathname } = useLocation()
 
-    <Spacer />
+  return (
+    <>
+      <Drawer variant='permanent'>
+        <DrawerContent>
 
-    <Suspense fallback='Loading...'>
-      <Switch>
-        <Route
-          path={routes.HOME}
-          exact
-          component={ChoosePizzaSize}
-        />
-        <Route
-          path={routes.CHOOSE_PIZZA_FLAVOURS}
-          component={ChoosePizzaFlavours}
-        />
-        <Route
-          path={routes.CHOOSE_PIZZA_AMOUNT}
-          component={ChoosePizzaAmount}
-        />
-        <Route
-          path={routes.CHECKOUT}
-          exact
-          component={Checkout}
-        />
+          <Typography variant='h4'>React-zzaria</Typography>
 
-        <Route
-          path={routes.CHECKOUT_CONFIRMATION}
-          component={CheckoutConfirmation}
-        />
+          <Typography>(Register System)</Typography>
 
-        <Route
-          path={routes.CHECKOUT_SUCCESS}
-          component={CheckoutSuccess}
-        />
-      </Switch>
-    </Suspense>
-  </>
-)
+        </DrawerContent>
 
-const style = (theme) => ({
-  main: theme.mixins.toolbar
-})
+        <Divider />
 
-const Spacer = withStyles(style)(({ classes }) => (
-  <div className={classes.main} />
-))
+        <List>
+          {menuItems.map(item => (
+            <ListItem
+              key={item.label}
+              button
+              selected={pathname === item.link}
+              component={Link}
+              to={item.link}
+            >
+              <ListItemText>{item.label}</ListItemText>
+            </ListItem>
+          ))}
+        </List>
+
+      </Drawer>
+
+      <Content>
+        <Suspense fallback='Loading...'>
+          <Switch>
+            {menuItems.map(item => (
+              <Route key={item.link} path={item.link} exact={item.exact}>
+                <item.component />
+              </Route>
+            ))}
+          </Switch>
+        </Suspense>
+      </Content>
+    </>
+  )
+}
+
+const menuItems = [
+  {
+    label: 'Orders',
+    link: routes.HOME,
+    component: Orders,
+    exact: true
+  },
+  {
+    label: 'Pizza Sizes',
+    link: routes.PIZZAS_SIZES,
+    component: PizzasSizes
+  },
+  {
+    label: 'Pizza Flavours',
+    link: routes.PIZZAS_FLAVOURS,
+    component: PizzasFlavours
+  }
+]
+
+const Drawer = styled(MaterialDrawer)`
+  && {
+    .MuiPaper-root {
+      width: ${({ theme }) => theme.extend.drawerWidth}px;
+    }
+  }
+`
+
+const DrawerContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${({ theme }) => theme.spacing(1)}px;
+  text-align: center;
+`
+
+const Content = styled.main`
+  margin-left: ${({ theme }) => theme.extend.drawerWidth}px;
+  padding: ${({ theme }) => theme.spacing(3)}px;
+`
 
 export default Main
