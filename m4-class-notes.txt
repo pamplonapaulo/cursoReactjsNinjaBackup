@@ -10275,205 +10275,1002 @@ Presentetion of the project
 class #173 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/120
 
+Starting folder and files of System Register
+
+1 - copy system orders into system register
+
+2 - cleaning up / removing some files
 
 
+After removing some files, there are some comments about other updates:
+
+src/pages/main.js:
+
+Daciuk's version of react-router-dom now is 5, which was alredy for me btw.
+
+That allows us to have a sintax a bit different:
+
+Insted of this old code:
+
+        <Route
+          path={routes.HOME}
+          exact
+          component={ChoosePizzaSize}
+        />
+
+Is the same as this:
+
+        <Route path={routes.HOME} exact>
+          <ChoosePizzaSize />
+        </Route>
 
 
+This version of react-router comes with hooks, so we don't have to inject via props. It's still working in the old fashion if you will.
+
+Also could be that:
+
+  <Route path={routes.HOME} exact children={<ChoosePizzaSize />} />
+
+  Which behind the scenes would be this:
+
+    React.createElement(ChoosePizzaSize, {props}, {children})
 
 
+src/root.js:
+
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+
+    We removed the <Route/> and now have directly the <App />. No longer need the Route.
+    
+    If later we need something from react-router we gonna use Hooks insted of pass data via props, unless we need to isolate the component, which is not the case right here. It's better to reach data via Hooks.
+
+    Later, after all cleaning up, Daciuk ran another create-react-app, Daciuk wonders if other dependencies may have updates available.
+
+    If just running 'react-script', to update to the last version of CRA, we wouldn´t have those other files updates, such as the ones in 'public' etc.
+
+Ideally, do not install from global react-react-app:
+
+  create-react-app <my-app>
+
+But if using NPM and at least from v5, then use NPX:
+
+  npx create-react-app <my-app>
+
+It runs a package that could be used as CLI (command line).
+
+So insted of having a single (global) verion of create-react-app, we could use always the most fresh version available.
+
+If using YARN:
+
+  yarn create react-app <my-app>
+
+  Yarn already comes with 'create' command. Any package which's name starts with 'create-something' is automaticaly installed if you pass the rest of the name without 'create'. Yarn will know that it's about 'create-react-app'. So here we are running:
+
+    yarn create react-app system-register-new
+
+  This new version of CRA already comes with jest-dom.
+
+      "@testing-library/jest-dom": "^4.2.4",
+
+  But in fact my own previous installation was already up to date, no differences at all.
+
+  Reminder: before install n-de_modules over our current package.json, remember always to check and remove any ^ (caret)
+
+Warning: DO not update your depedencies all at once like Daciuk does in this class, himself warns us, unless it's a brand new application. IF something already started, have a new branch in your repo before do that.
+
+At system-register-new (by most recent CRA): src/index.js
+
+New:
+
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+
+Moved this replacing:
+
+    <ErrorBoundary>
+      {(hasError) => (
+        <Root hasError={hasError} />
+      )}
+    </ErrorBoundary>,
+
+At it does?
+
+Wraps the whole app, makes sure we have no bug in the app. Also, if a very old feature that may become a problem will generate a warnign to force you to update it. From now, it's important to have it wrapping everything.
 
 
+At: src/serviceWorker.js
+
+Copy the new and replace the old. It turns our app into a PWA (progressive web application).
+
+src/setupTests.js:
+
+    Include it in the project.
+
+public/index.html
+
+    (already had)
+
+public/manifest.json
+
+    (already had)
+
+robots.txt + logos
+
+    (already had)
+
+Firebase:
+
+  Project Settings
+
+  Each app must be set with different 'nick-names' in Firebase, which generates them a single appId for each one.
+
+  Everything else will have the same settings.
 
 
+src/app.js
 
+Insted of 
 
+    function App ({ location }) { }
 
+remove this prop and import the hook 'useLocation':
+
+  import { useLocation } from 'react-router-dom'
+
+And use it:
+
+  const location = useLocation()
+
+Remove also the prop-types from 'location' prop just removed.
 
 
 class #174 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/126/sistema-pedidos
+Lint improvement
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/121
 
+How to control what erros block the app and what just warn the dev?
 
+Install at Terminal:
 
+  yarn add --dev --exact eslint-plugin-only-warn
 
+then at package.json, include this 'only-warn' after extends:
 
-
-
-
-
-
-
-
-
-
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "standard",
+      "standard-react"
+    ],
+    "plugins": [
+      "only-warn"
+    ]
+  },
 
 
 class #175 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/127/sistema-pedidos
+Drawer
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/122
+
+main.js:
+
+  import { Drawer } from '@material-ui/core'
+
+  <Drawer variant='permanent'>
+    Drawer
+  </Drawer>
 
 
 
+Drawer Margin: global variable to control margin
 
 
+root.js:
 
+drawerWidth
 
+      const theme = createMuiTheme({
+        typography: {
+          useNextVariant: true
+        },
 
+        extend: {
+          drawerWidth: 280
+        }
+      })
 
+main.js:
 
+      const Drawer = styled(MaterialDrawer)`
+        && {
+          .MuiPaper-root {
+            width: ${({ theme }) => theme.extend.drawerWidth}px;
+          }
+        }
+      `
 
-
-
-
+      const Content = styled.main`
+        margin-left: ${({ theme }) => theme.extend.drawerWidth}px;
+        padding: ${({ theme }) => theme.spacing(3)}px;
+      `
 
 
 
 class #176 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/128/sistema-pedidos
+Drawer items
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/123
 
+import {
+  Divider,
+  Drawer as MaterialDrawer,
+  List,
+  ListItem,
+  ListItemText,
+  Typography
+} from '@material-ui/core'
 
+const menuItems = [
+  {
+    label: 'Orders'
+  },
+  {
+    label: 'Pizza Sizes'
+  },
+  {
+    label: 'Pizza Flavours'
+  }
+]
 
-
-
-
-
-
-
-
-
-
-
-
+<List>
+  {menuItems.map(item => (
+    <ListItem key={item.label} button>
+      <ListItemText>{item.label}</ListItemText>
+    </ListItem>
+  ))}
+</List>
 
 
 class #177 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/129/sistema-pedidos
+Pages base
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/124
 
+main.js:
 
+          import React, { lazy, Suspense } from 'react'
+          import styled from 'styled-components'
+          import { Link, Route, Switch } from 'react-router-dom'
+          import {
+            Divider,
+            Drawer as MaterialDrawer,
+            List,
+            ListItem,
+            ListItemText,
+            Typography
+          } from '@material-ui/core'
 
+          import * as routes from 'routes'
 
+          const Orders = lazy(() => import('pages/orders'))
+          const PizzasSizes = lazy(() => import('pages/pizzas-sizes'))
+          const PizzasFlavours = lazy(() => import('pages/pizzas-flavours'))
 
+          const Main = () => (
+            <>
+              <Drawer variant='permanent'>
+                <DrawerContent>
 
+                  <Typography variant='h4'>React-zzaria</Typography>
 
+                  <Typography>(Register System)</Typography>
 
+                </DrawerContent>
 
+                <Divider />
 
+                <List>
 
+                  {menuItems.map(item => (
+                    <ListItem
+                      key={item.label}
+                      button
+                      component={Link}
+                      to={item.link}
+                    >
+                      <ListItemText>{item.label}</ListItemText>
+                    </ListItem>
+                  ))}
 
+                </List>
 
+              </Drawer>
 
+              <Content>
+                <Suspense fallback='Loading...'>
+                  <Switch>
+                    {menuItems.map(item => (
+                      <Route key={item.link} path={item.link} exact={item.exact}>
+                        <item.component />
+                      </Route>
+                    ))}
+                  </Switch>
+                </Suspense>
+              </Content>
+            </>
+          )
 
+          const menuItems = [
+            {
+              label: 'Orders',
+              link: routes.HOME,
+              component: Orders,
+              exact: true
+            },
+            {
+              label: 'Pizza Sizes',
+              link: routes.PIZZAS_SIZES,
+              component: PizzasSizes
+            },
+            {
+              label: 'Pizza Flavours',
+              link: routes.PIZZAS_FLAVOURS,
+              component: PizzasFlavours
+            }
+          ]
+
+          const Drawer = styled(MaterialDrawer)`
+            && {
+              .MuiPaper-root {
+                width: ${({ theme }) => theme.extend.drawerWidth}px;
+              }
+            }
+          `
+
+          const DrawerContent = styled.div`
+            display: flex;
+            flex-direction: column;
+            padding: ${({ theme }) => theme.spacing(1)}px;
+            text-align: center;
+          `
+
+          const Content = styled.main`
+            margin-left: ${({ theme }) => theme.extend.drawerWidth}px;
+            padding: ${({ theme }) => theme.spacing(3)}px;
+          `
+
+          export default Main
 
 
 class #178 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/130/sistema-pedidos
+Menu Item active / deactivated
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/125
 
+import { useLocation } from 'react-router-dom'
 
+const { pathname } = useLocation()
 
+selected={pathname === item.link}
 
-
-
-
-
-
-
-
-
-
-
+<List>
+  {menuItems.map(item => (
+    <ListItem
+      key={item.label}
+      button
+      selected={pathname === item.link}
+      component={Link}
+      to={item.link}
+    >
+      <ListItemText>{item.label}</ListItemText>
+    </ListItem>
+  ))}
+</List>
 
 
 class #179 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/131/sistema-pedidos
+Orders.js
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/126
 
+Markup:
 
+          import React from 'react'
+          import {
+            Paper,
+            Table,
+            TableBody,
+            TableCell,
+            TableContainer,
+            TableHead,
+            TableRow,
+            Typography
+          } from '@material-ui/core'
 
+          function Orders () {
+            return (
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>
+                        <Typography>
+                          Order info
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
 
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <div>
+                          <Typography variant='button'>
+                            Order time
+                          </Typography>
+                        </div>
 
+                        <div>
+                          <Typography variant='button'>
+                            Order:
+                          </Typography>
 
+                          <ul>
+                            <li>
+                              <Typography variant='button'>
+                                1 pizza media de {' '}
+                                Frango com catupiry e calabresa
+                              </Typography>
+                            </li>
+                          </ul>
+                        </div>
 
+                        <div>
+                          <Typography>
+                            Address to delivery
+                          </Typography>
 
+                          <Typography>
+                            Rua das Laranjeiras 999, 1222  {' '}
+                            Bairro: XPTO - Postcode:
+                            São Paulo - SP
+                          </Typography>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )
+          }
 
-
-
-
-
-
-
+          export default Orders
 
 
 class #180 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/132/sistema-pedidos
+Orders.js - Styling
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/127
 
 
+          import React from 'react'
+          import styled from 'styled-components'
+          import {
+            Paper,
+            Table,
+            TableBody,
+            TableCell,
+            TableContainer as MaterialTableContainer,
+            TableHead,
+            TableRow,
+            Typography
+          } from '@material-ui/core'
 
+          function Orders () {
+            return allOrderStatus.map(orderStatus => (
+              <TableContainer key={orderStatus.title}>
+                <TableTitle>
+                  {orderStatus.title}
+                </TableTitle>
+                <Table>
+                  <THead>
+                    <TableRow>
+                      <Th>
+                        <Typography>
+                          Informações do pedido
+                        </Typography>
+                      </Th>
+                    </TableRow>
+                  </THead>
 
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <div>
+                          <Subtitle>
+                            Order time: 10:20H
+                          </Subtitle>
+                        </div>
 
+                        <div>
+                          <Subtitle>
+                            Order:
+                          </Subtitle>
 
+                          <ul>
+                            <li>
+                              <Typography>
+                                1 pizza media de {' '}
+                                Frango com catupiry e calabresa
+                              </Typography>
+                            </li>
+                          </ul>
+                        </div>
 
+                        <div>
+                          <Subtitle>
+                            Address to delivery
+                          </Subtitle>
 
+                          <Typography>
+                            Rua das Laranjeiras 999, 1222  {' '}
+                            Bairro: XPTO - Postcode:
+                            São Paulo - SP
+                          </Typography>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ))
+          }
 
+          const allOrderStatus = [
+            {
+              title: 'Pending orders'
+            },
+            {
+              title: 'Orders under production'
+            },
+            {
+              title: 'On it\'s way'
+            },
+            {
+              title: 'Orders done'
+            }
+          ]
 
+          const TableContainer = styled(MaterialTableContainer).attrs({
+            component: Paper
+          })`
+            && {
+              margin-bottom: ${({ theme }) => theme.spacing(3)}px;
+            }
+          `
 
+          const TableTitle = styled(Typography).attrs({
+            variant: 'h6'
+          })`
+            && {
+              padding: ${({ theme }) => theme.spacing(3)}px;
+            }
+          `
 
+          const Subtitle = styled(Typography).attrs({
+            variant: 'button'
+          })`
+            && {
+              font-weight: bold;
+            }
+          `
 
+          const THead = styled(TableHead)`
+            && {
+              background: ${({ theme }) => theme.palette.common.black};
+            }
+          `
 
+          const Th = styled(TableCell)`
+            && {
+              color: ${({ theme }) => theme.palette.common.white};
+            }
+          `
 
+          export default Orders
 
 
 class #181 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/133/sistema-pedidos
+Get orders from Firebase
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/128
+
+custom hook: useOrders
+
+hooks/db/
+
+        collection.js:
+
+              import { useEffect, useState } from 'react'
+              import { db } from 'services/firebase'
+
+              function useCollection (collection) {
+                const [data, setData] = useState(null)
+
+                useEffect(() => {
+                  let mounted = true
+
+                  db.collection(collection).get().then(querySnapshot => {
+                    const docs = []
+
+                    querySnapshot.forEach(doc => {
+                      docs.push({
+                        id: doc.id,
+                        ...doc.data()
+                      })
+                    })
+
+                    if (mounted) {
+                      setData(docs)
+                    }
+                  })
+
+                  return () => {
+                    mounted = false
+                  }
+                }, [collection])
+
+                return data
+              }
+
+              export default useCollection
 
 
 
 
 
+        orders.js:
+
+              import { useEffect, useState } from 'react'
+              import { db } from 'services/firebase'
+
+              function useOrders () {
+                const [ orders, setOrders ] = useState(null)
+
+                useEffect(() => {
+                  db.collection('orders').get().then(querySnapshot => {
+                    const docs = []
+
+                    querySnapshot.forEach(doc => {
+                      docs.push({
+                        id: doc.id,
+                        ...doc.data()
+                      })
+                    })
+
+                    setOrders(docs)
+                  })
+                }, [])
+                
+                return { orders }
+              }
+
+              export default useOrders
 
 
+Firebase edit rules: temporary rule for tests
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /pizzasSizes/{size} {
+      allow read: if request.auth.uid != null;
+    }
+
+    match /pizzasFlavours/{flavour} {
+      allow read: if request.auth.uid != null;
+    }
+
+    match /orders/{order} {
+      allow read: if request.auth.uid == resource.data.userId || request.auth.uid != null;
+      allow write: if request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
 
 
+New code:
 
+ || request.auth.uid != null;
 
+It means any not null user will have access.  
 
+Here is a refactoring along all rules in Firebase:
 
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          function isAuthenticated () {
+            return request.auth.uid != null
+          }
+          
+          function isAdmin () {
+            return request.auth.uid != null;
+          }
+          
+          function isOwner () {
+            return request.auth.uid == resource.data.userId;
+          }
+          
+          function isOwnOrder () {
+            return request.auth.uid == request.resource.data.userId;
+          }
+          
+          match /pizzasSizes/{size} {
+            allow read: if isAuthenticated();
+          }
 
+          match /pizzasFlavours/{flavour} {
+            allow read: if isAuthenticated();
+          }
 
-
-
+          match /orders/{order} {
+            allow read: if isOwner() || isAdmin();
+            allow write: if isOwnOrder();
+          }
+        }
+      }
 
 class #182 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Display Orders on screen
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/129
 
 
 
+For a map in a array that actually doesn't exist and which's variable is still null:
+
+    use this short circuit:
+
+          {orders && orders.map(order => ( ....
+
+    Or....
+
+      Use this new feature: "optional chaining"
+
+          {orders?.map(order => ( ....
 
 
+Firebase toDate()
+
+        <Subtitle>
+          Order time: {' '} {order.createdAt.toDate().toString()}
+        </Subtitle>
+
+// ORDER TIME: THU JUL 16 2020 11:41:47 GMT-0300 (BRASILIA STANDARD TIME)
+
+Intl api (interlationalization)
+(google 'Intl mdn' for more information)
 
 
+    <Subtitle>
+      Order time: {' '} {getHour(order.createdAt.toDate())}
+    </Subtitle>
+
+    function getHour (date) {
+      const options = {
+        hour: 'numeric',
+        minute: 'numeric'
+      }
+      
+      return Intl.DateTimeFormat('pt-BR', options).format(date)
+    }
+
+// ORDER TIME: 11:41
 
 
+src/pages/orders/orders.js
 
+            import React from 'react'
+            import styled from 'styled-components'
+            import {
+              Paper,
+              Table,
+              TableBody,
+              TableCell,
+              TableContainer as MaterialTableContainer,
+              TableHead,
+              TableRow,
+              Typography
+            } from '@material-ui/core'
 
+            import { useOrders } from 'hooks'
 
+            function Orders () {
+              const { orders } = useOrders()
+              console.log('orders: ', orders)
 
+              function getHour (date) {
+                const options = {
+                  hour: 'numeric',
+                  minute: 'numeric'
+                }
 
+                return Intl.DateTimeFormat('pt-BR', options).format(date)
+              }
+
+              return allOrderStatus.map(orderStatus => (
+                <TableContainer key={orderStatus.title}>
+                  <TableTitle>
+                    {orderStatus.title}
+                  </TableTitle>
+                  <Table>
+                    <THead>
+                      <TableRow>
+                        <Th>
+                          <Typography>
+                            Informações do pedido
+                          </Typography>
+                        </Th>
+                      </TableRow>
+                    </THead>
+
+                    <TableBody>
+                      {orders?.map(order => (
+                        <TableRow key={order.id}>
+                          <TableCell>
+                            <div>
+                              <Subtitle>
+                                Order time: {' '} {getHour(order.createdAt.toDate())}
+                              </Subtitle>
+                            </div>
+
+                            <div>
+                              <Subtitle>
+                                Order:
+                              </Subtitle>
+
+                              <ul>
+                                <li>
+                                  <Typography>
+                                    1 pizza media de {' '}
+                                    Frango com catupiry e calabresa
+                                  </Typography>
+                                </li>
+                              </ul>
+                            </div>
+
+                            <div>
+                              <Subtitle>
+                                Address to delivery
+                              </Subtitle>
+
+                              <Typography>
+                                Rua das Laranjeiras 999, 1222  {' '}
+                                Bairro: XPTO - Postcode:
+                                São Paulo - SP
+                              </Typography>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ))
+            }
+
+            const allOrderStatus = [
+              {
+                title: 'Pending orders'
+              },
+              {
+                title: 'Orders under production'
+              },
+              {
+                title: 'On it\'s way'
+              },
+              {
+                title: 'Orders done'
+              }
+            ]
+
+            const TableContainer = styled(MaterialTableContainer).attrs({
+              component: Paper
+            })`
+              && {
+                margin-bottom: ${({ theme }) => theme.spacing(3)}px;
+              }
+            `
+
+            const TableTitle = styled(Typography).attrs({
+              variant: 'h6'
+            })`
+              && {
+                padding: ${({ theme }) => theme.spacing(3)}px;
+              }
+            `
+
+            const Subtitle = styled(Typography).attrs({
+              variant: 'button'
+            })`
+              && {
+                font-weight: bold;
+              }
+            `
+
+            const THead = styled(TableHead)`
+              && {
+                background: ${({ theme }) => theme.palette.common.black};
+              }
+            `
+
+            const Th = styled(TableCell)`
+              && {
+                color: ${({ theme }) => theme.palette.common.white};
+              }
+            `
+
+            export default Orders
 
 
 class #183 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Cont.
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/130
 
 
 
 
+When we are not about to modify items inside an array, it's acceptable to have index as key (while mapping this array). Nothing will be remoed or added.
+
+      <ul>
+        {order.pizzas.map((pizza, index) => (
+          <li key={index}>
+            <Typography>
+              1 pizza media de {' '}
+              Frango com catupiry e calabresa
+            </Typography>
+          </li>
+        ))}
+      </ul>
 
 
 
+This is beautiful:
 
+<ul>
+  {order.pizzas.map((pizza, index) => (
+    <li key={index}>
+      <Typography>
+        {pizza.amount} {' '}
+        {singularOrPlural(
+          pizza.amount,
+          'pizza',
+          'pizzas'
+        )}{' '}
+        {pizza.size.name.toUpperCase()} of {' '}
+        {pizza.flavours
+          .map(flavour => flavour.name)
+          .reduce((acc, flavour, index, array) => {
+            if (index === 0) {
+              return flavour
+            }
 
+            if (index === array.length - 1) {
+              return `${acc}, and ${flavour}`
+            }
 
-
+            return `${acc}, ${flavour}`
+          }, '')
+        }
+      </Typography>
+    </li>
+  ))}
+</ul>
 
 
 
@@ -10481,42 +11278,119 @@ class #183 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #184 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Address
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/131
 
 
+<TableBody>
+  {orders?.map(order => {
+    
+    const {
+      address,
+      number,
+      complement,
+      district,
+      code: postcode,
+      city,
+      state
+    } = order.address
 
+    ......
 
+    <div>
+      <Subtitle>
+        Address to delivery
+      </Subtitle>
 
-
-
-
-
-
-
-
-
-
+      <Typography>
+        {number} {' '} {address} {' '}
+        {complement && `, ${complement}`}<br />
+        {district}<br />
+        Postcode: {postcode}<br />
+        {city} {' / '} {state}
+      </Typography>
+    </div>
 
 
 class #185 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Order status
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/132
+
+  // {
+  //   pending: [],
+  //   inProgress: [],
+  //   outForDelivery: [],
+  //   delivered: []
+  // }
+
+
+hooks/db/orders.js:
+
+          import { useEffect, useState } from 'react'
+          import { db } from 'services/firebase'
+
+          function useOrders () {
+            const [orders, setOrders] = useState(null)
+
+            useEffect(() => {
+              const initialStatus = {
+                pending: [],
+                inProgress: [],
+                outForDelivery: [],
+                delivered: []
+              }
+
+              db.collection('orders').get().then(querySnapshot => {
+                const docs = []
+
+                querySnapshot.forEach(doc => {
+                  docs.push({
+                    id: doc.id,
+                    ...doc.data()
+                  })
+                })
+
+                const newOrders = docs.reduce((acc, doc) => {
+                  return {
+                    ...acc,
+                    pending: acc.pending.concat(doc)
+                  }
+                }, initialStatus)
+
+                setOrders(newOrders)
+              })
+            }, [])
+
+            return { orders }
+          }
+
+          export default useOrders
 
 
 
+pages/orders/orders.js:     orders?.pending.map
 
+        <TableBody>
+          {orders?.pending.map(order => {
+            const {
+              address,
+              number,
+              complement,
+              district,
+              code: postcode,
+              city,
+              state
+            } = order.address
 
-
-
-
-
-
-
-
-
-
-
+            return (
+              <TableRow key={order.id}>
 
 class #186 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/133
 
 
 
