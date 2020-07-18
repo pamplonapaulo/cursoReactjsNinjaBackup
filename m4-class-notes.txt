@@ -11389,242 +11389,1022 @@ pages/orders/orders.js:     orders?.pending.map
               <TableRow key={order.id}>
 
 class #186 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Order Status
 
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/133
 
 
 
+Hook: useMemo
+
+It creates a reference em memory of an object. In our case (bellow), it avoids the code from keep recreating our order status every time the component gets rerendered, which would cause an infinite loop. The status object is being passed in the useEffect but the useMemo tells the code that this is not actually changing, but using the reference in memory.
+
+useMemo also expect an array with dependencies. It's content will get recalculated if one of it's dependencies change. Here, our array from useMemo has no dependencies.
+
+src/hooks/db/orders.js
+
+          import { useEffect, useState, useMemo } from 'react'
+          import { db } from 'services/firebase'
+
+          function useOrders () {
+            const [orders, setOrders] = useState(null)
+
+            const status = useMemo(() => ({
+                pending: 'pending',
+                inProgress: 'inProgress',
+                outForDelivery: 'outForDelivery',
+                delivered: 'delivered'
+            }), [])
+
+            useEffect(() => {
+              db.collection('orders').get().then(querySnapshot => {
+                const docs = []
+
+                querySnapshot.forEach(doc => {
+                  docs.push({
+                    id: doc.id,
+                    ...doc.data()
+                  })
+                })
+
+                const initialStatus = object.keys(status).reduce((acc, status) => {
+                  acc[status] = []
+                  return acc
+                }, {})
+
+                setOrders(docs.reduce((acc, doc) => ({
+                  ...acc,
+                  pending: acc.pending.concat(doc)
+                }), initialStatus)
+                )
+              })
+            }, [status])
+
+            return { orders, status }
+          }
+
+          export default useOrders
+
+
+src/hooks/db/orders.js:
+
+                import { useEffect, useState, useMemo } from 'react'
+                import { db } from 'services/firebase'
+
+                function useOrders () {
+                  const [orders, setOrders] = useState(null)
+
+                  const status = useMemo(() => ({
+                    pending: 'pending',
+                    inProgress: 'inProgress',
+                    outForDelivery: 'outForDelivery',
+                    delivered: 'delivered'
+                  }), [])
+
+                  useEffect(() => {
+                    db.collection('orders').get().then(querySnapshot => {
+                      const docs = []
+
+                      querySnapshot.forEach(doc => {
+                        docs.push({
+                          id: doc.id,
+                          ...doc.data()
+                        })
+                      })
+
+                      const initialStatus = Object.keys(status).reduce((acc, status) => {
+                        acc[status] = []
+                        return acc
+                      }, {})
+
+                      setOrders(docs.reduce((acc, doc) => {
+                        const mainStatus = doc.status || status.pending
+
+                        return {
+                          ...acc,
+                          [mainStatus]: acc[mainStatus].concat(doc)
+                        }
+
+                      }, initialStatus)
+                      )
+                    })
+                  }, [status])
+
+                  return { orders, status }
+                }
+
+                export default useOrders
+
+
+src/pages/orders/orders.js:
+
+                import React, { useMemo } from 'react'
+                import styled from 'styled-components'
+                import {
+                  Paper,
+                  Table,
+                  TableBody,
+                  TableCell,
+                  TableContainer as MaterialTableContainer,
+                  TableHead,
+                  TableRow,
+                  Typography
+                } from '@material-ui/core'
+
+                import { useOrders } from 'hooks'
+
+                import { singularOrPlural } from 'utils'
+
+                function Orders () {
+                  const { orders, status } = useOrders()
+                  console.log('orders: ', orders)
+
+                  const allOrderStatus = useMemo(() => {
+                    return [
+                      {
+                        title: 'Pending orders',
+                        type: status.pending
+                      },
+                      {
+                        title: 'Under production',
+                        type: status.inProgress
+                      },
+                      {
+                        title: 'On it\'s way',
+                        type: status.outForDelivery
+                      },
+                      {
+                        title: 'Done',
+                        type: status.delivered
+                      }
+                    ]
+                  }, [status])
+
+                  function getHour (date) {
+                    const options = {
+                      hour: 'numeric',
+                      minute: 'numeric'
+                    }
+
+                    return Intl.DateTimeFormat('pt-BR', options).format(date)
+                  }
+
+                  return allOrderStatus.map(orderStatus => (
+                    <TableContainer key={orderStatus.title}>
+                      <TableTitle>
+                        {orderStatus.title}
+                      </TableTitle>
+                      <Table>
+                        <THead>
+                          <TableRow>
+                            <Th>
+                              <Typography>
+                                Order details
+                              </Typography>
+                            </Th>
+                          </TableRow>
+                        </THead>
+
+                        <TableBody>
+                          {orders?.[orderStatus.type].length === 0 && (
+                            <TableRow>
+                              <TableCell>
+                                <Typography>No orders here.</Typography>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          {orders?.[orderStatus.type].map(order => {
+                            const {
+                              address,
+                              number,
+                              complement,
+                              district,
+                              code: postcode,
+                              city,
+                              state
+                            } = order.address
+
+                            return (
+                              <TableRow key={order.id}>
+                                <TableCell>
+                                  <div>
+                                    <Subtitle>
+                                      Order time: {' '} {getHour(order.createdAt.toDate())}
+                                    </Subtitle>
+                                  </div>
+
+                                  <div>
+                                    <Subtitle>
+                                      Order:
+                                    </Subtitle>
+
+                                    <ul>
+                                      {order.pizzas.map((pizza, index) => (
+                                        <li key={index}>
+                                          <Typography>
+                                            {pizza.amount} {' '}
+                                            {singularOrPlural(
+                                              pizza.amount,
+                                              'pizza',
+                                              'pizzas'
+                                            )}{' '}
+                                            {pizza.size.name.toUpperCase()} of {' '}
+                                            {pizza.flavours
+                                              .map(flavour => flavour.name)
+                                              .reduce((acc, flavour, index, array) => {
+                                                if (index === 0) {
+                                                  return flavour
+                                                }
+
+                                                if (index === array.length - 1) {
+                                                  return `${acc}, and ${flavour}`
+                                                }
+
+                                                return `${acc}, ${flavour}`
+                                              }, '')}
+                                          </Typography>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+
+                                  <div>
+                                    <Subtitle>
+                                      Address to delivery
+                                    </Subtitle>
+
+                                    <Typography>
+                                      {number} {' '} {address} {' '}
+                                      {complement && `, ${complement}`}<br />
+                                      {district}<br />
+                                      Postcode: {postcode}<br />
+                                      {city} {' / '} {state}
+                                    </Typography>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  ))
+                }
+
+                const TableContainer = styled(MaterialTableContainer).attrs({
+                  component: Paper
+                })`
+                  && {
+                    margin-bottom: ${({ theme }) => theme.spacing(3)}px;
+                  }
+                `
+
+                const TableTitle = styled(Typography).attrs({
+                  variant: 'h6'
+                })`
+                  && {
+                    padding: ${({ theme }) => theme.spacing(3)}px;
+                  }
+                `
+
+                const Subtitle = styled(Typography).attrs({
+                  variant: 'button'
+                })`
+                  && {
+                    font-weight: bold;
+                  }
+                `
+
+                const THead = styled(TableHead)`
+                  && {
+                    background: ${({ theme }) => theme.palette.common.black};
+                  }
+                `
+
+                const Th = styled(TableCell)`
+                  && {
+                    color: ${({ theme }) => theme.palette.common.white};
+                  }
+                `
+
+                export default Orders
 
 
 
-
-
-
-
-
-
-
-
+That's a very long class: 25 minutes. I recomend myself to later watch it again.
 
 
 class #187 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Button change order status
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/134
 
 
 
+Fab: Floating Action Button (Material-ui)
 
 
+  const allOrderStatus = useMemo(() => {
+    return [
+      {
+        title: 'Pending orders',
+        type: status.pending,
+        nextAction: status.inProgress,
+        nextButtonTitle: 'Under production'
+      },
+      {
+        title: 'Under production',
+        type: status.inProgress,
+        nextAction: status.outForDelivery,
+        nextButtonTitle: 'On it\'s way'
+      },
+      {
+        title: 'On it\'s way',
+        type: status.outForDelivery,
+        nextAction: status.delivered,
+        nextButtonTitle: 'Done'
+      },
+      {
+        title: 'Done',
+        type: status.delivered
+      }
+    ]
+  }, [status])
+
+  <TableCell align='center'>
+    <Fab
+      color='primary'
+      title={`Change status to "${orderStatus.nextButtonTitle}"`}
+    />
+  </TableCell>
 
 
+Every component have to start with capital, but here:
 
+  <orderStatus.icon />
 
+Since it's just a property from an object, we don't have to.
 
-
-
+  {orderStatus.nextAction && (
+    <TableCell align='center'>
+      <Fab
+        color='primary'
+        title={`Change status to "${orderStatus.nextButtonTitle}"`}
+        onClick={() => console.log(orderStatus.nextAction)}
+      >
+        <orderStatus.icon />
+      </Fab>
+    </TableCell>
+  )}
 
 
 
 
 
 class #188 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Firebase: change status
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/135
 
 
+useCallback: returns a function
+useMemo: returns an object
+
+  PS: Both memorize something.
+
+hooks/db/orders.js:
+
+  Set the callback:
+
+    const updateOrder = useCallback(async ({ orderId, status }) => {
+      await db.collection('orders').doc(orderId).set({ status }, { merge: true })
+      // after await, page gets reloaded:
+      getOrders()
+    }, [getOrders])
+
+  export it:
+  return { orders, status, updateOrder }
+
+pages/orders:
+
+  Get the callback from the hook:
+  const { orders, status, updateOrder } = useOrders()
+
+  Put the callback on the button:
+  <Fab
+    color='primary'
+    title={`Change status to "${orderStatus.nextButtonTitle}"`}
+    onClick={() => updateOrder({
+      orderId: order.id,
+      status: orderStatus.nextAction
+    })}
+  >
+
+functions created with const don't make hoisting, so make sure the function call is bellow it's declaration. (see const updateOrder)
 
 
+Fixing order of orders:
 
+    orderedBy('createdAt', 'asc')
 
-
-
-
-
-
-
-
-
-
+    db.collection('orders').orderBy('createdAt', 'asc').get().then(
+      querySnapshot => { }
+      )
+    }, [status])
 
 
 class #189 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Page Pizza Sizes
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/136
 
+pizzas-sizes.js:
 
+          import React from 'react'
+          import {
+            Table,
+            TableBody,
+            TableRow,
+            TableCell
+          } from '@material-ui/core'
+          import { TableContainer, Th, THead, TableTitle } from 'ui'
+          import { useCollection } from 'hooks'
+          import { singularOrPlural } from 'utils'
 
+          function PizzasSizes () {
+            const pizzasSizes = useCollection('pizzasSizes')
+            return (
+              <TableContainer>
+                <TableTitle>
+                  Sizes:
+                </TableTitle>
 
+                <Table>
+                  <THead>
+                    <Th>Name</Th>
+                    <Th>Diameter</Th>
+                    <Th>Slices</Th>
+                    <Th>Flavours</Th>
+                  </THead>
 
+                  <TableBody>
+                    {pizzasSizes?.map(pizza => (
+                      <TableRow key={pizza.id}>
+                        <TableCell>{pizza.name}</TableCell>
+                        <TableCell>{pizza.size} cm.</TableCell>
+                        <TableCell>{pizza.slices} slices</TableCell>
+                        <TableCell>
+                          {pizza.flavours} {' '}
+                          {singularOrPlural(pizza.flavours, 'flavour', 'flavours')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )
+          }
 
-
-
-
-
-
-
-
-
-
-
+          export default PizzasSizes
 
 class #190 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Pizzas Sizes Page: Form
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/137
 
+src/pages/pizzas-sizes:
 
+- table.js (basically the previosu version of our pizzas-sizes.js from last class)
+- form.js
 
+form.js:
 
+          import React from 'react'
+          import styled from 'styled-components'
+          import {
+            Button,
+            Grid,
+            Typography
+          } from '@material-ui/core'
+          import { TextField } from 'ui'
 
+          function FormRegisterSizes () {
+            return (
+              <Container>
+                <Grid item xs={12}>
+                  <Typography variant='h4'>Add new size</Typography>
+                </Grid>
 
+                <Grid item container xs={12} spacing={2} component='form'>
+                  <TextField
+                    label='Size Name'
+                  />
 
+                  <TextField
+                    label='Diameter'
+                  />
 
+                  <TextField
+                    label='Slices amount'
+                  />
 
+                  <TextField
+                    label='Flavours amount'
+                  />
 
+                  <Grid item container justify='flex-end' spacing={2}>
+                    <Grid item>
+                      <Button variant='contained'>Cancel</Button>
+                    </Grid>
+                    <Grid item>
+                      <Button variant='contained' color='primary' type='submit'>Register</Button>
+                    </Grid>
+                  </Grid>
 
+                </Grid>
+              </Container>
+            )
+          }
 
+          const Container = styled(Grid).attrs({
+            container: true,
+            spacing: 2
+          })`
+            && {
+              margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+            }
+          `
 
-
-
-
-class #190 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          export default FormRegisterSizes
 
 class #191 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Action Buttons (Markup)
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/138
 
 
+import { Add, Delete, Edit } from '@material-ui/icons'
 
+<Grid item>
+  <Button startIcon={<Add />} color='primary'>Add new size</Button>
+</Grid>
 
-
-
-
-
-
-
-
-
-
-
-
+<TableCell align='right'>
+  <Button startIcon={<Edit />}>Edit</Button>
+  <Button startIcon={<Delete />} color='secondary'>Remove</Button>
+</TableCell>
 
 
 class #192 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Routes inside Form Page (Actions)
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/139
 
 
+routes.js:
+
+      export const HOME = '/'
+      export const LOGIN = '/login'
+      export const PIZZAS_SIZES = '/sizes'
+      export const PIZZAS_FLAVOURS = '/flavours'
+
+      // actions:
+      export const NEW = '/new'
+
+pizzas-sizes.js:
+
+      import React from 'react'
+      import { Route } from 'react-router-dom'
+      import TablePizzasSizes from './table'
+      import FormRegisterSize from './form'
+      import { PIZZAS_SIZES, NEW } from 'routes'
+
+      function PizzasSizes () {
+        return (
+          <>
+            <Route path={`${PIZZAS_SIZES}${NEW}`}>
+              <FormRegisterSize />
+            </Route>
+            <TablePizzasSizes />
+          </>
+        )
+      }
+
+      export default PizzasSizes
+
+table.js:
+
+      import { Link } from 'react-router-dom'
+      import { PIZZAS_SIZES, NEW } from 'routes'
+
+      <Button
+        startIcon={<Add />}
+        color='primary'
+        component={Link}
+        to={`${PIZZAS_SIZES}${NEW}`}
+      >
+        Add new size
+      </Button>
 
 
+Now the 'cancel' action...
+
+form.js:
+
+        import { Link } from 'react-router-dom'
+        import { PIZZAS_SIZES } from 'routes'
+
+        <Button
+          variant='contained'
+          component={Link}
+          to={PIZZAS_SIZES}
+        >
+          Cancel
+        </Button>
 
 
+But still have one issue: if user clicks multiple times, the location.history gets many pages in the history.
+
+So let's solve this with conditions:
 
 
+useRouteMatch
+
+    Use it to know if any route got match with a given value you pass.
 
 
+import { useRouteMatch } from 'react-router-dom'
 
+const newSizePath = useRouteMatch(`${PIZZAS_SIZES}${NEW}`)
 
+// Now pass this in the Button -> disabled={!!newSizePath}
 
-
-
+<Button
+  startIcon={<Add />}
+  color='primary'
+  component={Link}
+  to={`${PIZZAS_SIZES}${NEW}`}
+  disabled={!!newSizePath}
+>
+  Add new size
+</Button>
 
 
 class #193 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Register the new size on Firebase
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/140
+
+
+form.js:
+
+<Form onSubmit={handleSubmit}>
+
+const Form = styled(Grid).attrs({
+  item: true,
+  container: true,
+  xs: 12,
+  spacing: 2,
+  component: 'form'
+})``
+
+const handleSubmit = useCallback((e) => {
+  e.preventDefault()
+  const { name, size, slices, flavours } = e.target.elements
+
+  console.log(name.value, size.value, slices.value, flavours.value)
+}, [])
+
+
+How to easily convert string into number?
+
+    const normalizedData = {
+      name: name.value,
+      size: +size.value,
+      slices: +slices.value,
+      flavours: +flavours.value  
+    }
+
+    Same as:
+
+    const normalizedData = {
+      name: name.value,
+      size: Number(size.value),
+      slices: Number(slices.value),
+      flavours: Number(flavours.value)  
+    }
+
+  After all...
+
+
+        const { add } = useCollection('pizzasSizes')
+
+        const handleSubmit = useCallback((e) => {
+          e.preventDefault()
+          const { name, size, slices, flavours } = e.target.elements
+
+          const normalizedData = {
+            name: name.value,
+            size: +size.value,
+            slices: +slices.value,
+            flavours: +flavours.value
+          }
+
+          add(normalizedData)
+        }, [add])
 
 
 
 
+  But also at our hooks, we must include de 'add' function:
+
+        --> custom hook 'useCollection'
+
+        hooks/db/collection.js
+
+              const add = useCallback((data) => {
+                console.log('New data: ', data)
+              }, [])
 
 
+    Renamed destructuring:
 
+    Since we changed out collection.js to include the 'add' function, this component now doesn't return the same as before.
 
+    From this return...
 
+          return data
 
+    Now gives us this...
 
+          return { data, add }
 
+    So at the table.js, insted of getting the data like this:
 
+          const pizzasSizes = useCollection('pizzasSizes')
 
+    We gonna get that way:
 
+          const { data: pizzasSizes } = useCollection('pizzasSizes')
 
+    before we write the new sizes in our Firebase, we have to change the rules and give prmissions for that:
+
+    the include will be:
+    
+              allow write: if isAdmin();
+
+    Which is inside this function:
+
+        match /pizzasSizes/{size} {
+          allow read: if isAuthenticated();
+          allow write: if isAdmin();
+        }
+
+    And which callsabck the isAdmin():
+
+      	function isAdmin () {
+          return request.auth.uid != null;
+        }
 
 class #194 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Auto-update Sizes Table
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/141
+
+  Include async/ await in our form submit:
+
+
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault()
+    const { name, size, slices, flavours } = e.target.elements
+
+    const normalizedData = {
+      name: name.value,
+      size: +size.value,
+      slices: +slices.value,
+      flavours: +flavours.value
+    }
+
+    await add(normalizedData)
+  }, [add])
+
+
+{ useHistory } from 'react-router-dom'
+
+Then push the browser to the other route when await is done:
+
+    history.push(PIZZAS_SIZES)
+
+
+
+collection.js:
+
+  import { useLocation } from 'react-router-dom'
+
+  const { pathname } = useLocation()
+
+  useEffect(() => { }, [collection, pathname])
+
+So now every time pathname changes the collection will get reloaded.
 
 
 
 
+useRef()
+
+references don't change if the component redenders.
 
 
+New custom hook mounted.js: useMounted()
+
+        import { useEffect, useRef } from 'react'
+
+        function useMounted () {
+          const mounted = useRef(false)
+
+          useEffect(() => {
+            mounted.current = true
+
+            return () => {
+              mounted.current = false
+            }
+          }, [])
+
+          return mounted
+        }
+
+        export default useMounted
 
 
+then orders.js:
 
+      console.log('Orders.js mounted.current', mounted.current)
 
+      if (!mounted.current) {
+        return
+      }
 
+and in collections.js too:
 
+      console.log('collection mounted.current', mounted.current)
 
-
-
-
+      if (mounted.current) {
+        setData(docs)
+      }
 
 class #195 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Action Remove Pizza Size
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/142
 
+table.js
 
+  <Button
+    startIcon={<Delete />}
+    color='secondary'
+    onClick={() => remove(pizza.id)}
+  >Remove</Button>
 
+  const { data: pizzasSizes, remove } = useCollection('pizzasSizes')
 
+collection.js:
 
+      const remove = useCallback((id) => {
+        db.collection(collection).doc(id).delete()
+      }, [collection])
 
+      ....
 
+      return { data, add, remove }
 
+Fine. Now how to update the table rendered just after the delete? We aren't using pathnames, changing our routes, so we need fidn somethng else. Also, we can't insert 'data' in this useEffect because inside it there is a 'setData', which means we could get an infinite loop. So how trigger this useEffect?
 
+So far, this is the version:
 
+  useEffect(() => {
+    db.collection(collection).get().then(querySnapshot => {
+      const docs = []
 
+      querySnapshot.forEach(doc => {
+        docs.push({
+          id: doc.id,
+          ...doc.data()
+        })
+      })
+      console.log('collection mounted.current', mounted.current)
 
+      if (mounted.current) {
+        setData(docs)
+      }
+    })
+  }, [collection, pathname, mounted])
 
+What Daciuk decided is to extract some of it's content in another function, fetchCollectionData().
 
+Here is the file at the end of the class:
 
+          import { useEffect, useState, useCallback } from 'react'
+          import { useLocation } from 'react-router-dom'
+          import { db } from 'services/firebase'
+          import { useMounted } from 'hooks'
 
+          function useCollection (collection) {
+            const [data, setData] = useState(null)
+            const { pathname } = useLocation()
+            const mounted = useMounted()
+
+            const fetchCollectionData = useCallback(() => {
+              db.collection(collection).get().then(querySnapshot => {
+                const docs = []
+
+                querySnapshot.forEach(doc => {
+                  docs.push({
+                    id: doc.id,
+                    ...doc.data()
+                  })
+                })
+                console.log('collection mounted.current', mounted.current)
+
+                if (mounted.current) {
+                  setData(docs)
+                }
+              })
+            }, [collection, mounted])
+
+            const add = useCallback((data) => {
+              return db.collection(collection).add(data)
+            }, [collection])
+
+            const remove = useCallback(async (id) => {
+              await db.collection(collection).doc(id).delete()
+              fetchCollectionData()
+            }, [collection, fetchCollectionData])
+
+            useEffect(() => {
+              fetchCollectionData()
+            }, [pathname, fetchCollectionData])
+
+            return { data, add, remove }
+          }
+
+          export default useCollection
 
 class #196 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Action: Edit Button
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/143
 
 
+new route in routes.js:
 
+        export const EDIT = '/:id/edit'
 
+In fact, we will use this:
 
+        export const EDIT = (id = ':id') => `/${id}/edit`
 
+And at table.js, we call this route like that:
 
+        <Button
+          startIcon={<Edit />}
+          component={Link}
+          to={`${PIZZAS_SIZES}${EDIT(pizza.id)}`}
+        >
+          Edit
+        </Button>
 
+Now we need another route to have the form opened for edit size, not only for new size. Back to the pizzas-sizes.js:
 
+Insted of just one path route, we can have an array with both we need:
 
+        <Route path={[`${PIZZAS_SIZES}${NEW}`, `${PIZZAS_SIZES}${EDIT}`]}>
 
+To achieve a code more readable, how about that:
 
+        <Route path={[newSizePath, editSizePath]}>
 
+So the whole file pizzas-sizes.js:
 
+        import React from 'react'
+        import { Route } from 'react-router-dom'
+        import TablePizzasSizes from './table'
+        import FormRegisterSize from './form'
+        import { PIZZAS_SIZES, NEW, EDIT } from 'routes'
 
+        const newSizePath = `${PIZZAS_SIZES}${NEW}`
+        const editSizePath = `${PIZZAS_SIZES}${EDIT}`
 
+        function PizzasSizes () {
+          return (
+            <>
+              <Route path={[newSizePath, editSizePath]}>
+                <FormRegisterSize />
+              </Route>
+              <TablePizzasSizes />
+            </>
+          )
+        }
+
+        export default PizzasSizes
 
 class #197 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/144
 
 
 

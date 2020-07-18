@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { db } from 'services/firebase'
+import { useMounted } from 'hooks'
 
 function useCollection (collection) {
   const [data, setData] = useState(null)
+  const { pathname } = useLocation()
+  const mounted = useMounted()
 
-  useEffect(() => {
-    let mounted = true
-
+  const fetchCollectionData = useCallback(() => {
     db.collection(collection).get().then(querySnapshot => {
       const docs = []
 
@@ -16,18 +18,28 @@ function useCollection (collection) {
           ...doc.data()
         })
       })
+      console.log('collection mounted.current', mounted.current)
 
-      if (mounted) {
+      if (mounted.current) {
         setData(docs)
       }
     })
+  }, [collection, mounted])
 
-    return () => {
-      mounted = false
-    }
+  const add = useCallback((data) => {
+    return db.collection(collection).add(data)
   }, [collection])
 
-  return data
+  const remove = useCallback(async (id) => {
+    await db.collection(collection).doc(id).delete()
+    fetchCollectionData()
+  }, [collection, fetchCollectionData])
+
+  useEffect(() => {
+    fetchCollectionData()
+  }, [pathname, fetchCollectionData])
+
+  return { data, add, remove }
 }
 
 export default useCollection

@@ -1,18 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { db } from 'services/firebase'
+import { useMounted } from 'hooks'
 
 function useOrders () {
   const [orders, setOrders] = useState(null)
+  const mounted = useMounted()
 
-  useEffect(() => {
-    const initialStatus = {
-      pending: [],
-      inProgress: [],
-      outForDelivery: [],
-      delivered: []
-    }
+  const status = useMemo(() => ({
+    pending: 'pending',
+    inProgress: 'inProgress',
+    outForDelivery: 'outForDelivery',
+    delivered: 'delivered'
+  }), [])
 
-    db.collection('orders').get().then(querySnapshot => {
+  const getOrders = useCallback(() => {
+    db.collection('orders').orderBy('createdAt', 'asc').get().then(querySnapshot => {
       const docs = []
 
       querySnapshot.forEach(doc => {
@@ -22,18 +24,39 @@ function useOrders () {
         })
       })
 
-      const newOrders = docs.reduce((acc, doc) => {
+      const initialStatus = Object.keys(status).reduce((acc, status) => {
+        acc[status] = []
+        return acc
+      }, {})
+
+      console.log('Orders.js mounted.current', mounted.current)
+
+      if (!mounted.current) {
+        return
+      }
+
+      setOrders(docs.reduce((acc, doc) => {
+        const mainStatus = doc.status || status.pending
+
         return {
           ...acc,
-          pending: acc.pending.concat(doc)
+          [mainStatus]: acc[mainStatus].concat(doc)
         }
       }, initialStatus)
-
-      setOrders(newOrders)
+      )
     })
-  }, [])
+  }, [status, mounted])
 
-  return { orders }
+  const updateOrder = useCallback(async ({ orderId, status }) => {
+    await db.collection('orders').doc(orderId).set({ status }, { merge: true })
+    getOrders()
+  }, [getOrders])
+
+  useEffect(() => {
+    getOrders()
+  }, [getOrders])
+
+  return { orders, status, updateOrder }
 }
 
 export default useOrders
