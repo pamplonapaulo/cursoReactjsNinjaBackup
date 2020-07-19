@@ -13432,6 +13432,10 @@ Remember that object from .get() in Firebase is not an array, so we use the spec
 
               Done.
 
+              More about destructuring & Dynamic Object Key here:
+
+              https://github.com/da2k/curso-reactjs-ninja/issues/505
+
 The whole thing:
 
           const removePizzaSize = useCallback(async (id) => {
@@ -13465,82 +13469,8 @@ The whole thing:
 
 class #215 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class #216 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class #217 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class #218 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
