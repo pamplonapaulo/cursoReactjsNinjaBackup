@@ -13133,67 +13133,335 @@ and next class we will set this handle:
 
 class #212 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Action: allowing to change fields' values
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/158
 
 
+flavours/form.js
 
 
+        const handleChange = useCallback(async (e) => {
+          const { name, value } = e.target
+
+          dispatch({
+            type: 'UPDATE_FIELD',
+            payload: {
+              [name]: value
+            }
+          })
+
+        }, [])
 
 
+        function reducer (state, action) {
+          if (action.type === 'EDIT') {
+            return action.payload
+          }
+
+          if (action.type === 'UPDATE_FIELD') {
+            return {
+              ...state,
+              ...action.payload
+            }
+          }
+          return state
+        }
+
+Now still pending just the prices of each flavour. Let's fill these fields first:
+
+        {pizzasSizes?.map(size => (
+          <TextField
+            key={size.id}
+            label={size.name}
+            name={`size-${size.id}`}
+            value={pizzaEditable.value[size.id] || ''}
+            onChange={handleChange}
+            xs={3}
+          />
+        ))}
+
+Without the || '', in case the pizzaEditable.value[size.id] is undefined we get an error in React, so we  include this possibility filling the field with a blank strig to avoid the error.
+
+value={pizzaEditable.value[size.id] || ''}
+
+Now we must allow the change of these fields' values.
+
+handleChange must get extra conditions... Insted of just that:
+
+        const handleChange = useCallback(async (e) => {
+          const { name, value } = e.target
+
+          dispatch({
+            type: 'UPDATE_FIELD',
+            payload: {
+              [name]: value
+            }
+          })
+        }, [])
+
+We now have this:
+
+        const handleChange = useCallback(async (e) => {
+          const { name, value } = e.target
+          const action = name.includes('size-') ? 'UPDATE_SIZE' : 'UPDATE_FIELD'
+          const fieldName = name.includes('size-') ? name.replace('size-', '') : name
+
+          dispatch({
+            type: action,
+            payload: {
+              [fieldName]: value
+            }
+          })
+        }, [])
+
+Before test this code, let's include this action 'UPDATE_SIZE' in our reducer as well:
+
+        function reducer (state, action) {
+          if (action.type === 'EDIT') {
+            return action.payload
+          }
+
+          if (action.type === 'UPDATE_FIELD') {
+            return {
+              ...state,
+              ...action.payload
+            }
+          }
+
+          if (action.type === 'UPDATE_SIZE') {
+            return {
+              ...state,
+              value: {
+                ...state.value,
+                ...action.payload
+              }
+            }
+          }
+          return state
+        }
 
 
+Now to accomplish that we must make this new data be sent to our database.
 
+Inside the handleSubmit function, the normalizedData's object will change. Insted of:
 
+    const normalizedData = {
+      name: fields.name.value,
+      image: fields.image.value,
+      value: pizzasSizes.reduce((acc, size) => {
+        acc[size.id] = +fields[`size-${size.id}`].value
+        return acc
+      }, {})
+    }
 
+We will use this, and notice the reduce being used to convert string into number type:
 
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault()
 
+    const { id, ...data } = pizzaEditable
+    // also, line above cuz we don't want to send the id.
 
+    const normalizedData = {
+      ...data,
+      value: Object.entries(data.value).reduce((acc, [sizeId, value]) => {
+        acc[sizeId] = +value
+        return acc
+      }, {})
+    }
 
-
-
+    if (id) await edit(id, normalizedData)
+    else await add(normalizedData)
+    history.push(PIZZAS_FLAVOURS)
+  }, [add, edit, history, pizzaEditable])
 
 
 class #213 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+How to remove a size and update flavours at once?
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/159
 
 
+That's a bug. If the admin creates a new size, then if later he checks the flavours page and edit one flavour to add it's price for the new size, and then if later he decides to remove this new size, the flavours page will keep showing that price added for the new size that no longer existis, which should be removed when the size got removed.
 
+If a size is removed, we must check the flavours and in case find any price for that removed size, get rid of it as well.
 
+So, should we iterate the whole list of flavours to find the removed size and then remove it from there too? How many flavours may a pizza store have? 100? Some of them, yes. So there are a change of while this longe iteration is happening, who knows the internet's user wouldn't break? Ho do we run this in a safe way?
 
+Firebase: Transactions
 
+db.runTransaction()
 
+https://firebase.google.com/docs/firestore/manage-data/transactions?authuser=0
 
+    Use when we have many actions at the same time.
 
+    Create a function for this operation:
 
+          hooks/db/collection.js:
 
+            const removePizzaSize = useCallback(async (id) => {
+              db.runTransaction((transaction) => {
+                console.log('transaction', transaction)
+              })
+            }, [])
 
+    Then import it:
 
+          src/pages/pizzas-sizes/table.js: TablePizzasSizes
 
+    So insted of this import:
 
+        const { data: pizzasSizes, remove } = useCollection('pizzasSizes')
 
+    Call the removePizzaSize:
 
+        const { data: pizzasSizes, removePizzaSize } = useCollection('pizzasSizes')
+
+    But to avoid rename all the code already written, rename it in the import:
+
+        const { data: pizzasSizes, removePizzaSize: remove } = useCollection('pizzasSizes')
+
+    Now what the console show us in this transaction object?
+
+          delete: ƒ (t)
+          get: ƒ (t)
+          set: ƒ (t, e, n)
+          update: ƒ (t, e, n)
+
+    Those methods are available for us.
+
+    Firebase saves this transaction in memory.
+
+    Everything inside transaction function will be processed but will get applied only when all of them got processed, at the end, together in one single moment:
+
+        db.runTransaction((transaction) => {
+          
+          // do this...
+          // do also this...
+          // remove that...
+          // update this...
+          
+        }
+
+    If in the meanwhile any problem happen with your internet, Firebase won't change anything. Nothing changes.
+
+    If any data changes while transaction is happening and any lack of consistence appears, then FIrebase will run again from the begining.
+
+    We have to use transactions always when we need to run many changes trigged by just one action.
+
+    Transactions have two states:
+
+      commit X rollback
+
+      But Firebase does it by itself, we don't set this. Those are regular commands in most databases.
 
 
 class #214 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Coding our transaction
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/160
 
 
+The doc's REFERENCE: (we need it always)
+
+    const pizzaSizeRef = dc.collection('pizzasSizes').doc(id)
+
+    Have a look in all methods from this object:
+
+          collection: ƒ (t)
+          constructor: ƒ n(e, n, r)
+          cw: ƒ (t, e, n)
+          delete: ƒ ()
+          get: ƒ (t)
+          id: (...)
+          isEqual: ƒ (t)
+          onSnapshot: ƒ ()
+          parent: (...)
+          path: (...)
+          set: ƒ (t, e)
+          update: ƒ (t, e)
+          uw: ƒ (t, e)
+          withConverter: ƒ (t)
+          get id: ƒ ()
+          get parent: ƒ ()
+          get path: ƒ ()
+
+GET the data:
+
+          const removePizzaSize = useCallback(async (id) => {
+            const pizzaSizeRef = db.collection('pizzasSizes').doc(id)
+            console.log('pizzaSizeRef', pizzaSizeRef)
+
+            db.runTransaction(async (transaction) => {
+              const sizeDoc = await transaction.get(pizzaSizeRef)
+              console.log('sizeDoc.existis', sizeDoc.exists)
+
+              if (!sizeDoc.exists) {
+                throw new Error('')
+              }
+            })
+              .then(() => console.log('Transaction accomplished sucessfully!'))
+              .catch((e) => console.log('Transaction error:', e))
+          }, [])
 
 
+Remember that object from .get() in Firebase is not an array, so we use the specific method from Firebase itself. In this case, we use forEach() to iterate the collection.
 
+          const allFlavours = await db.collection('pizzasFlavours').get()
 
+          allFlavours.forEach(flavour => {
+            
+          })
 
+    So...
 
+          allFlavours.forEach(flavour => {
+            const { [id]: sizeId, ...value } = flavour.data().value
+            const flavourRef = db.collection('pizzasFlavours').doc(flavour.id)
+            transaction.update(flavourRef, { value })
+          })
 
+          // 
+              the destructuring over 'flavour.data().value' uses the arument from the function removePizzaSize, named id and which has the specific id to get removed, then stores it in a const named sizeId, including it's value, and separated from ...value. Now 'value' has everything else but the stuff to be removed. Inside the destructuring, id have to be inside [], otherwhise the selection fail.
 
+              Then we update the reference passing 'value', which no longer contains the size we want to remove.
 
+              Done.
 
+The whole thing:
 
+          const removePizzaSize = useCallback(async (id) => {
+            const pizzaSizeRef = db.collection('pizzasSizes').doc(id)
+            console.log('pizzaSizeRef', pizzaSizeRef)
 
+            db.runTransaction(async (transaction) => {
+              const sizeDoc = await transaction.get(pizzaSizeRef)
+              console.log('sizeDoc.existis', sizeDoc.exists)
+              if (!sizeDoc.exists) {
+                throw new Error('')
+              }
 
+              transaction.delete(pizzaSizeRef)
 
+              const allFlavours = await db.collection('pizzasFlavours').get()
 
+              allFlavours.forEach(flavour => {
+                const { [id]: sizeId, ...value } = flavour.data().value
+                const flavourRef = db.collection('pizzasFlavours').doc(flavour.id)
+                transaction.update(flavourRef, { value })
+              })
 
-
+            })
+              .then(() => {
+                console.log('Transaction accomplished sucessfully!')
+                fetchCollectionData()
+              })
+              .catch((e) => console.log('Transaction error:', e))
+          }, [fetchCollectionData])
 
 class #215 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
