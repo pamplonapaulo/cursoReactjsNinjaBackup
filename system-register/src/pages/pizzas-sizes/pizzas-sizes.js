@@ -5,7 +5,7 @@ import FormRegisterSize from './form'
 import { PIZZAS_SIZES, NEW, EDIT } from 'routes'
 
 const newSizePath = `${PIZZAS_SIZES}${NEW}`
-const editSizePath = `${PIZZAS_SIZES}${EDIT}`
+const editSizePath = `${PIZZAS_SIZES}${EDIT()}`
 
 function PizzasSizes () {
   return (

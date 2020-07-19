@@ -10,23 +10,25 @@ import { Link, useHistory, useParams } from 'react-router-dom'
 import {
   Button,
   Grid,
+  InputLabel,
   Typography
 } from '@material-ui/core'
 import { Form, FormContainer, TextField } from 'ui'
-import { PIZZAS_SIZES } from 'routes'
 import { useCollection } from 'hooks'
+import { PIZZAS_FLAVOURS } from 'routes'
 
-function FormRegisterSize () {
+function FormRegisterFlavour () {
   const { id } = useParams()
-  const { pizza, add, edit } = usePizzaSize(id)
+  const nameField = useRef()
+  const history = useHistory()
+  const { data: pizzasSizes } = useCollection('pizzasSizes')
+  const { pizza, add } = usePizzaFlavour(id)
   const [pizzaEditable, dispatch] = useReducer(reducer, initialState)
   console.log('pizzaEditable:', pizzaEditable)
-  const history = useHistory()
-  const nameField = useRef()
 
   const texts = useMemo(() => ({
-    title: id ? 'Edit size' : 'Add new size',
-    button: id ? 'Save' : 'Add'
+    title: id ? 'Editar sabor' : 'Cadastrar novo sabor',
+    button: id ? 'Salvar' : 'Cadastrar'
   }), [id])
 
   useEffect(() => {
@@ -40,32 +42,26 @@ function FormRegisterSize () {
     })
   }, [pizza])
 
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target
-    dispatch({
-      type: 'UPDATE_FIELD',
-      payload: {
-        [name]: value
-      }
-    })
+  const handleChange = useCallback(async (e) => {
+
   }, [])
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
-    const { id, name, size, slices, flavours } = pizzaEditable
+    const fields = e.target.elements
 
     const normalizedData = {
-      name,
-      size: +size,
-      slices: +slices,
-      flavours: +flavours
+      name: fields.name.value,
+      image: fields.image.value,
+      value: pizzasSizes.reduce((acc, size) => {
+        acc[size.id] = +fields[`size-${size.id}`].value
+        return acc
+      }, {})
     }
 
-    if (id) await edit(normalizedData)
-    else await add(normalizedData)
-
-    history.push(PIZZAS_SIZES)
-  }, [add, edit, history, pizzaEditable])
+    await add(normalizedData)
+    history.push(PIZZAS_FLAVOURS)
+  }, [pizzasSizes, add, history])
 
   return (
     <FormContainer>
@@ -77,39 +73,37 @@ function FormRegisterSize () {
 
       <Form onSubmit={handleSubmit}>
         <TextField
-          label='Nome para esse tamanho. Ex: Pequena'
+          label={`Flavour's  name`}
           name='name'
+          inputRef={nameField}
           value={pizzaEditable.name}
           onChange={handleChange}
-          inputRef={nameField}
-
         />
 
         <TextField
-          label='Diâmetro da pizza em cm'
-          name='size'
-          value={pizzaEditable.size}
+          label={`Image's file url`}
+          name='image'
+          value={pizzaEditable.image}
           onChange={handleChange}
         />
 
-        <TextField
-          label='Quantidade de fatias'
-          name='slices'
-          value={pizzaEditable.slices}
-          onChange={handleChange}
-        />
+        <Grid item xs={12}>
+          <InputLabel>Prices in £ for each size:</InputLabel>
+        </Grid>
 
-        <TextField
-          label='Quantidade de sabores'
-          name='flavours'
-          value={pizzaEditable.flavours}
-          onChange={handleChange}
-        />
+        {pizzasSizes?.map(size => (
+          <TextField
+            key={size.id}
+            label={size.name}
+            name={`size-${size.id}`}
+            xs={3}
+          />
+        ))}
 
         <Grid item container justify='flex-end' spacing={2}>
           <Grid item>
-            <Button variant='contained' component={Link} to={PIZZAS_SIZES}>
-              Cancel
+            <Button variant='contained' component={Link} to={PIZZAS_FLAVOURS}>
+              Cancelar
             </Button>
           </Grid>
 
@@ -126,27 +120,19 @@ function FormRegisterSize () {
 
 const initialState = {
   name: '',
-  size: '',
-  slices: '',
-  flavours: ''
+  image: '',
+  value: {}
 }
 
 function reducer (state, action) {
   if (action.type === 'EDIT') {
     return action.payload
   }
-
-  if (action.type === 'UPDATE_FIELD') {
-    return {
-      ...state,
-      ...action.payload
-    }
-  }
   return state
 }
 
-function usePizzaSize (id) {
-  const { data, add, edit } = useCollection('pizzasSizes')
+function usePizzaFlavour (id) {
+  const { data, add, edit } = useCollection('pizzasFlavours')
   const [pizza, setPizza] = useState(initialState)
 
   useEffect(() => {
@@ -156,4 +142,4 @@ function usePizzaSize (id) {
   return { pizza, add, edit }
 }
 
-export default FormRegisterSize
+export default FormRegisterFlavour

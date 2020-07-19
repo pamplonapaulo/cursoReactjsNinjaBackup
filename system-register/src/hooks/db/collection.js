@@ -18,7 +18,6 @@ function useCollection (collection) {
           ...doc.data()
         })
       })
-      console.log('collection mounted.current', mounted.current)
 
       if (mounted.current) {
         setData(docs)
@@ -27,7 +26,13 @@ function useCollection (collection) {
   }, [collection, mounted])
 
   const add = useCallback((data) => {
+    console.log('data add new', data)
     return db.collection(collection).add(data)
+  }, [collection])
+
+  const edit = useCallback((id, data) => {
+    console.log('edit size', data, id)
+    return db.collectioncolle(collection).doc(id).set(data)
   }, [collection])
 
   const remove = useCallback(async (id) => {
@@ -39,7 +44,7 @@ function useCollection (collection) {
     fetchCollectionData()
   }, [pathname, fetchCollectionData])
 
-  return { data, add, remove }
+  return { data, add, edit, remove }
 }
 
 export default useCollection
