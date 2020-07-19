@@ -12403,192 +12403,519 @@ So the whole file pizzas-sizes.js:
         export default PizzasSizes
 
 class #197 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
+Action Edit (cont.)
 https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/144
 
+useParams
 
+  import { useParams } from 'react-router-dom'
 
+  const { id } = useParams()
 
+  const { pizza, add } = usePizzaSize(id)
 
+  const initialState = {
+    name: '',
+    size: '',
+    slices: '',
+    flavours: ''
+  }
 
+  function usePizzaSize (id) {
+    const { data, add } = useCollection('pizzasSizes')
+    const [pizza,setPizza] = useState({})
 
+    useEffect(() => {
+      setPizza(data?.find(p => p.id === id) || initialState)
+    }, [data, id])
 
+    return { pizza, add }
+  }
 
-
-
-
-
-
-
+  <TextField
+    label='Size Name'
+    name='name'
+    value={pizza.name}
+    onChange={() => {}}
+  />
 
 class #198 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Action Edit (cont.)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/145
 
 
 class #199 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Action Edit (cont.)
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/146
+
+By the end of last class, user wasn't able to edit the text fields, since these fields are controlled by React state. Let's fix it.
+
+Reminders:
+
+  Reducer have to be a pure function, state can't be changed manually. If we have to change it, we create a new object
+
+  if (action.type === 'UPDATE_FIELD') {
+    return {
+      ...state,
+      ...action.payload
+    }
+  }
+
+In the block above, which is inside our reducer, the first destructuring, from state, takes the current data.
+Then the second destructuring, from action.payload, overrides the specific properties of the object. The cool thing of this approach is that we don't have to create an action to update each single field.
+
+The handle for editions:
+
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target
+    dispatch({
+      type: 'UPDATE_FIELD',
+      payload: {
+        [name]: value
+      }
+    })
+  }, [])
+
+Next issue:
+
+  Action edit must replace the current item, not create a new one!
+
+  This is because the current code is still using the add callback in our collection.js
+
+        const add = useCallback((data) => {
+          console.log('data add new', data)
+          return db.collection(collection).add(data)
+        }, [collection])
+
+Starting up with just a look inside:
+
+        const edit = useCallback((id, data) => {
+          console.log('edit size', data, id)
+        }, [])
+
+Don't forget:
+
+  1. pass 'edit' in the exportation of useCollection comp:
+
+        return { data, add, edit, remove }
+
+  2. in the FormRegisterSize comp, get 'edit' inside our custom hook usePizzaSize:
+
+        const { data, add, edit } = useCollection('pizzasSizes')
+
+  3. and return it as well inside the same custom hook:
+
+        return { pizza, add, edit }
+
+  4. then at the top of the same FormRegisterSize comp, take 'edit' in the destructuring from this custom hook usePizzaSize:
+
+        const { pizza, add, edit } = usePizzaSize(id)
+
+  5. fix handleSubmit, using 'e.target.elements' no longer changes since React now controlls these fields.
+
+    Insted of:
+    const { name, size, slices, flavours } = e.target.elements
+
+    Now this:
+    const { name, size, slices, flavours } = pizzaEditable
+
+    And remove the '.value' propertie from those consts when normalizing it, it's no longer a data from the text field element.
+
+    Make sure we get the 'pizzaEditable' passing as depedency in this useCallback. 
+    
+    After those last changes:
+
+            const handleSubmit = useCallback(async (e) => {
+              e.preventDefault()
+              const { name, size, slices, flavours } = pizzaEditable
+
+              const normalizedData = {
+                name: name, // this line just 'name,' is fine
+                size: +size,
+                slices: +slices,
+                flavours: +flavours
+              }
+
+              await add(normalizedData)
+              history.push(PIZZAS_SIZES)
+            }, [add, history, pizzaEditable])
+
+  6. handleSubmit last improvments:
+
+  Get the id inside the destructuring, if null, means that's a new size being set. If not null, that's an edition of an existing size. Also include it on callback dependencies. Then, check if null or not and run 'edit' or 'add'.
+
+          if (id) await edit(normalizedData)
+          else await add(normalizedData)
+
+  7. Save edit in firebase, back to our collection.js:
+
+          const edit = useCallback((id, data) => {
+            return db.collectioncolle(collection).doc(id).set(data)
+          }, [collection])
 
 
 
+  8. Now improving the focus in the form fields: page gets focus in the field if new size action but no focus at all when editing sizes.
 
+  useRef
 
+        const nameField = useRef()
 
+        <TextField
+          inputRef={nameField}
+        />
 
+  Have an useEffect specific to get focus in the fields. (useEffect always must be specific for each feature we want to handle)
 
-
-
-
-
-
-
-
+        useEffect(() => {
+          nameField.current.focus()
+        }, [id])
 
 
 class #200 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+General improvements
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/147
+
+action title on top page: edit X add
 
 
 
+  const texts = useMemo(() => ({
+    title: id ? 'Edit size' : 'Add new size',
+    button: id ? 'Save' : 'Add'
+  }), [id])
+
+  Since this function is inside the component (FormRegisterSize), unless we have useMemo it would run again every time the component gets rendered.
 
 
+Firebase
 
+  create a collection just for users
 
+  contexts/auth.js
 
+          useEffect(() => {
+            const uid = userInfo.user?.uid || 'EMPTY'
+            console.log('User: ', userInfo.user)
+            db.collection('users').doc(uid).get().then(doc => {
+              console.log('Does doc exist?', doc.exists)
+              if (doc.exists || uid === 'EMPTY') {
+                console.log('já existe ou é empty:', doc, uid)
+                return
+              }
 
+              db.collection('users').doc(uid).set({
+                email: userInfo.user.email,
+                name: userInfo.user.displayName,
+                role: 'user'
+              })
+            })
+          }, [userInfo])
 
+  write a new rule in firebase for this new collection:
 
-
-
-
-
-
+          match /users/{user} {
+            allow read: if isAuthenticated();
+            allow write: if isAuthenticated();
+          }
 
 
 class #201 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Admin User + Security Rules
+
+
+Firebasestore
+
+  Roles Playgroung (no need to publish to run tests)
+
+    type: get, create, delete update
+
+    path/to/resource: /users/1, pizzasSizes/1, etc.
+
+
+  Users shouldn't be able to access each other data, only the own data. So insted of this:
+
+      match /users/{user} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated();
+      }
+
+  Have this:
+
+      function isOwnProfile (id) {
+        return request.auth.uid == id
+      }
+
+      match /users/{user} {
+        allow read: if isOwnProfile(user);
+        allow write: if isAuthenticated();
+      }
+
+
+Now test two times like: 
+
+    Authenticated
+    path/to/resource: /users/2
+    Firebase UID: 1
+
+    - Should return read denied
+
+    Authenticated
+    path/to/resource: /users/2
+    Firebase UID: 2
+
+    - Should return read allowed
 
 
 
+Now let's include the admin
+
+    match /users/{user} {
+    	allow read: if isOwnProfile(user) || isAdmin();
+      allow write: if isAuthenticated();
+    }
+
+But this is not enough yet. Let's change isAdmin function. Insted of:
+
+  	function isAdmin () {
+    	return request.auth.uid != null;
+    }
+
+We will write:
+
+  	function isAdmin () {
+    	return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
 
 
+We have also to make sure that the role of the user it is really 'admin':
+
+    email: "pamplonapaulo@gmail.com"
+    name: "Paulo Pamplona"
+    role: "admin"
+
+In this case we cahnged Paulo's role editing via Firebase's website at dashboard/console. Then to test, take it's ID and use in the 'Firebase UID' field.
+
+After that, we also cahnged the writting rule, from this:
+
+      allow write: if isAuthenticated();
+
+To this:
+
+      allow write: if isOwnProfile(user);
+
+      But this is actually not safe. Any mean user with authentication could manipulade the object and create a user with the admin role.
+
+      So our write permissions will follow this:
+
+          match /users/{user} {
+            allow read: if isOwnProfile(user) || isAdmin();
+            allow create: if isOwnProfile(user) && isUser();
+          }
+
+          OBS: allow create is safer than allow write, it doesn't allow changes, just new objects.
 
 
+      Plus this:
 
+          function isUser () {
+            return request.resource.data.role == 'user'
+          }
 
+      Now if a common user creates a user for himself, it have to be a role 'user'
 
+Learn more here:
 
+      https://firebase.google.com/docs/web/setup?authuser=0
 
+      Get started with Cloud Firestore Security Rules
 
+      https://firebase.google.com/docs/firestore/security/get-started?authuser=0
 
 
 
 
 class #202 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/148
 
 
+General improvements
+
+1. If user scrolls down and chages the page, the next screen doesn't start in the top, scroll keeps where user left it.
+
+fix it:
+
+  main.js
+
+  Every time a pathname changes, meaning a new page is called, force the scroll top:
+
+      useEffect(() => {
+        window.scrollTo(0,0)
+      }, [pathname])
 
 
+  But it gets more readable with a custom hook for that:
 
+      const Main = () => {
+        useScrollToTop()
+        .....
+      }
 
+      function useScrollToTop () {
+        const { pathname } = useLocation()
 
+        useEffect(() => {
+          window.scrollTo(0,0)
+        }, [pathname])
+      }
 
+2. When user at Pizzas Sizes opens the Form, the pathname chages a bit and become no longer exact, with that we loose the color of active route in the sidebar.
 
+The select attribute in ListItem controlls this:
 
+        <List>
+          {menuItems.map(item => (
+            <ListItem
+              key={item.label}
+              button
+              selected={pathname === item.link}
+              component={Link}
+              to={item.link}
+            >
+              <ListItemText>{item.label}</ListItemText>
+            </ListItem>
+          ))}
+        </List>
 
+        We want to abstract this rule into a function:
 
+        selected={pathname === item.link}
 
+        selected={getSelectedMenuItem(item)}
 
+        const getSelectedMenuItem = useCallback((item) => {
+          console.log('pathname', pathname)
+          console.log('item.link', item.link)
 
+          return pathname === item.link ||
+            (pathname.includes(item.link) && item.link !== routes.HOME)
+        }, [pathname])
 
 class #203 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours Page - Markup
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/149
 
 
 class #204 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Flavours Page - Markup (Cont.)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/150
 
 
 class #205 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Flavours Page - Markup (Cont.)
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/151
 
+abstracting form.js to ui/form.js
 
+ui/form.js
 
+        import styled from 'styled-components'
+        import { Grid } from '@material-ui/core'
 
+        export const Form = styled(Grid).attrs({
+          item: true,
+          container: true,
+          xs: 12,
+          spacing: 2,
+          component: 'form'
+        })``
 
+        export const FormContainer = styled(Grid).attrs({
+          container: true,
+          spacing: 2
+        })`
+          && {
+            margin-bottom: ${({ theme }) => theme.spacing(5)}px;
+          }
+        `
 
+From pizzas-sizes/form.js we copied the whole thing and after removing and renaming a few things, here is how it looked the pizzas-flavours/form.js:
 
+        function FormRegisterFlavour () {
+          const { id } = useParams()
+          const nameField = useRef()
 
+          const texts = useMemo(() => ({
+            title: id ? 'Edit flavour' : 'Add new flavour',
+            button: id ? 'Save' : 'Add'
+          }), [id])
 
+          useEffect(() => {
+            nameField.current.focus()
+          }, [id])
 
+          return (
+            <FormContainer>
+              <Grid item xs={12}>
+                <Typography variant='h4'>
+                  {texts.title}
+                </Typography>
+              </Grid>
 
+              <Form>
+                <TextField
+                  label={`Flavour's  name`}
+                  name='name'
+                  inputRef={nameField}
+                />
 
+                <Grid item container justify='flex-end' spacing={2}>
+                  <Grid item>
+                    <Button variant='contained' component={Link} to={PIZZAS_FLAVOURS}>
+                      Cancel
+                    </Button>
+                  </Grid>
 
+                  <Grid item>
+                    <Button variant='contained' color='primary' type='submit'>
+                      {texts.button}
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Form>
+            </FormContainer>
+          )
+        }
 
 
 class #206 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Flavours Page
 
-
-
-
-
-
-
-
-
-
-
-
-
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/152
 
 
 
 
 class #207 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Flavours Page: Listing and deleting
 
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/153
 
+table.js:
 
+include:
+
+  import { useCollection } from 'hooks'
+
+  const newFlavourPath = useRouteMatch(`${PIZZAS_FLAVOURS}${NEW}`)
+  const { data: TablePizzasFlavours } = useCollection('pizzasFlavours')
 
 
 
@@ -12604,26 +12931,336 @@ class #207 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 class #208 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Flavours: Prices per sizes
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/154
 
 
+The React-zzaria may have a situation where there are more or less sizes for each flavour, depending on the order how the admin was inserting his data, releasing his new flavours or sizes.
 
+So we got a mapping here when undefined may be real, while passing for array elements.
 
+That said, our code will accept this eventual absence of name prop of ListItem:
 
+ListItem.propTypes = {
+  name: t.string,
+  price: t.number.isRequired
+}
 
+We removed the 'isRequired', to handle this eventuality.
 
+Now check this cool block:
 
+                <List>
+                  {Object.entries(pizza.value).map(([sizeId, value]) => {
+                    const sizeName = pizzasSizes
+                      ?.find(s => s.id === sizeId)
+                      ?.name
 
+                    return (
+                      <ListItem
+                        key={sizeId}
+                        name={sizeName}
+                        price={value}
+                      />
+                    )
+                  })}
+                </List>
 
+pizza.value is an object inside the object pizza. We use 'Object.entries()' to turn it into an array, otherwhise we can't use map method.
 
+    Object.entries(pizza.value).map
 
+The map parameters is a destructuring where the first argument is the id and the second it's value.
 
+    map(([sizeId, value])
 
+The array variable 'pizzasSizes' is coming from another call of our DB, since in the top of the file call our hook useCollection('pizzasSizes'). That might be the only file where we are having two calls in useCollection.
 
+    const { data: pizzasSizes } = useCollection('pizzasSizes')
+
+Then we pass the 'find' method over this array of sizes, which is our single source for sizes' names, the only reason we need it here.
+
+    const sizeName = pizzasSizes?.find(s => s.id === sizeId)?.name
+
+And the optional chaining (the question mark - ?) works almost like an ternary, code doesn't break if array is empty. In this line, the const sizeName gets a value only if the current pizza id does have a match with any size with the same id, if so we want it's 'name'
 
 class #209 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Action: add new flavour
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/155
 
 
+form.js:
+
+insted of these static fields:
+
+        <TextField
+          label='Small'
+          name='size-0'
+          xs={3}
+        />
+
+        <TextField
+          label='Medium'
+          name='size-1'
+          xs={3}
+        />
+
+        <TextField
+          label='Large'
+          name='size-2'
+          xs={3}
+        />
+
+we will have it dynamicaly:
+
+        {pizzasSizes?.map(size => (
+          <TextField
+            key={size.id}
+            label={size.name}
+            name={`size-${size.id}`}
+            xs={3}
+          />
+        ))}
+
+the submit function:
+
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault()
+    const fields = e.target.elements
+
+    const normalizedData = {
+      name: fields.name.value,
+      image: fields.image.value,
+      value: pizzasSizes.reduce((acc, size) => {
+        acc[size.id] = +fields[`size-${size.id}`].value
+        return acc
+      }, {})
+    }
+
+    await add(normalizedData)
+    history.push(PIZZAS_FLAVOURS)
+
+  }, [pizzasSizes, add, history])
+
+
+class #210 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Action: edit flavour
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/156
+
+
+form.js:
+
+const { pizza, add } = usePizzaFlavour(id)
+
+const initialState = {
+  name: '',
+  image: '',
+  value: {}
+}
+
+function usePizzaFlavour (id) {
+  const { data, add, edit } = useCollection('pizzasFlavours')
+  const [pizza, setPizza] = useState(initialState)
+
+  useEffect(() => {
+    setPizza(data?.find(p => p.id === id) || initialState)
+  }, [data, id])
+
+  return { pizza, add, edit }
+}
+
+
+class #211 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Action: filling the fields at edition
+
+https://github.com/da2k/curso-reactjs-ninja/tree/master/examples/m04/04-reactzzaria/157
+
+Converting the form from a basic form into a form controlled by react.
+
+
+      const [pizzaEditable, dispatch] = useReducer(reducer, initialState)
+
+      useEffect(() => {
+        dispatch({
+          type: 'EDIT',
+          payload: pizza
+        })
+      }, [pizza])
+
+      function reducer (state, action) {
+        if (action.type === 'EDIT') {
+          return action.payload
+        }
+        return state
+      }
+
+
+Now the last thing is ti really make the text input fields controlled by react:
+
+add that:
+          value={pizzaEditable.name}
+          onChange={handleChange}
+
+Like this:
+
+        <TextField
+          label={`Flavour's  name`}
+          name='name'
+          inputRef={nameField}
+          value={pizzaEditable.name}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label={`Image's file url`}
+          name='image'
+          value={pizzaEditable.image}
+          onChange={handleChange}
+        />
+
+and next class we will set this handle:
+
+  const handleChange = useCallback(async (e) => {
+
+  }, [])
+
+
+class #212 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #213 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #214 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #215 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #216 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #217 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class #218 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
 
