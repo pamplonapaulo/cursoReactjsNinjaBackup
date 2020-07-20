@@ -21,6 +21,9 @@ Instructor Fernando Daciuk
   
 ---
 
+Certificate's URL:
+https://www.udemy.com/certificate/UC-99f14090-5bc6-41fb-b5bf-00dbec5f9530
+
 https://www.udemy.com/course/curso-reactjs-ninja/
 
 https://github.com/da2k/curso-reactjs-ninja
